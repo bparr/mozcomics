@@ -1,0 +1,142 @@
+<?xml version="1.0"?>
+<!--
+Copyright (c) 2009 Ben Parr
+Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
+-->
+
+<!DOCTYPE overlay [
+	<!ENTITY % globalDTD SYSTEM "chrome://global/locale/global.dtd"> %globalDTD;
+	<!ENTITY % mozcomicsDTD SYSTEM "chrome://mozcomics/locale/mozcomics.dtd"> %mozcomicsDTD;
+]>
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://mozcomics/skin/mozcomics.css" type="text/css"?>
+<overlay id="mozcomics" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+	<script src="overlay.js" />
+
+	<statusbar id="status-bar">
+		<statusbarpanel id="mozcomics-statusbarpanel" class="statusbarpanel-iconic" onclick="MozComics.togglePane();" >
+			<image id="mozcomics-statusbar-image" src="chrome://mozcomics/skin/plugin.png" />
+		</statusbarpanel>
+	</statusbar>
+
+	<vbox id="appcontent">
+		<splitter id="mozcomics-splitter" resizebefore="closest" resizeafter="closest" hidden="true" />
+
+		<hbox id="mozcomics-pane" persist="height" hidden="true" chromedir="&locale.dir;" flex="1">
+
+			<popupset>
+				<popup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu();">
+					<menuitem label="&mozcomics.menu.findReadStrips;" oncommand="MozComics.findReadStrips()"/>
+					<menuitem label="&mozcomics.menu.deleteComic;" oncommand="MozComics.deleteComic()"/>
+				</popup>
+			</popupset>
+
+			<vbox flex="1">
+				<hbox class="toolbar">
+					<toolbarbutton id="mozcomics-tb-comicpicker" tooltiptext="&mozcomics.toolbar.comicPicker;" oncommand="MozComics.toggleComicPickerPane();"/>
+					<toolbarbutton id="mozcomics-tb-preferences" tooltiptext="&mozcomics.toolbar.preferences;" oncommand="MozComics.showPreferences();"/>
+					<toolbarseparator/>
+					<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.addComic()"/>
+					<toolbarbutton id="mozcomics-tb-update" tooltiptext="&mozcomics.toolbar.updateAll;" oncommand="MozComics.Update.updateAll()"/>
+					<spacer flex="1"/>
+					<toolbarbutton id="mozcomics-tb-back" tooltiptext="&mozcomics.toolbar.back;" oncommand="MozComics.Strips.setToBackStrip()"/>
+					<toolbarbutton id="mozcomics-tb-forward" tooltiptext="&mozcomics.toolbar.forward;" oncommand="MozComics.Strips.setToForwardStrip()"/>
+					<toolbarseparator/>
+					<toolbarbutton id="mozcomics-tb-first" tooltiptext="&mozcomics.toolbar.first;" oncommand="MozComics.Strips.setToFirstStrip()"/>
+					<toolbarbutton id="mozcomics-tb-previous" tooltiptext="&mozcomics.toolbar.previous;" oncommand="MozComics.Strips.setToPreviousStrip()"/>
+					<toolbarbutton id="mozcomics-tb-random" tooltiptext="&mozcomics.toolbar.random;" oncommand="MozComics.Strips.setToRandomStrip()"/>
+					<toolbarbutton id="mozcomics-tb-next" tooltiptext="&mozcomics.toolbar.next;" oncommand="MozComics.Strips.setToNextStrip()"/>
+					<toolbarbutton id="mozcomics-tb-last" tooltiptext="&mozcomics.toolbar.last;" oncommand="MozComics.Strips.setToLastStrip()"/>
+					<spacer flex="1"/>
+					<toolbarbutton class="tabs-closebutton" oncommand="MozComics.togglePane()"/>
+				</hbox>
+
+				<hbox flex="1">
+					<vbox id="mozcomics-comicpicker-pane" persist="width, hidden" hidden="false">
+						<vbox align="center">
+							<checkbox id="mozcomics-comicpicker-showread" label="&mozcomics.comicpicker.showRead;" persist="checked" checked="false"/>
+							<hbox>
+								<button label="&mozcomics.comicpicker.all;" oncommand="MozComics.Comics.enableAll();" />
+								<button label="&mozcomics.comicpicker.none;" oncommand="MozComics.Comics.disableAll();" />
+							</hbox>
+							<hbox>
+								<menulist id="mozcomics-comicpicker-datemenu" persist="value">
+									<menupopup>
+										<menuitem label="&mozcomics.comicpicker.pubDate;" value="pubDate"/>
+										<menuitem label="&mozcomics.comicpicker.readDate;" value="readDate"/>
+									</menupopup>
+								</menulist>
+								<datepicker id="mozcomics-comicpicker-date" type="popup" value=""/>
+							</hbox>
+						</vbox>
+						<tree id="mozcomics-comicPicker"
+							seltype="single"
+							enableColumnDrag="true" 
+							persist="sortDirection sortResource"
+							sortDirection="ascending"
+							sortResource="mozcomics-comic-name"
+							context="mozcomics-comicpicker-menu"
+							flex="1">
+
+							<treecols>
+								<treecol id="mozcomics-comic-enabled"
+									label="&mozcomics.comic.enabled;"
+									type="checkbox"
+									persist="width ordinal hidden"
+									onclick="MozComics.ComicPicker.update(this)"
+									class="sortDirectionIndicator"
+									sortDirection="ascending"
+									flex="1" />
+
+								<splitter class="tree-splitter"/>
+								<treecol id="mozcomics-comic-name"
+									label="&mozcomics.comic.name;"
+									persist="width ordinal hidden"
+									onclick="MozComics.ComicPicker.update(this)"
+									class="sortDirectionIndicator"
+									sortDirection="ascending"
+									flex="1" />
+
+								<splitter class="tree-splitter"/>
+								<treecol id="mozcomics-comic-rating"
+									label="&mozcomics.comic.rating;"
+									persist="width ordinal hidden"
+									onclick="MozComics.ComicPicker.update(this)"
+									class="sortDirectionIndicator"
+									flex="1" />
+							</treecols>
+
+							<treechildren />
+						</tree>
+					</vbox>
+
+					<splitter id="mozcomics-pane-splitter" resizebefore="closest" resizeafter="closest" />
+
+					<scrollbox orient="horizantal" id="mozcomics-strip-pane" flex="1" pack="center" onkeypress="MozComics.handleKeyPress(event, this.id);">
+						<vbox id="mozcomics-strip-found" align="center" hidden="true">
+							<checkbox id="mozcomics-strip-updateread" label="&mozcomics.strip.updateRead;" persist="checked" checked="true"/>
+							<label id="mozcomics-strip-comic" class="text-link" href="" value="" />
+							<label id="mozcomics-strip-title" value="" />
+							<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip" />
+							<tooltip id="mozcomics-strip-image-tooltip" label="" />
+						</vbox>
+						<vbox id="mozcomics-strip-none" align="center" hidden="true">
+							<label value="&mozcomics.strip.none;" />
+						</vbox>
+					</scrollbox>
+				</hbox>
+			</vbox>
+		</hbox>
+	</vbox>
+
+	<keyset id="mainKeyset">
+		<key id="mozcomics-key"
+			 key="C" 
+			 oncommand="MozComics.togglePane();"
+			 modifiers="accel shift" />
+	</keyset>
+
+
+</overlay>

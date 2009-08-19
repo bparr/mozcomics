@@ -1,0 +1,81 @@
+
+#mozcomics-pane {
+	height: 300px;
+}
+
+#mozcomics-pane .toolbar {
+	height: 32px;
+	margin: 0;
+	padding: 0;
+}
+
+#mozcomics-comicpicker-pane {
+	width: 300px;
+	background-color: white;
+	overflow: auto;
+}
+
+#mozcomics-comicpicker-pane treechildren::-moz-tree-checkbox {
+  list-style-image: none;
+}
+
+#mozcomics-comicpicker-pane treechildren::-moz-tree-checkbox(checked) {
+  list-style-image: url("chrome://mozcomics/skin/checked.png");
+}
+
+#mozcomics-strip-pane {
+	background-color: white;
+	overflow: auto;
+	-moz-user-focus: normal;
+}
+
+#mozcomics-tb-comicpicker {
+	list-style-image: url('chrome://mozcomics/skin/tb_comicPicker_contract.png');
+}
+
+#mozcomics-tb-comicpicker[expand="true"] {
+	list-style-image: url('chrome://mozcomics/skin/tb_comicPicker_expand.png');
+}
+
+
+#mozcomics-tb-preferences {
+	list-style-image: url('chrome://mozcomics/skin/tb_preferences.png');
+}
+
+#mozcomics-tb-addcomic {
+	list-style-image: url('chrome://mozcomics/skin/tb_addComic.png');
+}
+
+#mozcomics-tb-update {
+	list-style-image: url('chrome://mozcomics/skin/tb_update.png');
+}
+
+#mozcomics-tb-back {
+	list-style-image: url('chrome://mozcomics/skin/tb_back.png');
+}
+
+#mozcomics-tb-forward {
+	list-style-image: url('chrome://mozcomics/skin/tb_forward.png');
+}
+
+#mozcomics-tb-first {
+	list-style-image: url('chrome://mozcomics/skin/tb_first.png');
+}
+
+#mozcomics-tb-previous {
+	list-style-image: url('chrome://mozcomics/skin/tb_previous.png');
+}
+
+#mozcomics-tb-random {
+	list-style-image: url('chrome://mozcomics/skin/tb_random.png');
+}
+
+#mozcomics-tb-next {
+	list-style-image: url('chrome://mozcomics/skin/tb_next.png');
+}
+
+#mozcomics-tb-last {
+	list-style-image: url('chrome://mozcomics/skin/tb_last.png');
+}
+
+
