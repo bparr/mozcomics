@@ -1,0 +1,10 @@
+# Copyright (c) 2009 Ben Parr
+# Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
+
+content   mozcomics             chrome/content/
+skin      mozcomics  default    chrome/skin/
+
+overlay   chrome://browser/content/browser.xul    chrome://mozcomics/content/overlay.xul
+
+locale    mozcomics en-US       chrome/locale/en-US/
+

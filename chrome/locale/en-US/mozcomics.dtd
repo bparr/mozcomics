@@ -1,0 +1,33 @@
+<!--
+Copyright (c) 2009 Ben Parr
+Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
+-->
+
+<!ENTITY mozcomics.toolbar.comicPicker    "Toggle Comic Picker">
+<!ENTITY mozcomics.toolbar.preferences    "Preferences">
+<!ENTITY mozcomics.toolbar.addComic       "Add Comic">
+<!ENTITY mozcomics.toolbar.updateAll      "Update All">
+<!ENTITY mozcomics.toolbar.back           "Back">
+<!ENTITY mozcomics.toolbar.forward        "Forward">
+<!ENTITY mozcomics.toolbar.first          "First">
+<!ENTITY mozcomics.toolbar.previous       "Previous">
+<!ENTITY mozcomics.toolbar.random         "Random">
+<!ENTITY mozcomics.toolbar.next           "Next">
+<!ENTITY mozcomics.toolbar.last           "Last">
+
+<!ENTITY mozcomics.menu.findReadStrips    "Find Read Strips">
+<!ENTITY mozcomics.menu.deleteComic       "Delete Comic">
+
+<!ENTITY mozcomics.comic.name             "Name">
+<!ENTITY mozcomics.comic.enabled          "Enabled">
+<!ENTITY mozcomics.comic.rating           "Rating">
+
+<!ENTITY mozcomics.strip.updateRead       "Update Read Time">
+<!ENTITY mozcomics.strip.none             "No strip found by query">
+
+<!ENTITY mozcomics.comicpicker.all        "All">
+<!ENTITY mozcomics.comicpicker.none       "None">
+<!ENTITY mozcomics.comicpicker.showRead   "Show Read Comics">
+<!ENTITY mozcomics.comicpicker.pubDate    "Pub. Date">
+<!ENTITY mozcomics.comicpicker.readDate   "Read Date">
+
