@@ -25,7 +25,7 @@ MozComics.Comics = new function() {
 
 	function updateComic(comic) {
 		this.all[comic.comic] = comic;
-		this.guids[comic.guid] = comic.guid;
+		this.guids[comic.guid] = comic;
 	}
 
 	function deleteComic(comic) {

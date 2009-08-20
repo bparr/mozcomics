@@ -12,7 +12,7 @@ MozComics.DB = new function() {
 
 	this.dbConn = null;
 
-	this.comicColumns = ["comic", "name", "url", "description", "rating", "popularity", "guid", "state", "updated"]; // TODO is this the best way to do this?
+	this.comicColumns = ["comic", "name", "url", "description", "extra", "rating", "popularity", "guid", "state", "updated"]; // TODO is this the best way to do this?
 	this.comicParams = this._createParamsArray(this.comicColumns);
 
 	// does not contain "read" or "user_rating" because those are set by the user
@@ -40,7 +40,8 @@ MozComics.DB = new function() {
 			"comic INTEGER PRIMARY KEY AUTOINCREMENT," + // local id of comic
 			"name TEXT NOT NULL," + 
 			"url TEXT NOT NULL DEFAULT ''," + // homepage url
-			"description TEXT NOT NULL DEFAULT ''," + 
+			"description TEXT NOT NULL DEFAULT ''," +
+			"extra TEXT NOT NULL DEFAULT ''," + // extra info in JSON formatted string
 			"rating INTEGER NOT NULL DEFAULT -1," + // based on server results
 			"popularity INTEGER NOT NULL DEFAULT -1," + // based on server results
 			"guid TEXT NOT NULL UNIQUE," + // id for server transactions
@@ -92,6 +93,8 @@ MozComics.DB = new function() {
 			"UPDATE comic SET state=:state WHERE comic=:comic");
 		this.deleteComicStatement = this.dbConn.createStatement(
 			"DELETE FROM comic WHERE comic=:comic;");
+		this.deleteStripStatement = this.dbConn.createStatement(
+			"DELETE FROM strip WHERE comic=:comic and strip=:strip;");
 		this.deleteStripsByComicStatement = this.dbConn.createStatement(
 			"DELETE FROM strip WHERE comic=:comic;");
 	}
