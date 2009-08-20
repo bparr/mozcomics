@@ -6,7 +6,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 MozComics.Update = new function() {
 	var self = this;
 
-	this.defaultSite = 'http://localhost/mozcomics/update.php?';
+	this.defaultSite = 'http://localhost/mozcomics/update.php?'; // TODO change
+
+	this.COMIC_PERSIST_COLUMNS = ["state"];
 
 	this.updateAll = updateAll;
 	this.update = update;
@@ -69,19 +71,32 @@ MozComics.Update = new function() {
 		var comicColumns = MozComics.DB.comicColumns;
 		var stripColumns = MozComics.DB.updateStripColumns;
 		for(var i = 0, len = response.comics.length; i < len; i++) {
-			var comic = response.comics[i]; // TODO implement persist columns (i.e. 'status')
+			var comic = response.comics[i];
 			if(!comic.guid) {
 				throw ("Update failed: guid not defined for a comic");
 			}
+
 			comic.guid = comic.guid.toLowerCase();
 			comic.comic = _getComicIdFromGuid(comic.guid);
 			comic.updated = response.time;
+			if(comic.extra) {
+				comic.extra = JSON.stringify(comic.extra);
+			}
+
+			if(MozComics.Comics.guids[comic.guid]) {
+				var oldComic = MozComics.Comics.guids[comic.guid];
+				for(var j = 0, len2 = self.COMIC_PERSIST_COLUMNS.length; i < len; i++) {
+					var col = self.COMIC_PERSIST_COLUMNS[j];
+					comic[col] = oldComic[col];
+				}
+			}
 
 			for(var col = 0, colLen = comicColumns.length; col < colLen; col++) {
 				if(comic[comicColumns[col]]) {
 					MozComics.DB.updateComicStatement.params[comicColumns[col]] = comic[comicColumns[col]];
 				}
 			}
+
 			MozComics.DB.updateComicStatement.execute();
 
 			// add the comic to the comic cache
@@ -98,20 +113,30 @@ MozComics.Update = new function() {
 					throw ("Update failed: Strip ID not defined for a strip");
 				}
 
-				strip.comic = newComic.comic;
-				strip.updated = response.time;
-				if(strip.extra) {
-					strip.extra = JSON.stringify(strip.extra);
-				}
-				for(var col = 0, colLen = stripColumns.length; col < colLen; col++) {
-					if(strip[stripColumns[col]]) {
-						MozComics.DB.updateStripStatement.params[stripColumns[col]] = strip[stripColumns[col]];
-					}
-				}
-				MozComics.DB.updateStripStatement.execute(); // TODO implement 'action'
-			}
+				switch(parseInt(strip.action)) {
+					case 1: // delete
+						MozComics.DB.deleteStripStatement.params.comic = newComic.comic;
+						MozComics.DB.deleteStripStatement.params.strip = strip.strip;
+						MozComics.DB.deleteStripStatement.execute();
+						break;
 
+					default: // add/update
+						strip.comic = newComic.comic;
+						strip.updated = response.time;
+						if(strip.extra) {
+							strip.extra = JSON.stringify(strip.extra);
+						}
+						for(var col = 0, colLen = stripColumns.length; col < colLen; col++) {
+							if(strip[stripColumns[col]]) {
+								MozComics.DB.updateStripStatement.params[stripColumns[col]] = strip[stripColumns[col]];
+							}
+						}
+						MozComics.DB.updateStripStatement.execute();
+						break;
+				}
+			}
 		}
+
 		MozComics.ComicPicker.refreshTree();
 	}
 
