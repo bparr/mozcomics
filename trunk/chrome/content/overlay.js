@@ -124,7 +124,6 @@ var MozComics = new function() {
 				}
 				else if(key == 's') {
 					MozComics.Dom.showRead.checked = !MozComics.Dom.showRead.checked;
-					MozComics.Strips.refresh();
 				}
 			}
 		}

@@ -8,6 +8,7 @@ MozComics.Strips = new function() {
 	this.refresh = refresh;
 	this.unload = unload;
 
+	this.setToDefaultStrip = setToDefaultStrip;
 	this.setToFirstStrip = setToFirstStrip;
 	this.setToPreviousStrip = setToPreviousStrip;
 	this.setToNextStrip = setToNextStrip;
@@ -94,12 +95,17 @@ MozComics.Strips = new function() {
 		}
 	}
 
-	function refresh() { // TODO make this less crudy
+	function refresh() {
 		this.lastRead = this.INFINITE;
 		this.randomQueue = [];
 
 		if(MozComics.Dom.stripFound.hidden) {
-			this.setToLastStrip();
+			this.setToDefaultStrip();
+		}
+		else if(!this.lastComic || !MozComics.Comics.all[this.lastComic] ||
+			!MozComics.Comics.all[this.lastComic].enabled) {
+
+			this.setToDefaultStrip();
 		}
 	}
 
@@ -111,6 +117,22 @@ MozComics.Strips = new function() {
 		}
 		else {
 			MozComics.Prefs.set("lastViewed", "");
+		}
+	}
+
+	function setToDefaultStrip() {
+		switch(MozComics.Prefs.get("defaultStrip")) {
+			case 0:
+				this.setToFirstStrip();
+				break;
+
+			case 1:
+				this.setToLastStrip();
+				break;
+
+			default:
+				this.setToLastStrip();
+				break;
 		}
 	}
 

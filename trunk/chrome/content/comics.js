@@ -92,15 +92,15 @@ MozComics.Comics = new function() {
 		for(var comic in this.all) {
 				this.all[comic].enabled = true;
 		}
+
 		MozComics.ComicPicker.update();
-		MozComics.Strips.refresh();
 	}
 
 	this.disableAll = function() {
 		for(var comic in this.all) {
 				this.all[comic].enabled = false;
 		}
+
 		MozComics.ComicPicker.update();
-		MozComics.Strips.refresh();
 	}
 }

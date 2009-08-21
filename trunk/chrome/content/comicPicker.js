@@ -46,7 +46,6 @@ MozComics.ComicPicker = new function() {
 		}
 
 		this.update();
-		MozComics.Strips.refresh();
 	}
 
 	this.__defineGetter__("selectedComic", function() {
