@@ -11,10 +11,11 @@ MozComics.Comic = function(row) {
 	}
 }
 
-// define which bits represent which properties
+// define which bits represent which state properties
 MozComics.Comic.prototype.SHOWING = 0;
 MozComics.Comic.prototype.ENABLED = 1;
 
+// functions to get and change individual states
 MozComics.Comic.prototype.__defineGetter__("showing", function() { return this._getProperty(this.SHOWING); } );
 MozComics.Comic.prototype.__defineSetter__("showing", function(set) { this._setProperty(this.SHOWING, set); } );
 MozComics.Comic.prototype.toggleShowingProperty = function(set) { this._toggleProperty(this.SHOWING, set); }

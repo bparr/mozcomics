@@ -4,10 +4,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 */
 
 MozComics.Strips = new function() {
-	var self = this;
-
 	this.init = init;
 	this.refresh = refresh;
+	this.unload = unload;
 
 	this.setToFirstStrip = setToFirstStrip;
 	this.setToPreviousStrip = setToPreviousStrip;
@@ -16,6 +15,14 @@ MozComics.Strips = new function() {
 	this.setToRandomStrip = setToRandomStrip;
 	this.setToBackStrip = setToBackStrip;
 	this.setToForwardStrip = setToForwardStrip;
+
+	this._findStrip = _findStrip;
+	this._updatePane = _updatePane;
+	this._preloadImage = _preloadImage;
+	this._cloneRow = _cloneRow;
+	this._unloadLastStrip = _unloadLastStrip;
+	this._updateLastVariables = _updateLastVariables;
+	this._updateDatePicker = _updateDatePicker;
 
 	this.lastComic = null;
 	this.lastStrip = null;
@@ -63,6 +70,10 @@ MozComics.Strips = new function() {
 			this.statements[i] += " LIMIT " + limitAmount + ";";
 		}
 
+		this.updateStripReadTime = MozComics.DB.dbConn.createStatement(
+			"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
+		);
+
 		var lastViewed = MozComics.Prefs.get("lastViewed").split(",");
 		if(MozComics.Prefs.get("loadLastViewedAtStart") && lastViewed.length == 2) {
 			var statement = MozComics.DB.dbConn.createStatement(
@@ -71,7 +82,7 @@ MozComics.Strips = new function() {
 			statement.params.strip = lastViewed[1];
 
 			if(statement.executeStep()) {
-				_updatePane(statement.row);
+				this._updatePane(statement.row);
 			}
 			else {
 				this.refresh();
@@ -85,15 +96,27 @@ MozComics.Strips = new function() {
 
 	function refresh() { // TODO make this less crudy
 		this.lastRead = this.INFINITE;
+		this.randomQueue = [];
 
 		if(MozComics.Dom.stripFound.hidden) {
 			this.setToLastStrip();
 		}
 	}
 
+	function unload() {
+		if(this.lastComic && Math.abs(this.lastComic) < this.INFINITE &&
+			this.lastStrip && Math.abs(this.lastStrip) < this.INFINITE) {
+
+			MozComics.Prefs.set("lastViewed", this.lastComic + "," + this.lastStrip);
+		}
+		else {
+			MozComics.Prefs.set("lastViewed", "");
+		}
+	}
+
 	function setToFirstStrip() {
-		var firstStrip = _findStrip(self.s.first);
-		_updatePane(firstStrip, self.s.first);
+		var firstStrip = this._findStrip(this.s.first);
+		this._updatePane(firstStrip, this.s.first);
 
 		if(MozComics.Prefs.get("defaultToMarkRead")) {
 			MozComics.Dom.updateRead.checked = true;
@@ -102,15 +125,15 @@ MozComics.Strips = new function() {
 
 	function setToPreviousStrip() {
 		var previousStrip = null;
-		if(self.lastComic && self.lastStrip) {
-			previousStrip = _findStrip(self.s.previous);
+		if(this.lastComic && this.lastStrip) {
+			previousStrip = this._findStrip(this.s.previous);
 		}
 
 		if(!previousStrip && MozComics.Prefs.get("wrapAround")) {
-			self.setToLastStrip();
+			this.setToLastStrip();
 		}
 		else {
-			_updatePane(previousStrip, self.s.previous);
+			this._updatePane(previousStrip, this.s.previous);
 		}
 
 		if(MozComics.Prefs.get("defaultToMarkRead")) {
@@ -120,15 +143,15 @@ MozComics.Strips = new function() {
 
 	function setToNextStrip() {
 		var nextStrip = null;
-		if(self.lastComic && self.lastStrip) {
-			nextStrip = _findStrip(self.s.next);
+		if(this.lastComic && this.lastStrip) {
+			nextStrip = this._findStrip(this.s.next);
 		}
 
 		if(!nextStrip && MozComics.Prefs.get("wrapAround")) {
-			self.setToFirstStrip();
+			this.setToFirstStrip();
 		}
 		else {
-			_updatePane(nextStrip, self.s.next);
+			this._updatePane(nextStrip, this.s.next);
 		}
 
 		if(MozComics.Prefs.get("defaultToMarkRead")) {
@@ -137,8 +160,8 @@ MozComics.Strips = new function() {
 	}
 
 	function setToLastStrip() {
-		var lastStrip = _findStrip(self.s.last);
-		_updatePane(lastStrip, self.s.last);
+		var lastStrip = this._findStrip(this.s.last);
+		this._updatePane(lastStrip, this.s.last);
 
 		if(MozComics.Prefs.get("defaultToMarkRead")) {
 			MozComics.Dom.updateRead.checked = true;
@@ -150,15 +173,15 @@ MozComics.Strips = new function() {
 		if(this.randomQueue.length > 0) {
 			randomStrip = this.randomQueue.shift();
 			if(this.randomQueue.length == 0) {
-				var strip = _findStrip(self.s.random);
+				var strip = this._findStrip(this.s.random);
 				this.randomQueue.push(strip);
 			}
 		}
 		else {
-			randomStrip = _findStrip(self.s.random);
+			randomStrip = this._findStrip(this.s.random);
 		}
 
-		_updatePane(randomStrip, self.s.random);
+		this._updatePane(randomStrip, this.s.random);
 
 		if(MozComics.Prefs.get("defaultToMarkRead")) {
 			MozComics.Dom.updateRead.checked = true;
@@ -167,21 +190,21 @@ MozComics.Strips = new function() {
 
 
 	function setToBackStrip() {
-		var backStrip = _findStrip(self.s.back, true);
-		_updatePane(backStrip, self.s.back);
+		var backStrip = this._findStrip(this.s.back, true);
+		this._updatePane(backStrip, this.s.back);
 		MozComics.Dom.updateRead.checked = false;
 	}
 
 	function setToForwardStrip() {
-		var forwardStrip = _findStrip(self.s.forward, true);
-		_updatePane(forwardStrip, self.s.forward);
+		var forwardStrip = this._findStrip(this.s.forward, true);
+		this._updatePane(forwardStrip, this.s.forward);
 		MozComics.Dom.updateRead.checked = false;
 	}
 
 	function _findStrip(statementId, showRead) {//TODO make asynchronous???
-		self.randomQueue = [];
+		this.randomQueue = [];
 
-		var queryString = self.statements[statementId];
+		var queryString = this.statements[statementId];
 		var enabledComics = MozComics.Comics.enabled;
 		var len = enabledComics.length;
 		if(len == 0) {
@@ -206,28 +229,28 @@ MozComics.Strips = new function() {
 		}
 
 		if(finalQueryString.indexOf(":last_comic") > -1) {
-			statement.params.last_comic = self.lastComic;
+			statement.params.last_comic = this.lastComic;
 		}
 
 		if(finalQueryString.indexOf(":last_strip") > -1) {
-			statement.params.last_strip = self.lastStrip;
+			statement.params.last_strip = this.lastStrip;
 		}
 
 		if(finalQueryString.indexOf(":last_read") > -1) {
-			statement.params.last_read = self.lastRead;
+			statement.params.last_read = this.lastRead;
 		}
 
 		var returnValue = false;
 		if(statement.executeStep()) {
-			var returnValue = _cloneRow(statement.row);
-			_preloadImage(returnValue.image);
+			var returnValue = this._cloneRow(statement.row);
+			this._preloadImage(returnValue.image);
 
 			while(statement.executeStep()) {
-				if(statementId == self.s.random) {
-					self.randomQueue.push(_cloneRow(statement.row));
+				if(statementId == this.s.random) {
+					this.randomQueue.push(this._cloneRow(statement.row));
 				}
 
-				_preloadImage(statement.row.image);
+				this._preloadImage(statement.row.image);
 			}
 		}
 
@@ -236,9 +259,9 @@ MozComics.Strips = new function() {
 	}
 
 	function _updatePane(row, statementId) {
-		_unloadLastStrip();
-		_updateLastVariables(row, statementId);
-		_updateDatePicker(row);
+		this._unloadLastStrip();
+		this._updateLastVariables(row, statementId);
+		this._updateDatePicker(row);
 
 		MozComics.Dom.stripFound.hidden = !row;
 		MozComics.Dom.stripNone.hidden = !!row;
@@ -270,65 +293,61 @@ MozComics.Strips = new function() {
 
 	function _cloneRow(row) {
 		var clone = {};
-		for(var i = 0, len = self.COLUMNS.length; i < len; i++) {
-			var column = self.COLUMNS[i];
+		for(var i = 0, len = this.COLUMNS.length; i < len; i++) {
+			var column = this.COLUMNS[i];
 			clone[column] = row[column];
 		}
 		return clone;
 	}
 
 	function _unloadLastStrip() {
-		if(self.lastComic && self.lastStrip && MozComics.Dom.updateRead.checked) {
-			MozComics.DB.updateStripReadTimeStatement.params.comic = self.lastComic;
-			MozComics.DB.updateStripReadTimeStatement.params.strip = self.lastStrip;
+		if(this.lastComic && this.lastStrip && MozComics.Dom.updateRead.checked) {
+			this.updateStripReadTime.params.comic = this.lastComic;
+			this.updateStripReadTime.params.strip = this.lastStrip;
 
 			var d = new Date();
-			MozComics.DB.updateStripReadTimeStatement.params.read = d.getTime();
-			MozComics.DB.updateStripReadTimeStatement.execute();
+			this.updateStripReadTime.params.read = d.getTime();
+			this.updateStripReadTime.execute();
 		}
 	}
 
 	function _updateLastVariables(row, statementId) {
 		if(row) {
-			MozComics.Prefs.set("lastViewed", row.comic + "," + row.strip);
-
-			self.lastComic = row.comic;
-			self.lastStrip = row.strip;
+			this.lastComic = row.comic;
+			this.lastStrip = row.strip;
 
 			switch(statementId) {
-				case self.s.back:
-				case self.s.forward:
-					self.lastRead = row.read;
+				case this.s.back:
+				case this.s.forward:
+					this.lastRead = row.read;
 					break;
 				default: // some other navigation
-					self.lastRead = self.INFINITE;
+					this.lastRead = this.INFINITE;
 			}
 		}
 		else {
-			MozComics.Prefs.set("lastViewed", "");
-
 			switch(statementId) {
-				case self.s.previous:
-					self.lastComic = -1 * self.INFINITE;
-					self.lastStrip = -1 * self.INFINITE;
+				case this.s.previous:
+					this.lastComic = -1 * this.INFINITE;
+					this.lastStrip = -1 * this.INFINITE;
 					break;
-				case self.s.next:
-					self.lastComic = self.INFINITE;
-					self.lastStrip = self.INFINITE;
+				case this.s.next:
+					this.lastComic = this.INFINITE;
+					this.lastStrip = this.INFINITE;
 					break;
 				default: // some other navigation
-					self.lastComic = null;
-					self.lastStrip = null;
+					this.lastComic = null;
+					this.lastStrip = null;
 			}
 
 
 			switch(statementId) {
-				case self.s.back:
-					self.lastRead = -1 * self.INFINITE;
+				case this.s.back:
+					this.lastRead = -1 * this.INFINITE;
 					break;
-				case self.s.forward:
+				case this.s.forward:
 				default: // some other navigation
-					self.lastRead = self.INFINITE;
+					this.lastRead = this.INFINITE;
 			}
 		}
 	}
