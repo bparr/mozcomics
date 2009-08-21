@@ -4,14 +4,33 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 */
 
 MozComics.Update = new function() {
-	var self = this;
 
-	this.defaultSite = 'http://localhost/mozcomics/update.php?'; // TODO change
-
-	this.COMIC_PERSIST_COLUMNS = ["state"];
-
+	this.init = init;
 	this.updateAll = updateAll;
 	this.update = update;
+
+	function init() {
+		this.defaultSite = 'http://localhost/mozcomics/update.php?'; // TODO change
+
+		this.comicColumns = MozComics.DB.comicColumns;
+		var comicParams = MozComics.DB._createParamsArray(this.comicColumns);
+		this.comicPersistColumns = ["comic", "state"];
+		
+		// does not contain "read" or "user_rating" because those are set by the user
+		this.stripColumns = ["comic", "strip", "title", "url", "image", "extra", "server_rating", "updated"];
+		var stripParams = MozComics.DB._createParamsArray(this.stripColumns);
+
+		this.getComicByGuid = MozComics.DB.dbConn.createStatement(
+			"SELECT " + MozComics.DB.comicColumns.join(", ") + " FROM comic WHERE guid=:guid;");
+		this.updateComic = MozComics.DB.dbConn.createStatement(
+			"REPLACE INTO comic(" + this.comicColumns.join(", ") + ") VALUES (" + comicParams.join(", ") + ");"
+		);
+		this.updateStrip = MozComics.DB.dbConn.createStatement(
+			"REPLACE INTO strip(" + this.stripColumns.join(", ") + ") VALUES (" + stripParams.join(", ") + ");"
+		);
+		this.deleteStrip = MozComics.DB.dbConn.createStatement(
+			"DELETE FROM strip WHERE comic=:comic and strip=:strip;");
+	}
 
 	function updateAll() {
 		var comics = new Array();
@@ -21,7 +40,7 @@ MozComics.Update = new function() {
 		this.update(comics);
 	}
 
-	// ids is an array of comic ids to be updated
+	// comics is an array whose members at least have guid, name, and updated
 	function update(comics) {
 
 		// group by update site to decrease number of requests
@@ -46,6 +65,7 @@ MozComics.Update = new function() {
 			var req = new XMLHttpRequest();
 			req.open('GET', url, true);
 			req.onreadystatechange = function (aEvt) {
+				var req = aEvt.originalTarget;
 				if (req.readyState == 4) {
 					if(req.status == 200) {
 						_onDownloadComplete(req);
@@ -60,6 +80,8 @@ MozComics.Update = new function() {
 	}
 
 	function _onDownloadComplete(req) {
+		var self = MozComics.Update;
+
 		try {
 			var response = JSON.parse(req.responseText);
 		}
@@ -68,8 +90,6 @@ MozComics.Update = new function() {
 			return;
 		}
 
-		var comicColumns = MozComics.DB.comicColumns;
-		var stripColumns = MozComics.DB.updateStripColumns;
 		for(var i = 0, len = response.comics.length; i < len; i++) {
 			var comic = response.comics[i];
 			if(!comic.guid) {
@@ -77,34 +97,35 @@ MozComics.Update = new function() {
 			}
 
 			comic.guid = comic.guid.toLowerCase();
-			comic.comic = _getComicIdFromGuid(comic.guid);
+			comic.comic = null;
 			comic.updated = response.time;
 			if(comic.extra) {
 				comic.extra = JSON.stringify(comic.extra);
 			}
 
+			// save some states in the old comic so that they persist to the new one
 			if(MozComics.Comics.guids[comic.guid]) {
 				var oldComic = MozComics.Comics.guids[comic.guid];
-				for(var j = 0, len2 = self.COMIC_PERSIST_COLUMNS.length; i < len; i++) {
-					var col = self.COMIC_PERSIST_COLUMNS[j];
+				for(var j = 0, len2 = self.comicPersistColumns.length; i < len; i++) {
+					var col = self.comicPersistColumns[j];
 					comic[col] = oldComic[col];
 				}
 			}
 
-			for(var col = 0, colLen = comicColumns.length; col < colLen; col++) {
-				if(comic[comicColumns[col]]) {
-					MozComics.DB.updateComicStatement.params[comicColumns[col]] = comic[comicColumns[col]];
+			for(var col = 0, colLen = self.comicColumns.length; col < colLen; col++) {
+				if(comic[self.comicColumns[col]]) {
+					self.updateComic.params[self.comicColumns[col]] = comic[self.comicColumns[col]];
 				}
 			}
 
-			MozComics.DB.updateComicStatement.execute();
+			self.updateComic.execute();
 
 			// add the comic to the comic cache
-			MozComics.DB.getComicFromGuidStatement.params.guid = comic.guid;
-			MozComics.DB.getComicFromGuidStatement.executeStep();
-			var newComic = new MozComics.Comic(MozComics.DB.getComicFromGuidStatement.row);
+			self.getComicByGuid.params.guid = comic.guid;
+			self.getComicByGuid.executeStep();
+			var newComic = new MozComics.Comic(self.getComicByGuid.row);
 			MozComics.Comics.updateComic(newComic);
-			MozComics.DB.getComicFromGuidStatement.reset();
+			self.getComicByGuid.reset();
 
 			// add the comic's strips to the strip databases
 			for(var j = 0, len2 = comic.strips.length; j < len2; j++) {
@@ -115,9 +136,9 @@ MozComics.Update = new function() {
 
 				switch(parseInt(strip.action)) {
 					case 1: // delete
-						MozComics.DB.deleteStripStatement.params.comic = newComic.comic;
-						MozComics.DB.deleteStripStatement.params.strip = strip.strip;
-						MozComics.DB.deleteStripStatement.execute();
+						self.deleteStrip.params.comic = newComic.comic;
+						self.deleteStrip.params.strip = strip.strip;
+						self.deleteStrip.execute();
 						break;
 
 					default: // add/update
@@ -126,28 +147,17 @@ MozComics.Update = new function() {
 						if(strip.extra) {
 							strip.extra = JSON.stringify(strip.extra);
 						}
-						for(var col = 0, colLen = stripColumns.length; col < colLen; col++) {
-							if(strip[stripColumns[col]]) {
-								MozComics.DB.updateStripStatement.params[stripColumns[col]] = strip[stripColumns[col]];
+						for(var col = 0, colLen = self.stripColumns.length; col < colLen; col++) {
+							if(strip[self.stripColumns[col]]) {
+								self.updateStrip.params[self.stripColumns[col]] = strip[self.stripColumns[col]];
 							}
 						}
-						MozComics.DB.updateStripStatement.execute();
+						self.updateStrip.execute();
 						break;
 				}
 			}
 		}
 
 		MozComics.ComicPicker.refreshTree();
-	}
-
-
-	function _getComicIdFromGuid(guid) {
-		MozComics.DB.getComicIdFromGuidStatement.params.guid = guid;
-		var comic = null;
-		if(MozComics.DB.getComicIdFromGuidStatement.executeStep()) {
-			comic = MozComics.DB.getComicIdFromGuidStatement.row.comic;
-		}
-		MozComics.DB.getComicIdFromGuidStatement.reset();
-		return comic;
 	}
 }

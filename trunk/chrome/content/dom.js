@@ -6,9 +6,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 // TODO make less crudy
 MozComics.Dom = new function() {
-	var self = this;
-
 	this.init = init;
+	this._getDomElement = _getDomElement;
 
 	this.appcontent = null;
 	this.tabbrowser = null;
@@ -37,35 +36,35 @@ MozComics.Dom = new function() {
 
 	function init() {
 		// cache Dom elements
-		_getDomElement("appcontent", "appcontent");
-		_getDomElement("tabbrowser", "content");
-		_getDomElement("statusbarImage", "mozcomics-statusbar-image");
-		_getDomElement("pane", "mozcomics-pane");
-		_getDomElement("paneSplitter", "mozcomics-splitter");
+		this._getDomElement("appcontent", "appcontent");
+		this._getDomElement("tabbrowser", "content");
+		this._getDomElement("statusbarImage", "mozcomics-statusbar-image");
+		this._getDomElement("pane", "mozcomics-pane");
+		this._getDomElement("paneSplitter", "mozcomics-splitter");
 
-		_getDomElement("comicPickerPane", "mozcomics-comicpicker-pane");
-		_getDomElement("comicPicker", "mozcomics-comicPicker");
-		_getDomElement("comicPickerToolbarIcon", "mozcomics-tb-comicpicker");
-		_getDomElement("comicPicerMenu", "mozcomics-comicpicker-menu");
-		_getDomElement("showRead", "mozcomics-comicpicker-showread");
-		_getDomElement("comicPickerDateMenu", "mozcomics-comicpicker-datemenu");
-		_getDomElement("comicPickerDate", "mozcomics-comicpicker-date");
+		this._getDomElement("comicPickerPane", "mozcomics-comicpicker-pane");
+		this._getDomElement("comicPicker", "mozcomics-comicPicker");
+		this._getDomElement("comicPickerToolbarIcon", "mozcomics-tb-comicpicker");
+		this._getDomElement("comicPicerMenu", "mozcomics-comicpicker-menu");
+		this._getDomElement("showRead", "mozcomics-comicpicker-showread");
+		this._getDomElement("comicPickerDateMenu", "mozcomics-comicpicker-datemenu");
+		this._getDomElement("comicPickerDate", "mozcomics-comicpicker-date");
 
-		_getDomElement("stripPane", "mozcomics-strip-pane");
-		_getDomElement("stripFound", "mozcomics-strip-found");
-		_getDomElement("stripNone", "mozcomics-strip-none");
+		this._getDomElement("stripPane", "mozcomics-strip-pane");
+		this._getDomElement("stripFound", "mozcomics-strip-found");
+		this._getDomElement("stripNone", "mozcomics-strip-none");
 
-		_getDomElement("updateRead", "mozcomics-strip-updateread");
-		_getDomElement("comic", "mozcomics-strip-comic");
-		_getDomElement("title", "mozcomics-strip-title");
-		_getDomElement("image", "mozcomics-strip-image");
-		_getDomElement("imageTooltip", "mozcomics-strip-image-tooltip");
+		this._getDomElement("updateRead", "mozcomics-strip-updateread");
+		this._getDomElement("comic", "mozcomics-strip-comic");
+		this._getDomElement("title", "mozcomics-strip-title");
+		this._getDomElement("image", "mozcomics-strip-image");
+		this._getDomElement("imageTooltip", "mozcomics-strip-image-tooltip");
 
 		// add event listeners
-		self.tabbrowser.addEventListener("TabSelect", function(e) {MozComics.onPageChange(e);}, false);
-		self.appcontent.addEventListener("pageshow", function(e) {MozComics.onPageChange(e); }, true);
-		self.appcontent.addEventListener("pagehide", function(e) {MozComics.onPageChange(e); }, true);
-		self.comicPicker.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
+		this.tabbrowser.addEventListener("TabSelect", function(e) {MozComics.onPageChange(e);}, false);
+		this.appcontent.addEventListener("pageshow", function(e) {MozComics.onPageChange(e); }, true);
+		this.appcontent.addEventListener("pagehide", function(e) {MozComics.onPageChange(e); }, true);
+		this.comicPicker.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
 
 		this.comicPickerToolbarIcon.setAttribute("expand", this.comicPickerPane.hidden);
 
@@ -74,8 +73,8 @@ MozComics.Dom = new function() {
 	}
 
 	function _getDomElement(varName, id) {
-		self[varName] = document.getElementById(id);
-		if(!self[varName]) {
+		this[varName] = document.getElementById(id);
+		if(!this[varName]) {
 			throw ("Could not find " + varName);
 		}
 	}

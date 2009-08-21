@@ -14,10 +14,13 @@ MozComics.ComicPicker = new function() {
 		this.refreshTree();
 	}
 
+	// change value and order of rows without creating a new treeview
 	this.update = function(sortColumn) {
 		this.treeview.update(sortColumn);
+		MozComics.Strips.refresh();
 	};
 
+	// create a new treeview
 	this.refreshTree = function() {
 		this.table = MozComics.Comics.showing
 		this.treeview = new MozComics_TreeView(this.xulTree, this.table, this.xulVarPrefix);
@@ -41,10 +44,9 @@ MozComics.ComicPicker = new function() {
 		if(selectedComic) {
 			selectedComic.toggleEnabledProperty();
 		}
+
 		this.update();
-		//this.xulTree.invalidateRow(index); TODO make this work? it'd be more efficient
 		MozComics.Strips.refresh();
-		this.xulTree.view.selection.clearSelection();
 	}
 
 	this.__defineGetter__("selectedComic", function() {

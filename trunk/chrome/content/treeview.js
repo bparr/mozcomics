@@ -32,7 +32,7 @@ MozComics_TreeView.prototype.getColumnProperties = function(colid,col,props){};
 MozComics_TreeView.prototype.cycleHeader = function(col, elem) {};
 
 
-	// update tree with a specific sort
+// update tree with a specific sort
 MozComics_TreeView.prototype.update = function(sortColumn) {
 	var sortColumnId;
 	var sortOrder = (this.xulTree.getAttribute("sortDirection") == "ascending") ? 1 : -1;

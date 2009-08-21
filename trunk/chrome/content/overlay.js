@@ -21,6 +21,9 @@ var MozComics = new function() {
 	this.addComic = addComic;
 	this.deleteComic = deleteComic;
 
+	this.getUnreadStrips = null;
+	this.updateStripReadTime= null;
+
 	this._stringBundle = null;
 
 	function init() {
@@ -60,12 +63,21 @@ var MozComics = new function() {
 		MozComics.Comics.init();
 		MozComics.Strips.init();
 		MozComics.ComicPicker.init();
+		MozComics.Update.init();
+
+		MozComics.getUnreadStrips = MozComics.DB.dbConn.createStatement(
+			"SELECT strip, url FROM strip WHERE comic=:comic AND read ISNULL;"
+		);
+		MozComics.updateStripReadTime = MozComics.DB.dbConn.createStatement(
+			"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
+		);
 	}
 
 	function onUnload() {
 		window.removeEventListener("unload", MozComics.onUnload, false);
 
-		MozComics.DB.unload();
+		MozComics.Strips.unload();
+		MozComics.Comics.unload();
 	}
 
 	function onPageChange(e) {
@@ -156,16 +168,16 @@ var MozComics = new function() {
 			.getService(Components.interfaces.nsIIOService);
 
 		var selectedComic = MozComics.ComicPicker.selectedComic;
-		MozComics.DB.getUnreadStripsStatement.params.comic = selectedComic.comic;
+		this.getUnreadStrips.params.comic = selectedComic.comic;
 		var readStrips = [];
-		while(MozComics.DB.getUnreadStripsStatement.executeStep()) {
-			var url = MozComics.DB.getUnreadStripsStatement.row.url;
+		while(this.getUnreadStrips.executeStep()) {
+			var url = this.getUnreadStrips.row.url;
 			var uri = ioService.newURI(url, null, null);
 			if(historyService.isVisited(uri)) {
-				readStrips.push(MozComics.DB.getUnreadStripsStatement.row.strip);
+				readStrips.push(this.getUnreadStrips.row.strip);
 			}
 		}
-		MozComics.DB.getUnreadStripsStatement.reset();
+		this.getUnreadStrips.reset();
 
 		if(readStrips.length > 0) {
 			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
@@ -176,10 +188,10 @@ var MozComics = new function() {
 				var d = new Date();
 				var read = d.getTime();
 				for(var i = 0, len = readStrips.length; i < len; i++) {
-					MozComics.DB.updateStripReadTimeStatement.params.comic = selectedComic.comic;
-					MozComics.DB.updateStripReadTimeStatement.params.strip = readStrips[i];
-					MozComics.DB.updateStripReadTimeStatement.params.read = read + i;
-					MozComics.DB.updateStripReadTimeStatement.execute();
+					this.updateStripReadTime.params.comic = selectedComic.comic;
+					this.updateStripReadTime.params.strip = readStrips[i];
+					this.updateStripReadTime.params.read = read + i;
+					this.updateStripReadTime.execute();
 				}
 			}
 		}

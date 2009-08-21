@@ -29,6 +29,16 @@ function ChromeExtensionHandler() {
 	this._systemPrincipal = null;
 	this._extensions = {};
 	
+	/*
+	 * Allows users to add a comic to thier MozComics database.
+	 *
+	 * mozcomics://addcomic/?{queryStrings}
+	 *
+	 * queryStrings:
+	 * - guid (required)
+	 * - name (required)
+	 * - update_site
+	 */
 	var AddComicExtension = new function(){
 		this.newChannel = newChannel;
 		
@@ -43,6 +53,7 @@ function ChromeExtensionHandler() {
 				return;
 			}
 
+			// process the query string
 			var queryParts = pathParts[1].split('&');
 			var comic = {};
 			for(var i = 0, len = queryParts.length; i < len; i++) {
@@ -60,11 +71,19 @@ function ChromeExtensionHandler() {
 				}
 			}
 			
+			// ensure a guid was found
 			if(!comic.guid) {
 				window.alert(MozComics.getString("addComic.noGuid"));
 				return;
 			}
 
+			// ensure a name was found
+			if(!comic.name) {
+				window.alert(MozComics.getString("addComic.noName"));
+				return;
+			}
+
+			// ensure the comic is not already in MozComics
 			if(MozComics.Comics.guids[comic.guid]) {
 				window.alert(MozComics.getString("addComic.alreadyInstalled", comic.name));
 				return;
@@ -73,6 +92,7 @@ function ChromeExtensionHandler() {
 			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
 				.getService(Components.interfaces.nsIPrompt);
 
+			// ensure user wants to add this comic
 			var result = prompt.confirm("", MozComics.getString("addComic.youSure", comic.name));
 			if (result) {
 				comic.updated = 0;
@@ -210,6 +230,6 @@ var ChromeExtensionModule = {
 };
 
 function NSGetModule(compMgr, fileSpec) {
-    return ChromeExtensionModule;
+	return ChromeExtensionModule;
 }
 

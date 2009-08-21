@@ -4,23 +4,49 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 */
 
 MozComics.Comics = new function() {
-	var self = this;
-
 	this.init = init;
+	this.unload = unload;
 	this.updateComic = updateComic;
 	this.deleteComic = deleteComic;
 
 	this.all = null;
 	this.guids = null;
 
+	this.deleteComicFromDB = null;
+	this.deleteStripsByComic = null;
+
 	function init() { // TODO think this should stay synchronous
 		this.all = {};
 		this.guids = {};
-		var statement = MozComics.DB.getAllComicsStatement;
+		var statement = MozComics.DB.dbConn.createStatement(
+			"SELECT " + MozComics.DB.comicColumns.join(", ") + " FROM comic;"
+		);
+
 		while(statement.executeStep()) {
 			this.updateComic(new MozComics.Comic(statement.row));
 		}
 		statement.reset();
+
+		// create statements used by deleteComic
+		this.deleteComicFromDB = MozComics.DB.dbConn.createStatement(
+			"DELETE FROM comic WHERE comic=:comic;"
+		);
+		this.deleteStripsByComic = MozComics.DB.dbConn.createStatement(
+			"DELETE FROM strip WHERE comic=:comic;"
+		);
+	}
+
+	function unload() {
+		// save the states of each comic to the database
+		var statement = MozComics.DB.dbConn.createStatement(
+			"UPDATE comic SET state=:state WHERE comic=:comic"
+		);
+
+		for(var comic in this.all) {
+			statement.params.comic = this.all[comic].comic;
+ 			statement.params.state = this.all[comic].state;
+			statement.execute();
+		}
 	}
 
 	function updateComic(comic) {
@@ -34,10 +60,10 @@ MozComics.Comics = new function() {
 		delete this.guids[comic.guid];
 
 		// delete from database
-		MozComics.DB.deleteStripsByComicStatement.params.comic = comic.comic;
-		MozComics.DB.deleteStripsByComicStatement.execute();
-		MozComics.DB.deleteComicStatement.params.comic = comic.comic;
-		MozComics.DB.deleteComicStatement.execute();
+		this.deleteStripsByComic.params.comic = comic.comic;
+		this.deleteStripsByComic.execute();
+		this.deleteComicFromDB.params.comic = comic.comic;
+		this.deleteComicFromDB.execute();
 
 		MozComics.ComicPicker.refreshTree();
 	}
