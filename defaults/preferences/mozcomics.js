@@ -10,3 +10,4 @@ pref("extensions.mozcomics.lastViewed", "");
 pref("extensions.mozcomics.preloadImages", true);
 pref("extensions.mozcomics.preloadAmount", 3);
 pref("extensions.mozcomics.defaultToMarkRead", true);
+pref("extensions.mozcomics.defaultStrip", 0);
