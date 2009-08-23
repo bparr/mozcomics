@@ -49,7 +49,7 @@ function ChromeExtensionHandler() {
 
 			var pathParts = uri.path.substr(1).split('?');
 			if(pathParts.length != 2) {
-				window.alert(MozComics.getString("addComic.urlError"));
+				window.alert(MozComics.Utils.getString("addComic.urlError"));
 				return;
 			}
 
@@ -73,19 +73,19 @@ function ChromeExtensionHandler() {
 			
 			// ensure a guid was found
 			if(!comic.guid) {
-				window.alert(MozComics.getString("addComic.noGuid"));
+				window.alert(MozComics.Utils.getString("addComic.noGuid"));
 				return;
 			}
 
 			// ensure a name was found
 			if(!comic.name) {
-				window.alert(MozComics.getString("addComic.noName"));
+				window.alert(MozComics.Utils.getString("addComic.noName"));
 				return;
 			}
 
 			// ensure the comic is not already in MozComics
-			if(MozComics.Comics.guids[comic.guid]) {
-				window.alert(MozComics.getString("addComic.alreadyInstalled", comic.name));
+			if(MozComics.Comics.getComicByGuid(comic.guid)) {
+				window.alert(MozComics.Utils.getString("addComic.alreadyInstalled", comic.name));
 				return;
 			}
 			
@@ -93,7 +93,7 @@ function ChromeExtensionHandler() {
 				.getService(Components.interfaces.nsIPrompt);
 
 			// ensure user wants to add this comic
-			var result = prompt.confirm("", MozComics.getString("addComic.youSure", comic.name));
+			var result = prompt.confirm("", MozComics.Utils.getString("addComic.youSure", comic.name));
 			if (result) {
 				comic.updated = 0;
 				MozComics.Update.update([comic]);

@@ -4,30 +4,37 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 */
 
 MozComics.ComicPicker = new function() {
+	Components.utils.import("resource://mozcomics/treeview.js");
+
+	this.init = init;
+	this.update = update;
+	this.refreshTree = refreshTree;
+	this.onClick = onClick;
+
 	this.xulTree;
 	this.table;
 	this.xulVarPrefix = "mozcomics-comic-";
 	this.treeview = null;
 	
-	this.init = function() {
+	function init() {
 		this.xulTree = MozComics.Dom.comicPicker;
-		this.refreshTree();
 	}
 
 	// change value and order of rows without creating a new treeview
-	this.update = function(sortColumn) {
+	function update(sortColumn) {
 		this.treeview.update(sortColumn);
 		MozComics.Strips.refresh();
 	};
 
 	// create a new treeview
-	this.refreshTree = function() {
-		this.table = MozComics.Comics.showing
-		this.treeview = new MozComics_TreeView(this.xulTree, this.table, this.xulVarPrefix);
+	function refreshTree() {
+		this.table = MozComics.Comics.showing;
+		this.treeview = new TreeView(this.xulTree, this.table, this.xulVarPrefix,
+			MozComics.Comics.getComicProp);
 		MozComics.Strips.refresh();
 	}
 
-	this.onClick = function(e) {
+	function onClick(e) {
 		// Only care about primary button clicks on treechildren element
 		if (!e || e.button != 0 || e.originalTarget.localName != 'treechildren') {
 			return;
@@ -42,10 +49,9 @@ MozComics.ComicPicker = new function() {
 
 		var selectedComic = this.selectedComic;
 		if(selectedComic) {
-			selectedComic.toggleEnabledProperty();
+			var nowEnabled = !MozComics.Comics.getComicProp(selectedComic, "enabled");
+			MozComics.Comics.setComicProp(selectedComic, "enabled", nowEnabled);
 		}
-
-		this.update();
 	}
 
 	this.__defineGetter__("selectedComic", function() {
@@ -55,3 +61,4 @@ MozComics.ComicPicker = new function() {
 		return this.table[this.xulTree.currentIndex];
 	});
 }
+

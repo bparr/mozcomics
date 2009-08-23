@@ -29,7 +29,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			<popupset>
 				<popup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu();">
 					<menuitem label="&mozcomics.menu.findReadStrips;" oncommand="MozComics.findReadStrips()"/>
-					<menuitem label="&mozcomics.menu.deleteComic;" oncommand="MozComics.deleteComic()"/>
+					<menuitem label="&mozcomics.menu.deleteComic;" oncommand="MozComics.Comics.deleteComic()"/>
 				</popup>
 			</popupset>
 
@@ -38,7 +38,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					<toolbarbutton id="mozcomics-tb-comicpicker" tooltiptext="&mozcomics.toolbar.comicPicker;" oncommand="MozComics.toggleComicPickerPane();"/>
 					<toolbarbutton id="mozcomics-tb-preferences" tooltiptext="&mozcomics.toolbar.preferences;" oncommand="MozComics.showPreferences();"/>
 					<toolbarseparator/>
-					<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.addComic()"/>
+					<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.Comics.addComic()"/>
 					<toolbarbutton id="mozcomics-tb-update" tooltiptext="&mozcomics.toolbar.updateAll;" oncommand="MozComics.Update.updateAll()"/>
 					<spacer flex="1"/>
 					<toolbarbutton id="mozcomics-tb-back" tooltiptext="&mozcomics.toolbar.back;" oncommand="MozComics.Strips.setToBackStrip()"/>
@@ -118,7 +118,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 						<vbox id="mozcomics-strip-found" align="center" hidden="true">
 							<checkbox id="mozcomics-strip-updateread" label="&mozcomics.strip.updateRead;" persist="checked" checked="true"/>
 							<label id="mozcomics-strip-comic" class="text-link" href="" value="" />
-							<label id="mozcomics-strip-title" value="" />
+							<label id="mozcomics-strip-title" class="text-link" href="" value="" />
 							<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip" />
 							<tooltip id="mozcomics-strip-image-tooltip" label="" />
 						</vbox>
