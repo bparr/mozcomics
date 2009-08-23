@@ -25,9 +25,9 @@ MozComics.Strips = new function() {
 	this._updateLastVariables = _updateLastVariables;
 	this._updateDatePicker = _updateDatePicker;
 
+	this.limitAmount = null;
 	this.lastComic = null;
 	this.lastStrip = null;
-
 	this.lastRead = null;
 
 	this.randomQueue = [];
@@ -42,34 +42,31 @@ MozComics.Strips = new function() {
 		forward: 6
 	}
 
-	this.COLUMNS = ["comic", "strip", "title", "image", "extra", "read"];
+	this.COLUMNS = ["comic", "strip", "title", "url", "image", "extra", "read"];
 	this.STATEMENT_PREFIX = "SELECT " + this.COLUMNS.join(",") + " FROM strip WHERE (?) ";
 	this.statements = [
-		this.STATEMENT_PREFIX +	"ORDER BY strip ASC, comic ASC", // get the first strip
+		this.STATEMENT_PREFIX +	"ORDER BY strip ASC, comic ASC LIMIT :limit;", // get the first strip
 
 		this.STATEMENT_PREFIX + "AND ((strip < :last_strip) OR " // get the previous strip
-			+ "(strip = :last_strip AND comic < :last_comic)) ORDER BY strip DESC, comic DESC",
+			+ "(strip = :last_strip AND comic < :last_comic)) ORDER BY strip DESC, comic DESC LIMIT :limit;",
 
 		this.STATEMENT_PREFIX + "AND ((strip > :last_strip) OR " // get the next strip
-			+ "(strip = :last_strip AND comic > :last_comic)) ORDER BY strip ASC, comic ASC",
+			+ "(strip = :last_strip AND comic > :last_comic)) ORDER BY strip ASC, comic ASC LIMIT :limit;",
 
-		this.STATEMENT_PREFIX +	"ORDER BY strip DESC, comic DESC", // get the last strip
+		this.STATEMENT_PREFIX +	"ORDER BY strip DESC, comic DESC LIMIT :limit;", // get the last strip
 
-		this.STATEMENT_PREFIX + "ORDER BY RANDOM()", // get a random strip
+		this.STATEMENT_PREFIX + "ORDER BY RANDOM() LIMIT :limit;", // get a random strip
 
-		this.STATEMENT_PREFIX + "AND read < :last_read ORDER BY read DESC", // get the back strip
+		this.STATEMENT_PREFIX + "AND read < :last_read ORDER BY read DESC LIMIT :limit;", // get the back strip
 
-		this.STATEMENT_PREFIX + "AND read > :last_read ORDER BY read ASC", // get the forward strip
+		this.STATEMENT_PREFIX + "AND read > :last_read ORDER BY read ASC LIMIT :limit;", // get the forward strip
 	];
 
 	this.INFINITE = 10000000000000; // will fail when used for time after 2286-11-20 17:46:40
 
 	function init() {
 		var preloadAmount = MozComics.Prefs.get("preloadAmount");
-		var limitAmount = MozComics.Prefs.get("preloadImages") ? preloadAmount : 1;
-		for(var i = 0, len = this.statements.length; i < len; i++) {
-			this.statements[i] += " LIMIT " + limitAmount + ";";
-		}
+		this.limitAmount = MozComics.Prefs.get("preloadImages") ? preloadAmount : 1;
 
 		this.updateStripReadTime = MozComics.DB.dbConn.createStatement(
 			"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
@@ -102,8 +99,9 @@ MozComics.Strips = new function() {
 		if(MozComics.Dom.stripFound.hidden) {
 			this.setToDefaultStrip();
 		}
-		else if(!this.lastComic || !MozComics.Comics.all[this.lastComic] ||
-			!MozComics.Comics.all[this.lastComic].enabled) {
+		else if(!this.lastComic ||
+			!MozComics.Comics.getComic(this.lastComic) ||
+			!MozComics.Comics.getComicProp(this.lastComic, "enabled")) {
 
 			this.setToDefaultStrip();
 		}
@@ -228,6 +226,7 @@ MozComics.Strips = new function() {
 
 		var queryString = this.statements[statementId];
 		var enabledComics = MozComics.Comics.enabled;
+
 		var len = enabledComics.length;
 		if(len == 0) {
 			return false;
@@ -238,7 +237,7 @@ MozComics.Strips = new function() {
 			t.push("comic=?" + (i+1));
 		}
 		t = t.join(" OR ");
-		
+
 		if(!MozComics.Dom.showRead.checked && !showRead) {
 			t = "(" + t + ") AND read ISNULL";
 		}
@@ -250,16 +249,17 @@ MozComics.Strips = new function() {
 			statement.bindInt32Parameter(i, enabledComics[i].comic);
 		}
 
-		if(finalQueryString.indexOf(":last_comic") > -1) {
-			statement.params.last_comic = this.lastComic;
+		var params = {
+			"limit": this.limitAmount,
+			"last_comic": this.lastComic,
+			"last_strip": this.lastStrip,
+			"last_read": this.lastRead
 		}
 
-		if(finalQueryString.indexOf(":last_strip") > -1) {
-			statement.params.last_strip = this.lastStrip;
-		}
-
-		if(finalQueryString.indexOf(":last_read") > -1) {
-			statement.params.last_read = this.lastRead;
+		for(var param in params) {
+			if(finalQueryString.indexOf(":" + param) > -1) {
+				statement.params[param] = params[param];
+			}
 		}
 
 		var returnValue = false;
@@ -288,22 +288,25 @@ MozComics.Strips = new function() {
 		MozComics.Dom.stripFound.hidden = !row;
 		MozComics.Dom.stripNone.hidden = !!row;
 		if(row) {
-			MozComics.Dom.comic.value = MozComics.Comics.all[row.comic].name;
-			MozComics.Dom.comic.href = MozComics.Comics.all[row.comic].url;
+			MozComics.Dom.comic.value = MozComics.Comics.getComic(row.comic).name;
+			MozComics.Dom.comic.href = MozComics.Comics.getComic(row.comic).url;
 			MozComics.Dom.title.value = row.title;
+			MozComics.Dom.title.href = row.url;
 			MozComics.Dom.image.hidden = false;
 			MozComics.Dom.image.src = row.image;
 
 			var mouseover = null;
-			if(row.extra != "")  {
+			try {
 				var extra = JSON.parse(row.extra);
-				mouseover = extra.mouseover;
+				mouseover = MozComics.Utils.unescapeHtml(extra.mouseover);
 			}
+			catch(e) {}
+
 			MozComics.Dom.imageTooltip.label = mouseover ? mouseover : "";
 			MozComics.Dom.imageTooltip.hidden = !mouseover;
 		}
 			
-		if(!MozComics.Dom.pane.hidden) { // TODO shouldn't be run on startup?
+		if(!MozComics.Dom.pane.hidden) {
 			MozComics.Dom.scrollbox.scrollTo(0,0);
 		}
 	}

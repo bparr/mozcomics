@@ -14,41 +14,31 @@ var MozComics = new function() {
 	this.toggleComicPickerPane = toggleComicPickerPane;
 	this.handleKeyPress = handleKeyPress;
 	this.buildComicsContextMenu = buildComicsContextMenu;
-	this.getString = getString;
 
 	this.showPreferences = showPreferences;
 	this.findReadStrips = findReadStrips;
-	this.addComic = addComic;
-	this.deleteComic = deleteComic;
 
 	this.getUnreadStrips = null;
 	this.updateStripReadTime= null;
 
-	this._stringBundle = null;
-
 	function init() {
-		this._stringBundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
-			.getService(Components.interfaces.nsIStringBundleService)
-			.createBundle("chrome://mozcomics/locale/mozcomics.properties");
+		this.Utils = {}; Components.utils.import("resource://mozcomics/utils.js", this.Utils);
+		this.Prefs = {}; Components.utils.import("resource://mozcomics/prefs.js", this.Prefs);
+		this.DB = {}; Components.utils.import("resource://mozcomics/db.js", this.DB);
+		this.Update = {}; Components.utils.import("resource://mozcomics/update.js", this.Update);
 		
 		// load other javascript files
 		var scriptFiles = [
-			"comic",
 			"comicPicker",
 			"comics",
-			"db",
 			"dom",
-			"prefs",
-			"strips",
-			"treeview",
-			"update"
+			"strips"
 		];
 		var scriptLoader = Components.classes["@mozilla.org/moz/jssubscript-loader;1"]
 			.getService(Components.interfaces.mozIJSSubScriptLoader);
 		for(var i = 0, len = scriptFiles.length; i < len; i++) {
 			scriptLoader.loadSubScript("chrome://mozcomics/content/" + scriptFiles[i] + ".js");
 		}
-
 
 		window.addEventListener("load", MozComics.onChromeLoad, false);
 	}
@@ -57,13 +47,10 @@ var MozComics = new function() {
 		window.removeEventListener("load", MozComics.onChromeLoad, false);
 		window.addEventListener("unload", MozComics.onUnload, false);
 
-		MozComics.Prefs.init();
 		MozComics.Dom.init();
-		MozComics.DB.init();
-		MozComics.Comics.init();
 		MozComics.Strips.init();
 		MozComics.ComicPicker.init();
-		MozComics.Update.init();
+		MozComics.Comics.init();
 
 		MozComics.getUnreadStrips = MozComics.DB.dbConn.createStatement(
 			"SELECT strip, url FROM strip WHERE comic=:comic AND read ISNULL;"
@@ -131,28 +118,9 @@ var MozComics = new function() {
 
 	function buildComicsContextMenu() {
 		var menu = MozComics.Dom.comicPicerMenu;
-		var selectedComic = MozComics.ComicPicker.selectedComic;
-		if(selectedComic) {
-			for(var i = 0, len = menu.childNodes.length; i < len; i++) {
-				menu.childNodes[i].setAttribute('hidden', false);
-			}
-		}
-		else {
-			for(var i = 0, len = menu.childNodes.length; i < len; i++) {
-				menu.childNodes[i].setAttribute('hidden', true);
-			}
-		}
-	}
-
-
-	// http://developer.mozilla.org/en/docs/Code_snippets:Miscellaneous#Using_string_bundles_from_JavaScript
-	function getString(msg, args){ //get localised message
-		if (args){
-			args = Array.prototype.slice.call(arguments, 1);
-			return this._stringBundle.formatStringFromName(msg, args, args.length);
-		}
-		else {
-			return this._stringBundle.GetStringFromName(msg);
+		var hideItems = !MozComics.ComicPicker.selectedComic;
+		for(var i = 0, len = menu.childNodes.length; i < len; i++) {
+			menu.childNodes[i].setAttribute('hidden', hideItems);
 		}
 	}
 
@@ -182,7 +150,7 @@ var MozComics = new function() {
 			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
 				.getService(Components.interfaces.nsIPrompt);
 	
-			var result = prompt.confirm("", MozComics.getString("findReadStrips.youSure", readStrips.length));
+			var result = prompt.confirm("", MozComics.Utils.getString("findReadStrips.youSure", readStrips.length));
 			if (result) {
 				var d = new Date();
 				var read = d.getTime();
@@ -195,26 +163,7 @@ var MozComics = new function() {
 			}
 		}
 		else {
-			alert(MozComics.getString("findReadStrips.noneFound"));
-		}
-	}
-
-	function addComic() {
-		window.loadURI("http://localhost/mozcomics/"); // TODO change
-	}
-
-	function deleteComic() {
-		var selectedComic = MozComics.ComicPicker.selectedComic;
-		if(!selectedComic) {
-			return;
-		}
-
-		var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
-			.getService(Components.interfaces.nsIPrompt);
-	
-		var result = prompt.confirm("", MozComics.getString("deleteComic.youSure", selectedComic.name));
-		if (result) {
-			MozComics.Comics.deleteComic(selectedComic);
+			alert(MozComics.Utils.getString("findReadStrips.noneFound"));
 		}
 	}
 }

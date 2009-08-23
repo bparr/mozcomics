@@ -3,6 +3,7 @@
 
 content   mozcomics             chrome/content/
 skin      mozcomics  default    chrome/skin/
+resource  mozcomics             resource/
 
 overlay   chrome://browser/content/browser.xul    chrome://mozcomics/content/overlay.xul
 
