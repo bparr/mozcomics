@@ -28,7 +28,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 			<popupset>
 				<popup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu();">
-					<menuitem label="&mozcomics.menu.findReadStrips;" oncommand="MozComics.findReadStrips()"/>
+					<menuitem label="&mozcomics.menu.findReadStrips;" oncommand="MozComics.Comics.findReadStrips()"/>
 					<menuitem label="&mozcomics.menu.deleteComic;" oncommand="MozComics.Comics.deleteComic()"/>
 				</popup>
 			</popupset>

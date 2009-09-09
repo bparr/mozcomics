@@ -3,8 +3,9 @@ Copyright (c) 2009 Ben Parr
 Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
 */
 
-var EXPORTED_SYMBOLS = ["dbConn", "comicColumns", "comicParams", "_createParamsArray"];
+var EXPORTED_SYMBOLS = ["dbConn", "comicColumns", "comicParams", "_createParamsArray", "REASON_FINISHED"];
 
+var REASON_FINISHED = Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED;
 
 var storageService = Components.classes["@mozilla.org/storage/service;1"]
 	.getService(Components.interfaces.mozIStorageService);

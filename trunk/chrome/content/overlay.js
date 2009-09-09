@@ -14,17 +14,11 @@ var MozComics = new function() {
 	this.toggleComicPickerPane = toggleComicPickerPane;
 	this.handleKeyPress = handleKeyPress;
 	this.buildComicsContextMenu = buildComicsContextMenu;
-
 	this.showPreferences = showPreferences;
-	this.findReadStrips = findReadStrips;
-
-	this.getUnreadStrips = null;
-	this.updateStripReadTime= null;
 
 	function init() {
 		this.Utils = {}; Components.utils.import("resource://mozcomics/utils.js", this.Utils);
 		this.Prefs = {}; Components.utils.import("resource://mozcomics/prefs.js", this.Prefs);
-		this.DB = {}; Components.utils.import("resource://mozcomics/db.js", this.DB);
 		this.Update = {}; Components.utils.import("resource://mozcomics/update.js", this.Update);
 		
 		// load other javascript files
@@ -51,13 +45,6 @@ var MozComics = new function() {
 		MozComics.Strips.init();
 		MozComics.ComicPicker.init();
 		MozComics.Comics.init();
-
-		MozComics.getUnreadStrips = MozComics.DB.dbConn.createStatement(
-			"SELECT strip, url FROM strip WHERE comic=:comic AND read ISNULL;"
-		);
-		MozComics.updateStripReadTime = MozComics.DB.dbConn.createStatement(
-			"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
-		);
 	}
 
 	function onUnload() {
@@ -126,45 +113,6 @@ var MozComics = new function() {
 
 	function showPreferences() { // TODO implement
 
-	}
-
-	function findReadStrips() {
-		var historyService = Components.classes["@mozilla.org/browser/nav-history-service;1"]
-			.getService(Components.interfaces.nsIGlobalHistory2);
-		var ioService = Components.classes["@mozilla.org/network/io-service;1"]
-			.getService(Components.interfaces.nsIIOService);
-
-		var selectedComic = MozComics.ComicPicker.selectedComic;
-		this.getUnreadStrips.params.comic = selectedComic.comic;
-		var readStrips = [];
-		while(this.getUnreadStrips.executeStep()) {
-			var url = this.getUnreadStrips.row.url;
-			var uri = ioService.newURI(url, null, null);
-			if(historyService.isVisited(uri)) {
-				readStrips.push(this.getUnreadStrips.row.strip);
-			}
-		}
-		this.getUnreadStrips.reset();
-
-		if(readStrips.length > 0) {
-			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
-				.getService(Components.interfaces.nsIPrompt);
-	
-			var result = prompt.confirm("", MozComics.Utils.getString("findReadStrips.youSure", readStrips.length));
-			if (result) {
-				var d = new Date();
-				var read = d.getTime();
-				for(var i = 0, len = readStrips.length; i < len; i++) {
-					this.updateStripReadTime.params.comic = selectedComic.comic;
-					this.updateStripReadTime.params.strip = readStrips[i];
-					this.updateStripReadTime.params.read = read + i;
-					this.updateStripReadTime.execute();
-				}
-			}
-		}
-		else {
-			alert(MozComics.Utils.getString("findReadStrips.noneFound"));
-		}
 	}
 }
 
