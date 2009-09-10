@@ -6,7 +6,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 MozComics.Comics = new function() {
 	var self = this;
 
-	this._comicsData = {}; Components.utils.import("resource://mozcomics/comics.js", this._comicsData);
+	Components.utils.import("resource://mozcomics/comics.js");
 
 	this.init = init;
 	this.unload = unload;
@@ -29,17 +29,17 @@ MozComics.Comics = new function() {
 	this.enabled = [];
 
 	function init() {
-		this.id = this._comicsData.addCallback(this.refreshCache);
+		this.id = ComicsResource.addCallback(this.refreshCache);
 		this.refreshCache();
 	}
 
 	function unload() {
-		this._comicsData.saveStatesToDB(this.id);
-		this._comicsData.removeCallback(this.id);
+		ComicsResource.saveStatesToDB(this.id);
+		ComicsResource.removeCallback(this.id);
 	}
 
 	function addComic() {
-		window.loadURI("http://www.bparr.com/mozcomics/"); // TODO change
+		window.loadURI(MozComics.Utils.URLS.COMIC_LIST);
 	}
 
 	function deleteComic() {
@@ -53,12 +53,12 @@ MozComics.Comics = new function() {
 	
 		var result = prompt.confirm("", MozComics.Utils.getString("deleteComic.youSure", selectedComic.name));
 		if (result) {
-			this._comicsData.deleteComic(selectedComic);
+			ComicsResource.deleteComic(selectedComic);
 		}
 	}
 
 	function findReadStrips() {
-		this._comicsData.findReadStrips(MozComics.ComicPicker.selectedComic);
+		ComicsResource.findReadStrips(MozComics.ComicPicker.selectedComic);
 	}
 
 	function refreshCache(callUpdate) {
@@ -66,7 +66,7 @@ MozComics.Comics = new function() {
 		self.showing = [];
 		self.enabled = [];
 
-		for(var comic in self._comicsData.all) {
+		for(var comic in ComicsResource.all) {
 			if(self.getComicProp(comic, "showing")) {
 				self.showing.push(self.getComic(comic));
 
@@ -85,11 +85,11 @@ MozComics.Comics = new function() {
 	}
 
 	function getComic(comic) {
-		return (comic.comic) ? comic: this._comicsData.all[comic];
+		return (comic.comic) ? comic: ComicsResource.all[comic];
 	}
 
 	function getComicByGuid(guid) {
-		return this._comicsData.guids[guid];
+		return ComicsResource.guids[guid];
 	}
 
 	function getState(comic) {
@@ -109,7 +109,7 @@ MozComics.Comics = new function() {
 	}
 
 	function enableAll() {
-		for(var comic in this._comicsData.all) {
+		for(var comic in ComicsResource.all) {
 			this.setComicProp(comic, "enabled", true, true);
 		}
 
@@ -117,7 +117,7 @@ MozComics.Comics = new function() {
 	}
 
 	function disableAll() {
-		for(var comic in this._comicsData.all) {
+		for(var comic in ComicsResource.all) {
 			this.setComicProp(comic, "enabled", false, true);
 		}
 

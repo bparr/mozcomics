@@ -6,7 +6,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 MozComics.Strips = new function() {
 	var self = this;
 
-	this._stripsData = {}; Components.utils.import("resource://mozcomics/strips.js", this._stripsData);
+	Components.utils.import("resource://mozcomics/strips.js");
 
 	this.init = init;
 	this.refresh = refresh;
@@ -49,7 +49,7 @@ MozComics.Strips = new function() {
 			var lastViewed = MozComics.Prefs.get("lastViewed").split(",");
 			if(MozComics.Prefs.get("loadLastViewedAtStart") && lastViewed.length == 2) {
 				var data = _generateDefaultData();
-				data.statementId = self._stripsData.S.get;
+				data.statementId = StripsResource.S.get;
 				data.enabledComics = [{comic: lastViewed[0]}];
 				data.params.strip = lastViewed[1];
 				data.showRead = true;
@@ -62,12 +62,12 @@ MozComics.Strips = new function() {
 					}
 				};
 
-				self._stripsData.findStrip(data);
+				StripsResource.findStrip(data);
 				return;
 			}
 		}
 
-		self.params.lastRead = self._stripsData.INFINITE;
+		self.params.lastRead = StripsResource.INFINITE;
 		self.params.randomQueue = [];
 
 		if(MozComics.Dom.stripFound.hidden ||
@@ -82,8 +82,8 @@ MozComics.Strips = new function() {
 	function unload() {
 		if(this.params.lastComic && 
 			this.params.lastStrip && 
-			Math.abs(this.params.lastComic) < this._stripsData.INFINITE &&
-			Math.abs(this.params.lastStrip) < this._stripsData.INFINITE) {
+			Math.abs(this.params.lastComic) < StripsResource.INFINITE &&
+			Math.abs(this.params.lastStrip) < StripsResource.INFINITE) {
 
 			MozComics.Prefs.set("lastViewed", 
 				this.params.lastComic + "," + this.params.lastStrip
@@ -112,52 +112,52 @@ MozComics.Strips = new function() {
 
 	function setToFirstStrip() {
 		var data = _generateDefaultData();
-		data.statementId = this._stripsData.S.first;
-		this._stripsData.findStrip(data);
+		data.statementId = StripsResource.S.first;
+		StripsResource.findStrip(data);
 	}
 
 	function setToPreviousStrip() {
 		if(this.params.lastComic && this.params.lastStrip) {
 			var data = _generateDefaultData();
-			data.statementId = this._stripsData.S.previous;
+			data.statementId = StripsResource.S.previous;
 
 			if(MozComics.Prefs.get("wrapAround")) {
-				data.onFailStatementId = this._stripsData.S.last;
+				data.onFailStatementId = StripsResource.S.last;
 			}
 
-			this._stripsData.findStrip(data);
+			StripsResource.findStrip(data);
 		}
 		else {
-			this._updatePane(false, this._stripsData.S.previous);
+			this._updatePane(false, StripsResource.S.previous);
 		}
 	}
 
 	function setToNextStrip() {
 		if(this.params.lastComic && this.params.lastStrip) {
 			var data = _generateDefaultData();
-			data.statementId = this._stripsData.S.next;
+			data.statementId = StripsResource.S.next;
 
 			if(MozComics.Prefs.get("wrapAround")) {
-				data.onFailStatementId = this._stripsData.S.first;
+				data.onFailStatementId = StripsResource.S.first;
 			}
 
-			this._stripsData.findStrip(data);
+			StripsResource.findStrip(data);
 		}
 		else {
-			this._updatePane(false, this._stripsData.S.previous);
+			this._updatePane(false, StripsResource.S.previous);
 		}
 	}
 
 	function setToLastStrip() {
 		var data = _generateDefaultData();
-		data.statementId = this._stripsData.S.last;
-		this._stripsData.findStrip(data);
+		data.statementId = StripsResource.S.last;
+		StripsResource.findStrip(data);
 	}
 
 
 	function setToRandomStrip() {
 		var data = _generateDefaultData();
-		data.statementId = this._stripsData.S.random;
+		data.statementId = StripsResource.S.random;
 
 		if(data.params.randomQueue.length > 0) {
 			this._updatePane(data.params.randomQueue.shift());
@@ -165,18 +165,18 @@ MozComics.Strips = new function() {
 				data.onComplete = function(row, statementId) {
 					data.params.randomQueue.unshift(row);
 				};
-				this._stripsData.findStrip(data);
+				StripsResource.findStrip(data);
 			}
 		}
 		else {
-			this._stripsData.findStrip(data);
+			StripsResource.findStrip(data);
 		}
 	}
 
 
 	function setToBackStrip() {
 		var data = _generateDefaultData();
-		data.statementId = this._stripsData.S.back;
+		data.statementId = StripsResource.S.back;
 		data.showRead = true;
 
 		data.onComplete = function(row, statementId) {
@@ -184,12 +184,12 @@ MozComics.Strips = new function() {
 			MozComics.Dom.updateRead.checked = false;
 		};
 
-		this._stripsData.findStrip(data);
+		StripsResource.findStrip(data);
 	}
 
 	function setToForwardStrip() {
 		var data = _generateDefaultData();
-		data.statementId = this._stripsData.S.forward;
+		data.statementId = StripsResource.S.forward;
 		data.showRead = true;
 
 		data.onComplete = function(row, statementId) {
@@ -197,7 +197,7 @@ MozComics.Strips = new function() {
 			MozComics.Dom.updateRead.checked = false;
 		};
 
-		this._stripsData.findStrip(data);
+		StripsResource.findStrip(data);
 	}
 
 	function _generateDefaultData() {
@@ -256,14 +256,14 @@ MozComics.Strips = new function() {
 	function _unloadLastStrip() {
 		if(this.params.lastComic && this.params.lastStrip && MozComics.Dom.updateRead.checked) {
 			var d = new Date();
-			this._stripsData.updateReadTime(
+			StripsResource.updateReadTime(
 				this.params.lastComic, this.params.lastStrip, d.getTime()
 			);
 		}
 	}
 
 	function _updateParamVariables(row, statementId) {
-		var S = this._stripsData.S;
+		var S = StripsResource.S;
 		if(row) {
 			this.params.lastComic = row.comic;
 			this.params.lastStrip = row.strip;
@@ -274,18 +274,18 @@ MozComics.Strips = new function() {
 					this.params.lastRead = row.read;
 					break;
 				default: // some other navigation
-					this.params.lastRead = this._stripsData.INFINITE;
+					this.params.lastRead = StripsResource.INFINITE;
 			}
 		}
 		else {
 			switch(statementId) {
 				case S.previous:
-					this.params.lastComic = -1 * this._stripsData.INFINITE;
-					this.params.lastStrip = -1 * this._stripsData.INFINITE;
+					this.params.lastComic = -1 * StripsResource.INFINITE;
+					this.params.lastStrip = -1 * StripsResource.INFINITE;
 					break;
 				case S.next:
-					this.params.lastComic = this._stripsData.INFINITE;
-					this.params.lastStrip = this._stripsData.INFINITE;
+					this.params.lastComic = StripsResource.INFINITE;
+					this.params.lastStrip = StripsResource.INFINITE;
 					break;
 				default: // some other navigation
 					this.params.lastComic = null;
@@ -295,11 +295,11 @@ MozComics.Strips = new function() {
 
 			switch(statementId) {
 				case S.back:
-					this.params.lastRead = -1 * this._stripsData.INFINITE;
+					this.params.lastRead = -1 * StripsResource.INFINITE;
 					break;
 				case S.forward:
 				default: // some other navigation
-					this.params.lastRead = this._stripsData.INFINITE;
+					this.params.lastRead = StripsResource.INFINITE;
 			}
 		}
 	}

@@ -61,9 +61,6 @@ MozComics.Dom = new function() {
 		this._getDomElement("imageTooltip", "mozcomics-strip-image-tooltip");
 
 		// add event listeners
-		this.tabbrowser.addEventListener("TabSelect", function(e) {MozComics.onPageChange(e);}, false);
-		this.appcontent.addEventListener("pageshow", function(e) {MozComics.onPageChange(e); }, true);
-		this.appcontent.addEventListener("pagehide", function(e) {MozComics.onPageChange(e); }, true);
 		this.comicPicker.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
 
 		this.comicPickerToolbarIcon.setAttribute("expand", this.comicPickerPane.hidden);
@@ -79,3 +76,4 @@ MozComics.Dom = new function() {
 		}
 	}
 }
+

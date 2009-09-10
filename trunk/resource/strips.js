@@ -3,142 +3,139 @@ Copyright (c) 2009 Ben Parr
 Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
 */
 
-var EXPORTED_SYMBOLS = ["INFINITE", "S", "findStrip", "updateReadTime"];
+var EXPORTED_SYMBOLS = ["StripsResource"];
 
-var Utils = {}; Components.utils.import("resource://mozcomics/utils.js", Utils);
-var DB = {}; Components.utils.import("resource://mozcomics/db.js", DB);
+Components.utils.import("resource://mozcomics/utils.js");
+Components.utils.import("resource://mozcomics/db.js");
 
-INFINITE = 10000000000000; // will fail when used for time after 2286-11-20 17:46:40
+var StripsResource = new function() {
+	var self = this;
 
-S = {
-	get: 0,
-	first: 1,
-	previous: 2,
-	next: 3,
-	last: 4,
-	random: 5,
-	back: 6,
-	forward: 7
-}
+	this.findStrip = findStrip;
+	this.updateReadTime = updateReadTime;
 
-COLUMNS = ["comic", "strip", "title", "url", "image", "extra", "read"];
-STATEMENT_PREFIX = "SELECT " + COLUMNS.join(",") + " FROM strip WHERE (?) ";
-STATEMENTS = [
-	STATEMENT_PREFIX + "AND strip = :strip;", // get a specific strip
-	STATEMENT_PREFIX + "ORDER BY strip ASC, comic ASC LIMIT :limit;", // get the first strip
+	this.INFINITE = 10000000000000; // will fail when used for time after 2286-11-20 17:46:40
 
-	STATEMENT_PREFIX + "AND ((strip < :lastStrip) OR " // get the previous strip
-		+ "(strip = :lastStrip AND comic < :lastComic)) ORDER BY strip DESC, comic DESC LIMIT :limit;",
-
-	STATEMENT_PREFIX + "AND ((strip > :lastStrip) OR " // get the next strip
-		+ "(strip = :lastStrip AND comic > :lastComic)) ORDER BY strip ASC, comic ASC LIMIT :limit;",
-
-	STATEMENT_PREFIX + "ORDER BY strip DESC, comic DESC LIMIT :limit;", // get the last strip
-
-	STATEMENT_PREFIX + "ORDER BY RANDOM() LIMIT :limit;", // get a random strip
-
-	STATEMENT_PREFIX + "AND read < :lastRead ORDER BY read DESC LIMIT :limit;", // get the back strip
-
-	STATEMENT_PREFIX + "AND read > :lastRead ORDER BY read ASC LIMIT :limit;", // get the forward strip
-];
-
-
-var updateStripReadTimeStatement = DB.dbConn.createStatement(
-	"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
-); // TODO exact same as in comics.js (remove redundancy)
-
-
-function findStrip(data) {
-	data.params.randomQueue = [];
-	var enabledComics = data.enabledComics;
-
-	var len = enabledComics.length;
-	if(len == 0) {
-		data.onComplete(false, data.statementId);
-		return;
+	this.S = {
+		get: 0,
+		first: 1,
+		previous: 2,
+		next: 3,
+		last: 4,
+		random: 5,
+		back: 6,
+		forward: 7
 	}
 
-	var t = new Array();
-	for(var i = 0; i < len; i++) {
-		t.push("comic=?" + (i+1));
-	}
-	t = t.join(" OR ");
+	COLUMNS = ["comic", "strip", "title", "url", "image", "extra", "read"];
+	STATEMENT_PREFIX = "SELECT " + COLUMNS.join(",") + " FROM strip WHERE (?) ";
+	STATEMENTS = [
+		STATEMENT_PREFIX + "AND strip = :strip;", // get a specific strip
+		STATEMENT_PREFIX + "ORDER BY strip ASC, comic ASC LIMIT :limit;", // get the first strip
 
-	if(!data.showRead) {
-		t = "(" + t + ") AND read ISNULL";
-	}
+		STATEMENT_PREFIX + "AND ((strip < :lastStrip) OR " // get the previous strip
+			+ "(strip = :lastStrip AND comic < :lastComic)) ORDER BY strip DESC, comic DESC LIMIT :limit;",
 
-	var queryString = STATEMENTS[data.statementId].replace("?", t);
-	var statement = DB.dbConn.createStatement(queryString);
+		STATEMENT_PREFIX + "AND ((strip > :lastStrip) OR " // get the next strip
+			+ "(strip = :lastStrip AND comic > :lastComic)) ORDER BY strip ASC, comic ASC LIMIT :limit;",
 
-	for(var i = 0; i < len; i++) {
-		statement.bindInt32Parameter(i, enabledComics[i].comic);
-	}
+		STATEMENT_PREFIX + "ORDER BY strip DESC, comic DESC LIMIT :limit;", // get the last strip
 
-	for(var param in data.params) {
-		if(queryString.indexOf(":" + param) > -1) {
-			statement.params[param] = data.params[param];
+		STATEMENT_PREFIX + "ORDER BY RANDOM() LIMIT :limit;", // get a random strip
+
+		STATEMENT_PREFIX + "AND read < :lastRead ORDER BY read DESC LIMIT :limit;", // get the back strip
+
+		STATEMENT_PREFIX + "AND read > :lastRead ORDER BY read ASC LIMIT :limit;", // get the forward strip
+	];
+
+
+	var updateStripReadTimeStatement = DB.dbConn.createStatement(
+		"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
+	);
+
+
+	function findStrip(data) {
+		data.params.randomQueue = [];
+		var enabledComics = data.enabledComics;
+
+		var len = enabledComics.length;
+		if(len == 0) {
+			data.onComplete(false, data.statementId);
+			return;
 		}
-	}
 
-	statement.executeAsync({
-		data: data,
-		rows: [],
+		var t = new Array();
+		for(var i = 0; i < len; i++) {
+			t.push("comic=?" + (i+1));
+		}
+		t = t.join(" OR ");
 
-		handleResult: function(response) {
-			for(var row = response.getNextRow(); row; row = response.getNextRow()) {
-				this.rows.push(row);
+		if(!data.showRead) {
+			t = "(" + t + ") AND read ISNULL";
+		}
+
+		var queryString = STATEMENTS[data.statementId].replace("?", t);
+		var statement = DB.dbConn.createStatement(queryString);
+
+		for(var i = 0; i < len; i++) {
+			statement.bindInt32Parameter(i, enabledComics[i].comic);
+		}
+
+		for(var param in data.params) {
+			if(queryString.indexOf(":" + param) > -1) {
+				statement.params[param] = data.params[param];
 			}
-		},
+		}
 
-		handleError: function(error) {},
-		handleCompletion: function(reason) {
-			if(reason == DB.REASON_FINISHED) {
-				if(this.rows.length > 0) {
-					var firstRow = _cloneRow(this.rows[0]);
-					this.data.preloadImage(firstRow.image);
+		statement.executeAsync({
+			data: data,
+			rows: [],
 
-					for(var i = 1, len = this.rows.length; i < len; i++) {
-						var row = this.rows[i];
-						if(this.data.statementId == S.random) {
-							this.data.params.randomQueue.push(_cloneRow(row));
-						}
-						this.data.preloadImage(row.getResultByName("image"));
-					}
-
-					this.data.onComplete(firstRow, this.data.statementId);
+			handleResult: function(response) {
+				for(var row = response.getNextRow(); row; row = response.getNextRow()) {
+					this.rows.push(row);
 				}
-				else if(this.data.onFailStatementId) {
-					this.data.statementId = this.data.onFailStatementId;
-					this.data.onFailStatementId = null;
-					findStrip(this.data);
+			},
+
+			handleError: function(error) {},
+			handleCompletion: function(reason) {
+				if(reason == DB.REASON_FINISHED) {
+					if(this.rows.length > 0) {
+						var firstRow = DB.cloneRow(this.rows[0], COLUMNS);
+						this.data.preloadImage(firstRow.image);
+
+						for(var i = 1, len = this.rows.length; i < len; i++) {
+							var row = this.rows[i];
+							if(this.data.statementId == self.S.random) {
+								this.data.params.randomQueue.push(DB.cloneRow(row, COLUMNS));
+							}
+							this.data.preloadImage(row.getResultByName("image"));
+						}
+
+						this.data.onComplete(firstRow, this.data.statementId);
+					}
+					else if(this.data.onFailStatementId) {
+						this.data.statementId = this.data.onFailStatementId;
+						this.data.onFailStatementId = null;
+						findStrip(this.data);
+					}
+					else {
+						this.data.onComplete(false, this.data.statementId);
+					}
 				}
 				else {
-					this.data.onComplete(false, this.data.statementId);
+					Utils.alert(Utils.getString("findStrip.sqlError"));
 				}
 			}
-			else {
-				Utils.alert(Utils.getString("findStrip.sqlError"));
-			}
-		}
-	});
-}
-
-function updateReadTime(comic, strip, read) {
-	var updateStripReadTime = updateStripReadTimeStatement.clone();
-	updateStripReadTime.params.comic = comic;
-	updateStripReadTime.params.strip = strip;
-	updateStripReadTime.params.read = read;
-	updateStripReadTime.executeAsync();
-}
-
-function _cloneRow(row) {
-	var clone = {};
-	for(var i = 0, len = COLUMNS.length; i < len; i++) {
-		var column = COLUMNS[i];
-		clone[column] = row.getResultByName(column);
+		});
 	}
-	return clone;
-}
 
+	function updateReadTime(comic, strip, read) {
+		var updateStripReadTime = updateStripReadTimeStatement.clone();
+		updateStripReadTime.params.comic = comic;
+		updateStripReadTime.params.strip = strip;
+		updateStripReadTime.params.read = read;
+		updateStripReadTime.executeAsync();
+	}
+}
 

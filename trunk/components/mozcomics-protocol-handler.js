@@ -96,7 +96,7 @@ function ChromeExtensionHandler() {
 			var result = prompt.confirm("", MozComics.Utils.getString("addComic.youSure", comic.name));
 			if (result) {
 				comic.updated = 0;
-				MozComics.Update.update([comic]);
+				MozComics.Update.update([comic], true);
 			}
 		}
 	};
