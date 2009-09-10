@@ -9,7 +9,6 @@ var MozComics = new function() {
 
 	this.onChromeLoad = onChromeLoad;
 	this.onUnload = onUnload;
-	this.onPageChange = onPageChange;
 	this.togglePane = togglePane;
 	this.toggleComicPickerPane = toggleComicPickerPane;
 	this.handleKeyPress = handleKeyPress;
@@ -17,9 +16,9 @@ var MozComics = new function() {
 	this.showPreferences = showPreferences;
 
 	function init() {
-		this.Utils = {}; Components.utils.import("resource://mozcomics/utils.js", this.Utils);
-		this.Prefs = {}; Components.utils.import("resource://mozcomics/prefs.js", this.Prefs);
-		this.Update = {}; Components.utils.import("resource://mozcomics/update.js", this.Update);
+		Components.utils.import("resource://mozcomics/utils.js"); this.Utils = Utils;
+		Components.utils.import("resource://mozcomics/prefs.js"); this.Prefs = Prefs;
+		Components.utils.import("resource://mozcomics/update.js"); this.Update = Update;
 		
 		// load other javascript files
 		var scriptFiles = [
@@ -52,9 +51,6 @@ var MozComics = new function() {
 
 		MozComics.Strips.unload();
 		MozComics.Comics.unload();
-	}
-
-	function onPageChange(e) {
 	}
 
 	function togglePane() {
@@ -117,3 +113,4 @@ var MozComics = new function() {
 }
 
 MozComics.init();
+
