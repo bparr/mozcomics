@@ -45,7 +45,7 @@ MozComics.Dom = new function() {
 		this._getDomElement("comicPickerPane", "mozcomics-comicpicker-pane");
 		this._getDomElement("comicPicker", "mozcomics-comicPicker");
 		this._getDomElement("comicPickerToolbarIcon", "mozcomics-tb-comicpicker");
-		this._getDomElement("comicPicerMenu", "mozcomics-comicpicker-menu");
+		this._getDomElement("comicPickerMenu", "mozcomics-comicpicker-menu");
 		this._getDomElement("showRead", "mozcomics-comicpicker-showread");
 		this._getDomElement("comicPickerDateMenu", "mozcomics-comicpicker-datemenu");
 		this._getDomElement("comicPickerDate", "mozcomics-comicpicker-date");

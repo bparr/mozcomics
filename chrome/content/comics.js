@@ -17,14 +17,13 @@ MozComics.Comics = new function() {
 
 	this.getComic = getComic;
 	this.getComicByGuid = getComicByGuid;
-	this.getState = getState;
 	this.getComicProp = getComicProp;
 	this.setComicProp = setComicProp;
 
 	this.enableAll = enableAll;
 	this.disableAll = disableAll;
 
-	this.id = null;
+	this.id = null; // id for this instance of the MozComics object
 	this.showing = [];
 	this.enabled = [];
 
@@ -76,6 +75,7 @@ MozComics.Comics = new function() {
 			}
 		}
 
+		// refresh ComicPicker
 		if(callUpdate) {
 			MozComics.ComicPicker.update();
 		}
@@ -92,18 +92,17 @@ MozComics.Comics = new function() {
 		return ComicsResource.guids[guid];
 	}
 
-	function getState(comic) {
-		return this.getComic(comic).getState(this.id);
-	}
-
 	function getComicProp(comic, prop) {
 		return self.getComic(comic).get(prop, self.id);
 	}
 
+	// ignoreUpdatingCache is a flag used when setComicProp is called
+	// multiple times in a function so that refreshCache is not called
+	// every time a property is changed
 	function setComicProp(comic, prop, val, ignoreUpdatingCache) {
 		this.getComic(comic).set(prop, val, this.id);
 
-		if(!ignoreUpdatingCache) {// make more efficient
+		if(!ignoreUpdatingCache) {
 			this.refreshCache(true);
 		}
 	}

@@ -8,14 +8,19 @@ var EXPORTED_SYMBOLS = ["ComicsResource"];
 Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/db.js");
 
-// object to contain an indiviual comic, and expose different states
-// row can be a row from a db, or a pre-existing comic (clones it)
+/*
+ * Object to contain an indiviual comic, and expose different states.
+ * row can be a row from a db, or a pre-existing comic (clones it)
+ */
 var Comic = function(row) {
 	for(var j = 0, len = DB.comicColumns.length; j < len; j++) {
 		var column = DB.comicColumns[j];
 		this[column] = row[column];
 	}
 
+	// Each instance of the MozComics object has its own set of comic states.
+	// Assign each instance of the MozComics object an id (callbackId) in
+	// order to know which set of states we are dealing with.
 	this.states = {};
 }
 
@@ -27,10 +32,15 @@ Comic.prototype.BITS = {
 
 Comic.prototype.get = function(key, callbackId) {
 	switch(key) {
+		case "state":
+			if(callbackId && this.states[callbackId]) {
+				return this.states[callbackId];
+			}
+			return this.state;
+
 		case "showing":
 		case "enabled":
-			return this._getProperty(this.BITS[key], callbackId);
-			break;
+			return this._getStateProperty(this.BITS[key], callbackId);
 		default:
 			return this[key];
 	}
@@ -38,62 +48,69 @@ Comic.prototype.get = function(key, callbackId) {
 
 Comic.prototype.set = function(key, value, callbackId) {
 	switch(key) {
+		case "state":
+			if(callbackId) {
+				this.states[callbackId] = value
+			}
+			else {
+				this[key] = value;
+			}
+			break;
+
 		case "showing":
 		case "enabled":
-			return this._setProperty(this.BITS[key], value, callbackId);
+			this._setStateProperty(this.BITS[key], value, callbackId);
 			break;
 		default:
-			return this[key];
+			this[key] = value;
 	}
 }
 
-Comic.prototype.getState = function(callbackId) {
-	return (this.states[callbackId]) ? this.states[callbackId] : this.state;
-}
-
-Comic.prototype.setState = function(callbackId, value) {
-	this.states[callbackId] = value;
-}
-
-Comic.prototype._getProperty = function(bit, callbackId) {
-	if(!this.getState(callbackId)) {
-		throw ("State not defined in Comic._getProperty");
+Comic.prototype._getStateProperty = function(bit, callbackId) {
+	var state = this.get("state", callbackId);
+	if(!state) {
+		throw ("State not defined in Comic._getStateProperty");
 	}
 
 	var mask = 1 << bit;
-	return (this.getState(callbackId) & mask) > 0;
+	return (state & mask) > 0;
 }
 
-Comic.prototype._setProperty = function(bit, set, callbackId) {
-	if(!this.getState(callbackId)) {
-		throw ("State not defined in Comic._setProperty");
+Comic.prototype._setStateProperty = function(bit, set, callbackId) {
+	var state = this.get("state", callbackId);
+	if(!state) {
+		throw ("State not defined in Comic._setStateProperty");
 	}
 
 	var mask = 1 << bit;
 	if(set) {
-		this.setState(callbackId, this.getState(callbackId) | mask);
+		this.set("state", state | mask, callbackId);
 	}
 	else {
-		this.setState(callbackId, this.getState(callbackId) & (~mask));
+		this.set("state", state & (~mask), callbackId);
 	}
 }
 
 
+/*
+ * Handle caching comics from the database, and other comic functions.
+ */
 var ComicsResource = new function() {
 	var self = this;
 
-	this.all = {};
-	this.guids = {};
+	this.all = {}; // all comics indexed by comic column
+	this.guids = {}; // all comics indexed by guid column
 
 	this.updateComic = updateComic;
 	this.deleteComic = deleteComic;
 	this.saveStatesToDB = saveStatesToDB;
 	this.findReadStrips = findReadStrips;
+
 	this.addCallback = addCallback;
 	this.removeCallback = removeCallback;
 	this.callCallbacks = callCallbacks;
 
-
+	// cache comics from database
 	var statement = DB.dbConn.createStatement(
 		"SELECT " + DB.comicColumns.join(", ") + " FROM comic;"
 	);
@@ -125,12 +142,17 @@ var ComicsResource = new function() {
 	);
 
 
-	function updateComic(row, getResultByName) {
-		var comic = new Comic(row, getResultByName);
+	function updateComic(row) {
+		var comic = new Comic(row);
+
 		var oldComic = self.all[comic.comic];
 		for(var id in callbacks) {
+			// persist states from old comic
 			if(oldComic && oldComic.states[id]) {
 				comic.states[id] = oldComic.states[id];
+			}
+			else {
+				comic.states[id] = comic.state;
 			}
 		}
 
@@ -164,12 +186,16 @@ var ComicsResource = new function() {
 		});
 	}
 
+	// Save the set of states for the instance of the MozComics object
+	// (identified by callbackId) to the database
 	function saveStatesToDB(callbackId) {
 		var statements = [];
 		for(var comic in self.all) {
+			var state = self.all[comic].get("state", callbackId);
+			self.all[comic].set("state", state);
 			var saveStateToDB = saveStateToDBStatement.clone();
 			saveStateToDB.params.comic = comic;
-			saveStateToDB.params.state = self.all[comic].getState(callbackId);//TODO make better (caching problem)
+			saveStateToDB.params.state = state;
 			statements.push(saveStateToDB);
 		}
 
@@ -229,7 +255,10 @@ var ComicsResource = new function() {
 					var updateStripReadTime = updateStripReadTimeStatement.clone();
 					updateStripReadTime.params.comic = selectedComic.comic;
 					updateStripReadTime.params.strip = readStrips[i];
+
+					// add i to read in order to make read times different
 					updateStripReadTime.params.read = read + i;
+
 					updateStatements.push(updateStripReadTime);
 				}
 
@@ -243,14 +272,26 @@ var ComicsResource = new function() {
 
 
 	var callbacks = {};
-	var nextCallbackId = 0;
+	var nextCallbackId = 1;
 	function addCallback(callback) {
 		var id = nextCallbackId++;
 		callbacks[id] = callback;
+
+		// add set of states for this id
+		for(var comicId in this.all) {
+			var comic = this.all[comicId];
+			comic.states[id] = comic.state;
+		}
+
 		return id;
 	}
 
 	function removeCallback(id) {
+		// delete set of states for this id
+		for(var comicId in this.all) {
+			delete this.all[comicId].states[id];
+		}
+
 		delete callbacks[id];
 	}
 

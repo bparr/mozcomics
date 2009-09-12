@@ -8,6 +8,9 @@ var EXPORTED_SYMBOLS = ["StripsResource"];
 Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/db.js");
 
+/*
+ * Handle finding strips.
+ */
 var StripsResource = new function() {
 	var self = this;
 
@@ -16,6 +19,7 @@ var StripsResource = new function() {
 
 	this.INFINITE = 10000000000000; // will fail when used for time after 2286-11-20 17:46:40
 
+	// indexes in STATEMENTS of types of strip statements
 	this.S = {
 		get: 0,
 		first: 1,
@@ -60,10 +64,12 @@ var StripsResource = new function() {
 
 		var len = enabledComics.length;
 		if(len == 0) {
+			// don't bother searching if no comics are enabled
 			data.onComplete(false, data.statementId);
 			return;
 		}
 
+		// generate query string, adding placeholders for binding
 		var t = new Array();
 		for(var i = 0; i < len; i++) {
 			t.push("comic=?" + (i+1));
@@ -77,10 +83,12 @@ var StripsResource = new function() {
 		var queryString = STATEMENTS[data.statementId].replace("?", t);
 		var statement = DB.dbConn.createStatement(queryString);
 
+		// bind comic parameters
 		for(var i = 0; i < len; i++) {
 			statement.bindInt32Parameter(i, enabledComics[i].comic);
 		}
 
+		// bind other parameters
 		for(var param in data.params) {
 			if(queryString.indexOf(":" + param) > -1) {
 				statement.params[param] = data.params[param];
@@ -100,6 +108,7 @@ var StripsResource = new function() {
 			handleError: function(error) {},
 			handleCompletion: function(reason) {
 				if(reason == DB.REASON_FINISHED) {
+					// successfully found strip(s)
 					if(this.rows.length > 0) {
 						var firstRow = DB.cloneRow(this.rows[0], COLUMNS);
 						this.data.preloadImage(firstRow.image);
@@ -114,11 +123,13 @@ var StripsResource = new function() {
 
 						this.data.onComplete(firstRow, this.data.statementId);
 					}
+					// unsuccessful in finding a strip, but a fallback statement exists
 					else if(this.data.onFailStatementId) {
 						this.data.statementId = this.data.onFailStatementId;
 						this.data.onFailStatementId = null;
 						findStrip(this.data);
 					}
+					// unsuccessful with no fallback statement
 					else {
 						this.data.onComplete(false, this.data.statementId);
 					}

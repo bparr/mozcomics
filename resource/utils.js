@@ -5,6 +5,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 var EXPORTED_SYMBOLS = ["Utils"];
 
+/*
+ * Useful general purpose functions/objects
+ */
 var Utils = new function() {
 	this.URLS = {
 		COMIC_LIST: "http://www.bparr.com/mozcomics/",
@@ -15,19 +18,21 @@ var Utils = new function() {
 	this.getString = getString;
 	this.unescapeHtml = unescapeHtml;
 
-
-	var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
-		.getService(Components.interfaces.nsIPromptService);
 	var stringBundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
 		.getService(Components.interfaces.nsIStringBundleService)
 		.createBundle("chrome://mozcomics/locale/mozcomics.properties");
 
+	// Generates standard alert box. Useful for code inside resource module
+	// where the alert shortcut is not available.
 	function alert(msg) {
+		var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+			.getService(Components.interfaces.nsIPromptService);
 		promptService.alert(null, '', msg);
 	}
 
-	// http://developer.mozilla.org/en/docs/Code_snippets:Miscellaneous#Using_string_bundles_from_JavaScript
-	function getString(msg, args){ //get localised message
+	// Get localised message. Based off of
+	// https://developer.mozilla.org/En/Code_snippets/Miscellaneous#Using_string_bundles_from_JavaScript
+	function getString(msg, args) {
 		if (args){
 			args = Array.prototype.slice.call(arguments, 1);
 			return stringBundle.formatStringFromName(msg, args, args.length);

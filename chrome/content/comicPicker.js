@@ -20,7 +20,7 @@ MozComics.ComicPicker = new function() {
 		this.xulTree = MozComics.Dom.comicPicker;
 	}
 
-	// change value and order of rows without creating a new treeview
+	// update value and order of rows in tree without creating a new treeview
 	function update(sortColumn) {
 		this.treeview.update(sortColumn);
 		MozComics.Strips.refresh();
@@ -49,6 +49,7 @@ MozComics.ComicPicker = new function() {
 
 		var selectedComic = this.selectedComic;
 		if(selectedComic) {
+			// toggle enabled property of selected comic
 			var nowEnabled = !MozComics.Comics.getComicProp(selectedComic, "enabled");
 			MozComics.Comics.setComicProp(selectedComic, "enabled", nowEnabled);
 		}

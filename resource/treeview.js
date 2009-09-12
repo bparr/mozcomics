@@ -5,6 +5,10 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 var EXPORTED_SYMBOLS = ["TreeView"];
 
+/*
+ * Object implementing the nsITreeView interface, that includes 
+ * simple row sorting capabilities.
+ */
 var TreeView = function(xulTree, table, xulVarPrefix, getText) {
 	this.xulTree = xulTree;
 	this.table = table;
