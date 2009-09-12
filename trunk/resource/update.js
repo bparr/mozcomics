@@ -9,16 +9,14 @@ Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/db.js");
 Components.utils.import("resource://mozcomics/comics.js");
 
+/*
+ * Update local database. Also used to add a comic to the database.
+ */
 var Update = new function() {
 	this.updateAll = updateAll;
 	this.update = update;
 
-
-	var defaultSite = Utils.URLS.UPDATE;
-
-	// does not contain "read" or "user_rating" because those are set by the user
-	var stripColumns = ["comic", "strip", "title", "url", "image", "extra", "server_rating", "updated"];
-	var stripParams = DB.createParamsArray(stripColumns);
+	var defaultSite = Utils.URLS.UPDATE; // used when update_site column is null
 
 	var getComicByGuidStatement = DB.dbConn.createStatement(
 		"SELECT " + DB.comicColumns.join(", ") + " FROM comic WHERE guid=:guid;");
@@ -26,12 +24,13 @@ var Update = new function() {
 		"REPLACE INTO comic(" + DB.comicColumns.join(", ") + ") VALUES (" + DB.comicParams.join(", ") + ");"
 	);
 	var updateStripStatement = DB.dbConn.createStatement(
-		"REPLACE INTO strip(" + stripColumns.join(", ") + ") VALUES (" + stripParams.join(", ") + ");"
+		"REPLACE INTO strip(" + DB.stripColumns.join(", ") + ") VALUES (" + DB.stripParams.join(", ") + ");"
 	);
 	var deleteStripStatement = DB.dbConn.createStatement(
 		"DELETE FROM strip WHERE comic=:comic and strip=:strip;");
 
 
+	// update all installed comics
 	function updateAll() {
 		var comics = new Array();
 		for(comicId in ComicsResource.all) {
@@ -81,6 +80,7 @@ var Update = new function() {
 		}
 	}
 
+	// process JSON returned by the server
 	function _onDownloadComplete(req, addingNewComic) {
 		try {
 			var response = JSON.parse(req.responseText);
@@ -90,9 +90,12 @@ var Update = new function() {
 			return;
 		}
 
+		// ensure only one comic is added if adding a new comic
 		if(addingNewComic && response.comics.length > 1) {
 			throw ("Update failed: suspected foul play with update site");
 		}
+
+		var updated = response.time;
 
 		for(var i = 0, len = response.comics.length; i < len; i++) {
 			var comic = response.comics[i];
@@ -101,12 +104,11 @@ var Update = new function() {
 			}
 
 			comic.guid = comic.guid.toLowerCase();
+
+			// certain columns are not settable from the JSON
 			comic.comic = null;
 			comic.state = null;
-			comic.updated = response.time;
-			if(comic.extra) {
-				comic.extra = JSON.stringify(comic.extra);
-			}
+			comic.updated = updated;
 
 			// save some states in the old comic so that they persist to the new one
 			var oldComic = ComicsResource.guids[comic.guid];
@@ -115,9 +117,11 @@ var Update = new function() {
 				comic.state = oldComic.state;
 			}
 			else if(!addingNewComic) {
+				// no comics should be added if only updating installed comics
 				throw ("Update failed: suspected foul play with update site");
 			}
 
+			// generate and execute statements to update comic
 			var updateComic = updateComicStatement.clone();
 			for(var col = 0, colLen = DB.comicColumns.length; col < colLen; col++) {
 				var columnName = DB.comicColumns[col];
@@ -126,73 +130,72 @@ var Update = new function() {
 				}
 			}
 
-			// add the comic to the comic cache
 			var getComicByGuid = getComicByGuidStatement.clone();
 			getComicByGuid.params.guid = comic.guid;
 
 			DB.dbConn.executeAsync([updateComic, getComicByGuid], 2, {
-				row: null,
-				comic: null,
-				strips: comic.strips,
-
 				handleResult: function(response) {
-					this.row = response.getNextRow();
-					this.comic = this.row.getResultByName("comic");
-					ComicsResource.updateComic(DB.cloneRow(this.row, DB.comicColumns));
-					var stripStatements = [];
-
-					// add the comic's strips to the strip databases
-					for(var j = 0, len2 = this.strips.length; j < len2; j++) {
-						var strip = this.strips[j];
-						if(!strip.strip) {
-							throw ("Update failed: Strip ID not defined for a strip");
-						}
-
-						switch(parseInt(strip.action)) {
-							case 1: // delete
-								var deleteStrip = deleteStripStatement.clone();
-								deleteStrip.params.comic = this.comic;
-								deleteStrip.params.strip = strip.strip;
-								stripStatements.push(deleteStrip);
-								break;
-
-							default: // add/update
-								strip.comic = this.comic;
-								strip.updated = response.time;
-								if(strip.extra) {
-									strip.extra = JSON.stringify(strip.extra);
-								}
-
-								var updateStrip = updateStripStatement.clone();
-								for(var col = 0, colLen = stripColumns.length; col < colLen; col++) {
-									if(strip[stripColumns[col]]) {
-										updateStrip.params[stripColumns[col]] = strip[stripColumns[col]];
-									}
-								}
-								stripStatements.push(updateStrip);
-								break;
-						}
-					}
-
-					DB.dbConn.executeAsync(stripStatements, stripStatements.length, {
-						handleResult: function(resultSet) {},
-						handleError: function(error) {},
-						handleCompletion: function(reason) {
-							if(reason == DB.REASON_FINISHED) {
-								if(addingNewComic) {
-									ComicsResource.callCallbacks();
-								}
-							}
-							else {
-								Utils.alert(Utils.getString("update.sqlError"));
-							}
-						}
-					});
+					var row = response.getNextRow();
+					var newComicId = row.getResultByName("comic");
+					ComicsResource.updateComic(DB.cloneRow(row, DB.comicColumns));
+					_updateStrips(newComicId, comic.strips, updated, addingNewComic);
 				},
 				handleError: function(error) {},
 				handleCompletion: function(reason) {}
 			});
 		}
+	}
+
+	function _updateStrips(comic, strips, updated, addingNewComic) {
+		var stripStatements = [];
+		for(var i = 0, len = strips.length; i < len; i++) {
+			var strip = strips[i];
+			if(!strip.strip) {
+				throw ("Update failed: Strip ID not defined for a strip");
+			}
+
+			switch(parseInt(strip.action)) {
+				case 1: // delete
+					var deleteStrip = deleteStripStatement.clone();
+					deleteStrip.params.comic = comic;
+					deleteStrip.params.strip = strip.strip;
+					stripStatements.push(deleteStrip);
+					break;
+
+				default: // add/update
+					// certain columns are not settable from the JSON
+					strip.comic = comic;
+					strip.read = null;
+					strip.user_rating = null;
+					strip.updated = updated;
+
+					var updateStrip = updateStripStatement.clone();
+					for(var col = 0, colLen = DB.stripColumns.length; col < colLen; col++) {
+						var columnName = DB.stripColumns[col];
+						if(strip[columnName]) {
+							updateStrip.params[columnName] = strip[columnName];
+						}
+					}
+					stripStatements.push(updateStrip);
+					break;
+			}
+		}
+
+		DB.dbConn.executeAsync(stripStatements, stripStatements.length, {
+			handleResult: function(response) {},
+			handleError: function(error) {},
+			handleCompletion: function(reason) {
+				if(reason == DB.REASON_FINISHED) {
+					// only need to callCallbacks if a new comic was added
+					if(addingNewComic) {
+						ComicsResource.callCallbacks();
+					}
+				}
+				else {
+					Utils.alert(Utils.getString("update.sqlError"));
+				}
+			}
+		});
 	}
 }
 

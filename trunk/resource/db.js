@@ -5,6 +5,10 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 var EXPORTED_SYMBOLS = ["DB"];
 
+/*
+ * Establish database connection, and database schema. Also provide a few
+ * database related objects/functions.
+ */
 var DB = new function() {
 	var storageService = Components.classes["@mozilla.org/storage/service;1"]
 		.getService(Components.interfaces.mozIStorageService);
@@ -14,15 +18,19 @@ var DB = new function() {
 	file.append("mozcomics.sqlite");
 
 
-	this.dbConn = storageService.openDatabase(file);
+	this.dbConn = storageService.openDatabase(file); // database connection
 	this.REASON_FINISHED = Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED;
-	this.createParamsArray = createParamsArray;
 	this.cloneRow = cloneRow;
 
 	// list of columns in the comic table
-	this.comicColumns = ["comic", "name", "url", "description", "extra", 
+	this.comicColumns = ["comic", "name", "url", "description", "extra",
 			"rating", "popularity", "guid", "state", "updated", "update_site"];
-	this.comicParams = this.createParamsArray(this.comicColumns);
+	this.comicParams = _createParamsArray(this.comicColumns);
+
+	// list of columns in the strips table
+	this.stripColumns = ["comic", "strip", "title", "url", "image", "extra",
+		"read", "user_rating", "server_rating", "updated"];
+	this.stripParams = _createParamsArray(this.stripColumns);
 
 	// create tables
 	var statement = this.dbConn.createStatement("CREATE TABLE IF NOT EXISTS comic (" +
@@ -64,14 +72,8 @@ var DB = new function() {
 	statement.execute();
 
 
-	function createParamsArray(columnArray) {
-		var paramsArray = new Array();
-		for(var i = 0, len = columnArray.length; i < len; i++) {
-			paramsArray.push(":" + columnArray[i]);
-		}
-		return paramsArray;
-	}
-
+	// row is from a statement run asynchronously. Return an object with
+	// properties listed in the columns array.
 	function cloneRow(row, columns) {
 		var clone = {};
 		for(var i = 0, len = columns.length; i < len; i++) {
@@ -82,6 +84,14 @@ var DB = new function() {
 			catch(e) {}
 		}
 		return clone;
+	}
+
+	function _createParamsArray(columnArray) {
+		var paramsArray = new Array();
+		for(var i = 0, len = columnArray.length; i < len; i++) {
+			paramsArray.push(":" + columnArray[i]);
+		}
+		return paramsArray;
 	}
 }
 

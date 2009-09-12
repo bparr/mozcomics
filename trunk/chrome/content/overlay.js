@@ -16,6 +16,7 @@ var MozComics = new function() {
 	this.showPreferences = showPreferences;
 
 	function init() {
+		// load code from resource module
 		Components.utils.import("resource://mozcomics/utils.js"); this.Utils = Utils;
 		Components.utils.import("resource://mozcomics/prefs.js"); this.Prefs = Prefs;
 		Components.utils.import("resource://mozcomics/update.js"); this.Update = Update;
@@ -100,7 +101,7 @@ var MozComics = new function() {
 	}
 
 	function buildComicsContextMenu() {
-		var menu = MozComics.Dom.comicPicerMenu;
+		var menu = MozComics.Dom.comicPickerMenu;
 		var hideItems = !MozComics.ComicPicker.selectedComic;
 		for(var i = 0, len = menu.childNodes.length; i < len; i++) {
 			menu.childNodes[i].setAttribute('hidden', hideItems);

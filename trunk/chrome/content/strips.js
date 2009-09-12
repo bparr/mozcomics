@@ -37,15 +37,21 @@ MozComics.Strips = new function() {
 		randomQueue: []
 	}
 
+	// used by setToRandomStrip to know if the showRead checkbox changed
+	// checked state since the last time a random strip was requested
+	this.lastShowRead = null;
+
 	function init() {
 		var preloadAmount = MozComics.Prefs.get("preloadAmount");
 		this.params.limit = MozComics.Prefs.get("preloadImages") ? preloadAmount : 1;
+		this.lastShowRead = MozComics.Dom.showRead.checked;
 	}
 
 	function refresh() {
 		if(self.firstRefresh) {
 			self.firstRefresh = false;
 
+			// attempt to load last viewed strip stored in preference
 			var lastViewed = MozComics.Prefs.get("lastViewed").split(",");
 			if(MozComics.Prefs.get("loadLastViewedAtStart") && lastViewed.length == 2) {
 				var data = _generateDefaultData();
@@ -70,6 +76,8 @@ MozComics.Strips = new function() {
 		self.params.lastRead = StripsResource.INFINITE;
 		self.params.randomQueue = [];
 
+		// change strip to default if no strip showing, or the one that is
+		// showing is from a comic that is no longer enabled
 		if(MozComics.Dom.stripFound.hidden ||
 			!self.params.lastComic ||
 			!MozComics.Comics.getComic(self.params.lastComic) ||
@@ -80,6 +88,7 @@ MozComics.Strips = new function() {
 	}
 
 	function unload() {
+		// save currently viewed strip to preference
 		if(this.params.lastComic && 
 			this.params.lastStrip && 
 			Math.abs(this.params.lastComic) < StripsResource.INFINITE &&
@@ -111,15 +120,13 @@ MozComics.Strips = new function() {
 	}
 
 	function setToFirstStrip() {
-		var data = _generateDefaultData();
-		data.statementId = StripsResource.S.first;
+		var data = _generateDefaultData(StripsResource.S.first);
 		StripsResource.findStrip(data);
 	}
 
 	function setToPreviousStrip() {
 		if(this.params.lastComic && this.params.lastStrip) {
-			var data = _generateDefaultData();
-			data.statementId = StripsResource.S.previous;
+			var data = _generateDefaultData(StripsResource.S.previous);
 
 			if(MozComics.Prefs.get("wrapAround")) {
 				data.onFailStatementId = StripsResource.S.last;
@@ -134,8 +141,7 @@ MozComics.Strips = new function() {
 
 	function setToNextStrip() {
 		if(this.params.lastComic && this.params.lastStrip) {
-			var data = _generateDefaultData();
-			data.statementId = StripsResource.S.next;
+			var data = _generateDefaultData(StripsResource.S.next);
 
 			if(MozComics.Prefs.get("wrapAround")) {
 				data.onFailStatementId = StripsResource.S.first;
@@ -149,21 +155,22 @@ MozComics.Strips = new function() {
 	}
 
 	function setToLastStrip() {
-		var data = _generateDefaultData();
-		data.statementId = StripsResource.S.last;
+		var data = _generateDefaultData(StripsResource.S.last);
 		StripsResource.findStrip(data);
 	}
 
 
 	function setToRandomStrip() {
-		var data = _generateDefaultData();
-		data.statementId = StripsResource.S.random;
+		var data = _generateDefaultData(StripsResource.S.random);
+		var newShowRead = MozComics.Dom.showRead.checked;
 
-		if(data.params.randomQueue.length > 0) {
+		if(data.params.randomQueue.length > 0 && this.lastShowRead == newShowRead) {
 			this._updatePane(data.params.randomQueue.shift());
 			if(data.params.randomQueue.length == 0) {
 				data.onComplete = function(row, statementId) {
-					data.params.randomQueue.unshift(row);
+					if(row) {
+						data.params.randomQueue.unshift(row);
+					}
 				};
 				StripsResource.findStrip(data);
 			}
@@ -171,38 +178,43 @@ MozComics.Strips = new function() {
 		else {
 			StripsResource.findStrip(data);
 		}
+
+		this.lastShowRead = newShowRead;
 	}
 
 
 	function setToBackStrip() {
-		var data = _generateDefaultData();
-		data.statementId = StripsResource.S.back;
+		var data = _generateDefaultData(StripsResource.S.back);
 		data.showRead = true;
 
 		data.onComplete = function(row, statementId) {
 			self._updatePane(row, statementId);
-			MozComics.Dom.updateRead.checked = false;
+			if(row) {
+				MozComics.Dom.updateRead.checked = false;
+			}
 		};
 
 		StripsResource.findStrip(data);
 	}
 
 	function setToForwardStrip() {
-		var data = _generateDefaultData();
-		data.statementId = StripsResource.S.forward;
+		var data = _generateDefaultData(StripsResource.S.forward);
 		data.showRead = true;
 
 		data.onComplete = function(row, statementId) {
 			self._updatePane(row, statementId);
-			MozComics.Dom.updateRead.checked = false;
+			if(row) {
+				MozComics.Dom.updateRead.checked = false;
+			}
 		};
 
 		StripsResource.findStrip(data);
 	}
 
-	function _generateDefaultData() {
+	function _generateDefaultData(statementId) {
+		statementId = (statementId != undefined) ? statementId : null;
 		return {
-			statementId: null,
+			statementId: statementId,
 			onFailStatementId: null,
 			params: self.params,
 			preloadImage: self._preloadImage,
@@ -230,8 +242,8 @@ MozComics.Strips = new function() {
 			MozComics.Dom.comic.href = comic.url;
 			MozComics.Dom.title.value = row.title;
 			MozComics.Dom.title.href = row.url;
-			MozComics.Dom.image.hidden = false;
 			MozComics.Dom.image.src = row.image;
+			MozComics.Dom.image.hidden = false;
 
 			var mouseover = null;
 			try {
@@ -247,12 +259,13 @@ MozComics.Strips = new function() {
 				MozComics.Dom.updateRead.checked = true;
 			}
 		}
-			
+
 		if(!MozComics.Dom.pane.hidden) {
 			MozComics.Dom.scrollbox.scrollTo(0,0);
 		}
 	}
 
+	// update show read if the updateRead checkbox was checked
 	function _unloadLastStrip() {
 		if(this.params.lastComic && this.params.lastStrip && MozComics.Dom.updateRead.checked) {
 			var d = new Date();

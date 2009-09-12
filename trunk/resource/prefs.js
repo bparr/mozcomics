@@ -5,6 +5,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 var EXPORTED_SYMBOLS = ["Prefs"];
 
+/*
+ * Expose a generic get and set functions for MozComic preferences
+ */
 var Prefs = new function() {
 	var branch = Components.classes["@mozilla.org/preferences-service;1"]
 			.getService(Components.interfaces.nsIPrefService)
