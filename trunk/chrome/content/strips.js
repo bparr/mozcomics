@@ -261,7 +261,7 @@ MozComics.Strips = new function() {
 		}
 
 		if(!MozComics.Dom.pane.hidden) {
-			MozComics.Dom.scrollbox.scrollTo(0,0);
+			MozComics.Dom.stripPane.scrollTo(0,0);
 		}
 	}
 

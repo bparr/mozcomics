@@ -101,7 +101,7 @@ var MozComics = new function() {
 	}
 
 	function buildComicsContextMenu() {
-		var menu = MozComics.Dom.comicPickerMenu;
+		var menu = MozComics.Dom.comicPickerContextMenu;
 		var hideItems = !MozComics.ComicPicker.selectedComic;
 		for(var i = 0, len = menu.childNodes.length; i < len; i++) {
 			menu.childNodes[i].setAttribute('hidden', hideItems);
