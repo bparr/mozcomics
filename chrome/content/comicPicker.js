@@ -17,7 +17,7 @@ MozComics.ComicPicker = new function() {
 	this.treeview = null;
 	
 	function init() {
-		this.xulTree = MozComics.Dom.comicPicker;
+		this.xulTree = MozComics.Dom.comicPickerTree;
 	}
 
 	// update value and order of rows in tree without creating a new treeview
