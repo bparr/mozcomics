@@ -134,11 +134,15 @@ var Update = new function() {
 			getComicByGuid.params.guid = comic.guid;
 
 			DB.dbConn.executeAsync([updateComic, getComicByGuid], 2, {
+				strips: comic.strips,
+				updated: updated,
+				addingNewComic: addingNewComic,
+
 				handleResult: function(response) {
 					var row = response.getNextRow();
 					var newComicId = row.getResultByName("comic");
 					ComicsResource.updateComic(DB.cloneRow(row, DB.comicColumns));
-					_updateStrips(newComicId, comic.strips, updated, addingNewComic);
+					_updateStrips(newComicId, this.strips, this.updated, this.addingNewComic);
 				},
 				handleError: function(error) {},
 				handleCompletion: function(reason) {}
@@ -181,17 +185,20 @@ var Update = new function() {
 			}
 		}
 
+		if(stripStatements.length == 0) {
+			ComicsResource.callCallbacks(); // TODO call only once when updating multiple comics
+			return;
+		}
+
 		DB.dbConn.executeAsync(stripStatements, stripStatements.length, {
+			addingNewComic: addingNewComic,
+
 			handleResult: function(response) {},
 			handleError: function(error) {},
 			handleCompletion: function(reason) {
-				if(reason == DB.REASON_FINISHED) {
-					// only need to callCallbacks if a new comic was added
-					if(addingNewComic) {
-						ComicsResource.callCallbacks();
-					}
-				}
-				else {
+				ComicsResource.callCallbacks(); // TODO call only once when updating multiple comics
+
+				if(reason != DB.REASON_FINISHED) {
 					Utils.alert(Utils.getString("update.sqlError"));
 				}
 			}
