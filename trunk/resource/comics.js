@@ -199,7 +199,9 @@ var ComicsResource = new function() {
 			statements.push(saveStateToDB);
 		}
 
-		DB.dbConn.executeAsync(statements, statements.length);
+		if(statements.length > 0) {
+			DB.dbConn.executeAsync(statements, statements.length);
+		}
 	}
 
 
