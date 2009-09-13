@@ -7,13 +7,15 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.toolbar.preferences    "Preferences">
 <!ENTITY mozcomics.toolbar.addComic       "Add Comic">
 <!ENTITY mozcomics.toolbar.updateAll      "Update All">
-<!ENTITY mozcomics.toolbar.back           "Back">
-<!ENTITY mozcomics.toolbar.forward        "Forward">
+<!ENTITY mozcomics.toolbar.strip           "Strip">
+<!ENTITY mozcomics.toolbar.chapter        "Chapter">
 <!ENTITY mozcomics.toolbar.first          "First">
 <!ENTITY mozcomics.toolbar.previous       "Previous">
 <!ENTITY mozcomics.toolbar.random         "Random">
 <!ENTITY mozcomics.toolbar.next           "Next">
 <!ENTITY mozcomics.toolbar.last           "Last">
+<!ENTITY mozcomics.toolbar.back           "Back">
+<!ENTITY mozcomics.toolbar.forward        "Forward">
 
 <!ENTITY mozcomics.menu.findReadStrips    "Find Read Strips">
 <!ENTITY mozcomics.menu.deleteComic       "Delete Comic">

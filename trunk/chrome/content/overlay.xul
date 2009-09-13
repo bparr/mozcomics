@@ -41,14 +41,20 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.Comics.addComic()"/>
 					<toolbarbutton id="mozcomics-tb-update" tooltiptext="&mozcomics.toolbar.updateAll;" oncommand="MozComics.Update.updateAll()"/>
 					<spacer flex="1"/>
-					<toolbarbutton id="mozcomics-tb-back" tooltiptext="&mozcomics.toolbar.back;" oncommand="MozComics.Strips.setToBackStrip()"/>
-					<toolbarbutton id="mozcomics-tb-forward" tooltiptext="&mozcomics.toolbar.forward;" oncommand="MozComics.Strips.setToForwardStrip()"/>
-					<toolbarseparator/>
+					<menulist id="mozcomics-tb-bookmark-menu" persist="value">
+						<menupopup>
+							<menuitem label="&mozcomics.toolbar.strip;" value="0"/>
+							<menuitem label="&mozcomics.toolbar.chapter;" value="1"/>
+						</menupopup>
+					</menulist>
 					<toolbarbutton id="mozcomics-tb-first" tooltiptext="&mozcomics.toolbar.first;" oncommand="MozComics.Strips.setToFirstStrip()"/>
 					<toolbarbutton id="mozcomics-tb-previous" tooltiptext="&mozcomics.toolbar.previous;" oncommand="MozComics.Strips.setToPreviousStrip()"/>
 					<toolbarbutton id="mozcomics-tb-random" tooltiptext="&mozcomics.toolbar.random;" oncommand="MozComics.Strips.setToRandomStrip()"/>
 					<toolbarbutton id="mozcomics-tb-next" tooltiptext="&mozcomics.toolbar.next;" oncommand="MozComics.Strips.setToNextStrip()"/>
 					<toolbarbutton id="mozcomics-tb-last" tooltiptext="&mozcomics.toolbar.last;" oncommand="MozComics.Strips.setToLastStrip()"/>
+					<toolbarseparator/>
+					<toolbarbutton id="mozcomics-tb-back" tooltiptext="&mozcomics.toolbar.back;" oncommand="MozComics.Strips.setToBackStrip()"/>
+					<toolbarbutton id="mozcomics-tb-forward" tooltiptext="&mozcomics.toolbar.forward;" oncommand="MozComics.Strips.setToForwardStrip()"/>
 					<spacer flex="1"/>
 					<toolbarbutton class="tabs-closebutton" oncommand="MozComics.togglePane()"/>
 				</hbox>

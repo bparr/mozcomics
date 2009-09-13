@@ -13,6 +13,9 @@ MozComics.Dom = new function() {
 		this._getDomElement("paneSplitter", "mozcomics-splitter");
 		this._getDomElement("statusbarImage", "mozcomics-statusbar-image");
 
+		// cache navigation elements
+		this._getDomElement("bookmarkMenu", "mozcomics-tb-bookmark-menu");
+
 		// cache comicPicker elements
 		this._getDomElement("comicPickerPane", "mozcomics-comicpicker-pane");
 		this._getDomElement("comicPickerToolbarIcon", "mozcomics-tb-comicpicker");

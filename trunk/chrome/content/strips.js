@@ -220,7 +220,8 @@ MozComics.Strips = new function() {
 			preloadImage: self._preloadImage,
 			onComplete: self._updatePane,
 			enabledComics: MozComics.Comics.enabled,
-			showRead: MozComics.Dom.showRead.checked
+			showRead: MozComics.Dom.showRead.checked,
+			bookmark: MozComics.Dom.bookmarkMenu.value
 		};
 	}
 
