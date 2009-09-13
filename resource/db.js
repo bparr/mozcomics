@@ -23,7 +23,7 @@ var DB = new function() {
 	this.cloneRow = cloneRow;
 
 	// list of columns in the comic table
-	this.comicColumns = ["comic", "name", "url", "description", "extra",
+	this.comicColumns = ["comic", "type", "name", "url", "description", "extra",
 			"rating", "popularity", "guid", "state", "updated", "update_site"];
 	this.comicParams = _createParamsArray(this.comicColumns);
 
@@ -35,6 +35,7 @@ var DB = new function() {
 	// create tables
 	var statement = this.dbConn.createStatement("CREATE TABLE IF NOT EXISTS comic (" +
 		"comic INTEGER PRIMARY KEY AUTOINCREMENT," + // local id of comic
+		"type INTEGER NOT NULL DEFAULT 0," + // webcomic vs. manga (default = webcomic)
 		"name TEXT NOT NULL," + 
 		"url TEXT NOT NULL DEFAULT ''," + // homepage url
 		"description TEXT NOT NULL DEFAULT ''," +
