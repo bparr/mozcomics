@@ -15,6 +15,8 @@ var MozComics = new function() {
 	this.buildComicsContextMenu = buildComicsContextMenu;
 	this.showPreferences = showPreferences;
 
+	var MAX_BOOKMARK = 2;
+
 	function init() {
 		// load code from resource module
 		Components.utils.import("resource://mozcomics/utils.js"); this.Utils = Utils;
@@ -95,6 +97,10 @@ var MozComics = new function() {
 				}
 				else if(key == 's') {
 					MozComics.Dom.showRead.checked = !MozComics.Dom.showRead.checked;
+				}
+				else if(key == 'b') {
+					var newValue = (parseInt(MozComics.Dom.bookmarkMenu.value) + 1) % MAX_BOOKMARK;
+					MozComics.Dom.bookmarkMenu.value = newValue;
 				}
 			}
 		}

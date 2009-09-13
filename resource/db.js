@@ -28,8 +28,8 @@ var DB = new function() {
 	this.comicParams = _createParamsArray(this.comicColumns);
 
 	// list of columns in the strips table
-	this.stripColumns = ["comic", "strip", "title", "url", "image", "extra",
-		"read", "user_rating", "server_rating", "updated"];
+	this.stripColumns = ["comic", "strip", "title", "url", "image", "bookmark",
+		"extra", "read", "user_rating", "server_rating", "updated"];
 	this.stripParams = _createParamsArray(this.stripColumns);
 
 	// create tables
@@ -53,6 +53,7 @@ var DB = new function() {
 		"title TEXT NOT NULL DEFAULT ''," +
 		"url TEXT NOT NULL DEFAULT ''," +
 		"image TEXT NOT NULL DEFAULT ''," + // url of image
+		"bookmark INTEGER NOT NULL DEFAULT 0," + // used to mark chapter starts in mangas
 		"extra TEXT NOT NULL DEFAULT ''," + // extra info in JSON formatted string
 		"read INTEGER," + // time of last read (null indicates unread)
 		"user_rating INTEGER NOT NULL DEFAULT -1," + // rating set by user

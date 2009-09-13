@@ -80,6 +80,10 @@ var StripsResource = new function() {
 			t = "(" + t + ") AND read ISNULL";
 		}
 
+		if(data.bookmark > 0) {
+			t += " AND bookmark = :bookmark";
+		}
+
 		var queryString = STATEMENTS[data.statementId].replace("?", t);
 		var statement = DB.dbConn.createStatement(queryString);
 
@@ -93,6 +97,11 @@ var StripsResource = new function() {
 			if(queryString.indexOf(":" + param) > -1) {
 				statement.params[param] = data.params[param];
 			}
+		}
+
+		// bind bookmark
+		if(queryString.indexOf(":bookmark") > -1) {
+			statement.params.bookmark = data.bookmark;
 		}
 
 		statement.executeAsync({
