@@ -8,11 +8,24 @@ var EXPORTED_SYMBOLS = ["Update"];
 Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/db.js");
 Components.utils.import("resource://mozcomics/comics.js");
+Components.utils.import("resource://mozcomics/prefs.js");
 
 /*
  * Update local database. Also used to add a comic to the database.
  */
 var Update = new function() {
+	var self = this;
+
+	this.MIN_INTERVAL = 10;
+	this.timer = Components.classes["@mozilla.org/timer;1"]
+		.createInstance(Components.interfaces.nsITimer);
+	this.timerCallback = {
+		notify: function(timer) {
+			self.updateAll();
+		}
+	};
+
+	this.setAutoUpdateTimer = setAutoUpdateTimer;
 	this.updateAll = updateAll;
 	this.update = update;
 
@@ -30,6 +43,31 @@ var Update = new function() {
 		"DELETE FROM strip WHERE comic=:comic and strip=:strip;");
 
 
+	if(Prefs.get("updateOnStart")) {
+		this.updateAll();
+	}
+	this.setAutoUpdateTimer();
+
+
+	function setAutoUpdateTimer() {
+		this.timer.cancel();
+
+		if(Prefs.get("autoUpdate")) {
+			// stored as number of minutes
+			var updateInterval = Prefs.get("updateInterval");
+
+			if(updateInterval < this.MIN_INTERVAL) {
+				updateInterval = Prefs.getDefault("updateInterval");
+				Prefs.set("updateInterval", updateInterval);
+			}
+
+			this.timer.initWithCallback(this.timerCallback, updateInterval * 60000, 
+				Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);
+		
+		}
+	}
+
+
 	// update all installed comics
 	function updateAll() {
 		var comics = new Array();
@@ -42,6 +80,10 @@ var Update = new function() {
 	// comics is an array whose members at least have guid, name, and updated
 	// addingNewComic is a boolean flag for case when adding a new comic
 	function update(comics, addingNewComic) {
+		var completedTracker = {
+			numComplete: 0,
+			total: comics.length
+		};
 
 		// group by update site to decrease number of requests
 		var updateSites = {};
@@ -52,9 +94,11 @@ var Update = new function() {
 				updateSites[site] = {};
 				updateSites[site].guids = new Array();
 				updateSites[site].updated = new Array();
+				updateSites[site].count = 0;
 			}
 			updateSites[site].guids.push(comics[i].guid);
 			updateSites[site].updated.push(comics[i].updated);
+			updateSites[site].count++;
 		}
 
 		// generate and send requests
@@ -65,11 +109,12 @@ var Update = new function() {
 			var req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
 				.createInstance(Components.interfaces.nsIXMLHttpRequest);
 			req.open('GET', url, true);
+			req.comicRequestCount = updateSites[updateSite].count;
 			req.onreadystatechange = function (aEvt) {
 				var req = aEvt.originalTarget;
 				if (req.readyState == 4) {
 					if(req.status == 200) {
-						_onDownloadComplete(req, addingNewComic);
+						_onDownloadComplete(req, addingNewComic, completedTracker, req.comicRequestCount);
 					}
 					else {
 						Utils.alert(Utils.getString("update.serverError"));
@@ -81,7 +126,7 @@ var Update = new function() {
 	}
 
 	// process JSON returned by the server
-	function _onDownloadComplete(req, addingNewComic) {
+	function _onDownloadComplete(req, addingNewComic, completedTracker, comicRequestCount) {
 		try {
 			var response = JSON.parse(req.responseText);
 		}
@@ -90,14 +135,20 @@ var Update = new function() {
 			return;
 		}
 
+		var comicsLen = response.comics.length;
+		completedTracker.numComplete += (comicRequestCount - comicsLen);
+		if(comicsLen == 0) {
+			_onStripsComplete(addingNewComic, completedTracker);
+		}
+
 		// ensure only one comic is added if adding a new comic
-		if(addingNewComic && response.comics.length > 1) {
+		if(addingNewComic && comicsLen > 1) {
 			throw ("Update failed: suspected foul play with update site");
 		}
 
 		var updated = response.time;
 
-		for(var i = 0, len = response.comics.length; i < len; i++) {
+		for(var i = 0; i < comicsLen; i++) {
 			var comic = response.comics[i];
 			if(!comic.guid) {
 				throw ("Update failed: guid not defined for a comic");
@@ -137,12 +188,14 @@ var Update = new function() {
 				strips: comic.strips,
 				updated: updated,
 				addingNewComic: addingNewComic,
+				completedTracker: completedTracker,
 
 				handleResult: function(response) {
 					var row = response.getNextRow();
 					var newComicId = row.getResultByName("comic");
 					ComicsResource.updateComic(DB.cloneRow(row, DB.comicColumns));
-					_updateStrips(newComicId, this.strips, this.updated, this.addingNewComic);
+					_updateStrips(newComicId, this.strips, this.updated, 
+						this.addingNewComic, this.completedTracker);
 				},
 				handleError: function(error) {},
 				handleCompletion: function(reason) {}
@@ -150,7 +203,7 @@ var Update = new function() {
 		}
 	}
 
-	function _updateStrips(comic, strips, updated, addingNewComic) {
+	function _updateStrips(comic, strips, updated, addingNewComic, completedTracker) {
 		var stripStatements = [];
 		for(var i = 0, len = strips.length; i < len; i++) {
 			var strip = strips[i];
@@ -186,23 +239,36 @@ var Update = new function() {
 		}
 
 		if(stripStatements.length == 0) {
-			ComicsResource.callCallbacks(); // TODO call only once when updating multiple comics
+			completedTracker.numComplete++;
+			_onStripsComplete(addingNewComic, completedTracker);
 			return;
 		}
 
 		DB.dbConn.executeAsync(stripStatements, stripStatements.length, {
 			addingNewComic: addingNewComic,
+			completedTracker: completedTracker,
 
 			handleResult: function(response) {},
 			handleError: function(error) {},
 			handleCompletion: function(reason) {
-				ComicsResource.callCallbacks(); // TODO call only once when updating multiple comics
+				this.completedTracker.numComplete++;
+				_onStripsComplete(this.addingNewComic, this.completedTracker);
 
 				if(reason != DB.REASON_FINISHED) {
 					Utils.alert(Utils.getString("update.sqlError"));
 				}
 			}
 		});
+	}
+
+	function _onStripsComplete(addingNewComic, completedTracker) {
+		if(completedTracker.numComplete == completedTracker.total) {
+			ComicsResource.callCallbacks(true);
+
+			if(!addingNewComic) {
+				self.setAutoUpdateTimer();
+			}
+		}
 	}
 }
 

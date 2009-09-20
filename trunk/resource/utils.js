@@ -10,8 +10,9 @@ var EXPORTED_SYMBOLS = ["Utils"];
  */
 var Utils = new function() {
 	this.URLS = {
-		COMIC_LIST: "http://www.bparr.com/mozcomics/",
-		UPDATE: "http://www.bparr.com/mozcomics/update.php?"
+		FIRST_RUN: "http://www.mozcomics.com/",
+		COMIC_LIST: "http://www.mozcomics.com/search.php",
+		UPDATE: "http://www.mozcomics.com/update.php?"
 	};
 
 	this.alert = alert;

@@ -3,33 +3,57 @@ Copyright (c) 2009 Ben Parr
 Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
 -->
 
-<!ENTITY mozcomics.toolbar.comicPicker    "Toggle Comic Picker">
-<!ENTITY mozcomics.toolbar.preferences    "Preferences">
-<!ENTITY mozcomics.toolbar.addComic       "Add Comic">
-<!ENTITY mozcomics.toolbar.updateAll      "Update All">
-<!ENTITY mozcomics.toolbar.strip           "Strip">
-<!ENTITY mozcomics.toolbar.chapter        "Chapter">
-<!ENTITY mozcomics.toolbar.first          "First">
-<!ENTITY mozcomics.toolbar.previous       "Previous">
-<!ENTITY mozcomics.toolbar.random         "Random">
-<!ENTITY mozcomics.toolbar.next           "Next">
-<!ENTITY mozcomics.toolbar.last           "Last">
-<!ENTITY mozcomics.toolbar.back           "Back">
-<!ENTITY mozcomics.toolbar.forward        "Forward">
+<!ENTITY mozcomics.toolbar.comicPicker                  "Toggle Comic Picker">
+<!ENTITY mozcomics.toolbar.preferences                  "Preferences">
+<!ENTITY mozcomics.toolbar.addComic                     "Add Comic">
+<!ENTITY mozcomics.toolbar.updateAll                    "Update All">
+<!ENTITY mozcomics.toolbar.strip                        "Strip">
+<!ENTITY mozcomics.toolbar.chapter                      "Chapter">
+<!ENTITY mozcomics.toolbar.first                        "First">
+<!ENTITY mozcomics.toolbar.previous                     "Previous">
+<!ENTITY mozcomics.toolbar.random                       "Random">
+<!ENTITY mozcomics.toolbar.next                         "Next">
+<!ENTITY mozcomics.toolbar.last                         "Last">
+<!ENTITY mozcomics.toolbar.back                         "Back">
+<!ENTITY mozcomics.toolbar.forward                      "Forward">
 
-<!ENTITY mozcomics.menu.findReadStrips    "Find Read Strips">
-<!ENTITY mozcomics.menu.deleteComic       "Delete Comic">
+<!ENTITY mozcomics.menu.findReadStrips                  "Find Read Strips">
+<!ENTITY mozcomics.menu.markAllStripsRead               "Mark All Strips Read">
+<!ENTITY mozcomics.menu.deleteComic                     "Delete Comic">
 
-<!ENTITY mozcomics.comic.name             "Name">
-<!ENTITY mozcomics.comic.enabled          "Enabled">
-<!ENTITY mozcomics.comic.rating           "Rating">
+<!ENTITY mozcomics.comic.name                           "Name">
+<!ENTITY mozcomics.comic.enabled                        "Enabled">
+<!ENTITY mozcomics.comic.unread                         "Unread">
+<!ENTITY mozcomics.comic.rating                         "Rating">
 
-<!ENTITY mozcomics.strip.updateRead       "Update Read Time">
-<!ENTITY mozcomics.strip.none             "No strip found by query">
+<!ENTITY mozcomics.strip.updateRead                     "Update Read Time">
+<!ENTITY mozcomics.strip.none                           "No strip found by query">
 
-<!ENTITY mozcomics.comicpicker.all        "All">
-<!ENTITY mozcomics.comicpicker.none       "None">
-<!ENTITY mozcomics.comicpicker.showRead   "Show Read Comics">
-<!ENTITY mozcomics.comicpicker.pubDate    "Pub. Date">
-<!ENTITY mozcomics.comicpicker.readDate   "Read Date">
+<!ENTITY mozcomics.comicpicker.all                      "All">
+<!ENTITY mozcomics.comicpicker.none                     "None">
+<!ENTITY mozcomics.comicpicker.showRead                 "Show Read Comics">
+<!ENTITY mozcomics.comicpicker.pubDate                  "Pub. Date">
+<!ENTITY mozcomics.comicpicker.readDate                 "Read Date">
+
+<!ENTITY mozcomics.preferences.title                    "MozComics - Preferences">
+<!ENTITY mozcomics.preferences.general                  "General">
+<!ENTITY mozcomics.preferences.userInterface            "User Interface">
+<!ENTITY mozcomics.preferences.showUnreadCount          "Show unread count in status bar">
+<!ENTITY mozcomics.preferences.wrapAround               "Wrap around">
+<!ENTITY mozcomics.preferences.wrapAround               "Wrap around">
+<!ENTITY mozcomics.preferences.loadLastViewedAtStart    "Load last viewed strip at start">
+<!ENTITY mozcomics.preferences.defaultToMarkRead        "Default to marked read">
+<!ENTITY mozcomics.preferences.multipleEnabledComics    "Allow multiple comics to be enabled at a time">
+<!ENTITY mozcomics.preferences.showMouseoverBelowImage  "Show mouseover text/images below strip image">
+<!ENTITY mozcomics.preferences.defaultStrip             "Default Strip">
+<!ENTITY mozcomics.preferences.first                    "First">
+<!ENTITY mozcomics.preferences.last                     "Last">
+<!ENTITY mozcomics.preferences.random                   "Random">
+<!ENTITY mozcomics.preferences.preloading               "Preloading">
+<!ENTITY mozcomics.preferences.preloadAmount            "Number of strips to preload:">
+<!ENTITY mozcomics.preferences.preloadImages            "Preload images">
+<!ENTITY mozcomics.preferences.update                   "Update">
+<!ENTITY mozcomics.preferences.updateOnStart            "Update on start of Firefox">
+<!ENTITY mozcomics.preferences.autoUpdate               "Auto updating">
+<!ENTITY mozcomics.preferences.updateInterval           "Update interval (in minutes):">
 
