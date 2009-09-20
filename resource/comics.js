@@ -41,6 +41,8 @@ Comic.prototype.get = function(key, callbackId) {
 		case "showing":
 		case "enabled":
 			return this._getStateProperty(this.BITS[key], callbackId);
+		case "unread":
+			return ComicsResource.unreadCounts[this.comic];
 		default:
 			return this[key];
 	}
@@ -60,6 +62,9 @@ Comic.prototype.set = function(key, value, callbackId) {
 		case "showing":
 		case "enabled":
 			this._setStateProperty(this.BITS[key], value, callbackId);
+			break;
+		case "unread":
+			ComicsResource.unreadCounts[this.comic] = value;
 			break;
 		default:
 			this[key] = value;
@@ -100,27 +105,25 @@ var ComicsResource = new function() {
 
 	this.all = {}; // all comics indexed by comic column
 	this.guids = {}; // all comics indexed by guid column
+	this.unreadCounts = {}; // strip unread counts indexed by comic column
+	this.totalUnread = 0;
 
+	this.populateUnreadCounts = populateUnreadCounts;
 	this.updateComic = updateComic;
 	this.deleteComic = deleteComic;
 	this.saveStatesToDB = saveStatesToDB;
 	this.findReadStrips = findReadStrips;
+	this.markAllStripsRead = markAllStripsRead;
 
 	this.addCallback = addCallback;
 	this.removeCallback = removeCallback;
 	this.callCallbacks = callCallbacks;
 
-	// cache comics from database
-	var statement = DB.dbConn.createStatement(
-		"SELECT " + DB.comicColumns.join(", ") + " FROM comic;"
+	// create statements
+	var getUnreadCountsStatement = DB.dbConn.createStatement(
+		"SELECT comic, COUNT(*) as unreadCount FROM strip WHERE read ISNULL GROUP BY comic;"
 	);
 
-	while(statement.executeStep()) {
-		updateComic(statement.row);
-	}
-	statement.reset();
-
-	// create statements used by deleteComic
 	var deleteStripsByComicStatement = DB.dbConn.createStatement(
 		"DELETE FROM strip WHERE comic=:comic;"
 	);
@@ -128,18 +131,42 @@ var ComicsResource = new function() {
 		"DELETE FROM comic WHERE comic=:comic;"
 	);
 
-	// create statement used by saveStatesToDB
 	var saveStateToDBStatement = DB.dbConn.createStatement(
 		"UPDATE comic SET state=:state WHERE comic=:comic"
 	);
 
-	// create statements used by findReadStrips
 	var getUnreadStripsStatement = DB.dbConn.createStatement(
 		"SELECT strip, url FROM strip WHERE comic=:comic AND read ISNULL;"
 	);
 	var updateStripReadTimeStatement = DB.dbConn.createStatement(
 		"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
 	);
+
+
+	// cache comics from database
+	var statement = DB.dbConn.createStatement(
+		"SELECT " + DB.comicColumns.join(", ") + " FROM comic;"
+	);
+
+	while(statement.step()) {
+		updateComic(statement.row);
+	}
+
+	this.populateUnreadCounts();
+
+	function populateUnreadCounts() {
+		this.unreadCounts = {};
+		for(var comic in this.all) {
+			this.unreadCounts[comic] = 0;
+		}
+
+		this.totalUnread = 0;
+		var statement = getUnreadCountsStatement.clone(); 
+		while(statement.step()) {
+			this.unreadCounts[statement.row.comic] = statement.row.unreadCount;
+			this.totalUnread += statement.row.unreadCount;
+		}
+	}
 
 
 	function updateComic(row) {
@@ -177,7 +204,7 @@ var ComicsResource = new function() {
 			handleError: function(error) {},
 			handleCompletion: function(reason) {
 				if(reason == DB.REASON_FINISHED) {
-					callCallbacks();
+					self.callCallbacks(true);
 				}
 				else {
 					Utils.alert(Utils.getString("deleteComic.sqlError"));
@@ -242,12 +269,40 @@ var ComicsResource = new function() {
 		});
 	}
 
+	function markAllStripsRead(selectedComic) {
+		var getUnreadStrips = getUnreadStripsStatement.clone();
+		getUnreadStrips.params.comic = selectedComic.comic;
+		getUnreadStrips.executeAsync({
+			selectedComic: selectedComic,
+			rows: [],
+
+			handleResult: function(response) {
+				for(var row = response.getNextRow(); row; row = response.getNextRow()) {
+					this.rows.push(row);
+				}
+			},
+			handleError: function(error) {},
+			handleCompletion: function(reason) {
+				if(reason == DB.REASON_FINISHED) {
+					var readStrips = [];
+					for(var i = 0, len = this.rows.length; i < len; i++) {
+						readStrips.push(this.rows[i].getResultByName("strip"));
+					}
+					_processReadStrips(readStrips, this.selectedComic);
+				}
+				else {
+					Utils.alert(Utils.getString("markAllStripsRead.sqlError"));
+				}
+			}
+		});
+	}
+
 	function _processReadStrips(readStrips, selectedComic) {
 		if(readStrips.length > 0) {
 			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
 				.getService(Components.interfaces.nsIPrompt);
 
-			var result = prompt.confirm("", Utils.getString("findReadStrips.youSure", readStrips.length));
+			var result = prompt.confirm("", Utils.getString("processReadStrips.youSure", readStrips.length));
 			if(result) {
 				var d = new Date();
 				var read = d.getTime();
@@ -264,11 +319,20 @@ var ComicsResource = new function() {
 					updateStatements.push(updateStripReadTime);
 				}
 
-				DB.dbConn.executeAsync(updateStatements, updateStatements.length);
+				DB.dbConn.executeAsync(updateStatements, updateStatements.length, {
+					handleResult: function(response) {},
+					handleError: function(error) {},
+					handleCompletion: function(reason) {
+						self.callCallbacks();
+						if(reason != DB.REASON_FINISHED) {
+							Utils.alert(Utils.getString("processReadStrips.sqlError"));
+						}
+					}
+				});
 			}
 		}
 		else {
-			Utils.alert(Utils.getString("findReadStrips.noneFound"));
+			Utils.alert(Utils.getString("processReadStrips.noneFound"));
 		}
 	}
 
@@ -298,9 +362,11 @@ var ComicsResource = new function() {
 	}
 
 
-	function callCallbacks() {
+	function callCallbacks(arg) {
+		this.populateUnreadCounts();
+
 		for(var id in callbacks) {
-			callbacks[id]();
+			callbacks[id](arg);
 		}
 	}
 }

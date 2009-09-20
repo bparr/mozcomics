@@ -49,9 +49,15 @@ MozComics.ComicPicker = new function() {
 
 		var selectedComic = this.selectedComic;
 		if(selectedComic) {
-			// toggle enabled property of selected comic
-			var nowEnabled = !MozComics.Comics.getComicProp(selectedComic, "enabled");
-			MozComics.Comics.setComicProp(selectedComic, "enabled", nowEnabled);
+			if(MozComics.Prefs.get("multipleEnabledComics")) {
+				// toggle enabled property of selected comic
+				var nowEnabled = !MozComics.Comics.getComicProp(selectedComic, "enabled");
+				MozComics.Comics.setComicProp(selectedComic, "enabled", nowEnabled);
+			}
+			else {
+				MozComics.Comics.disableAll(true);
+				MozComics.Comics.setComicProp(selectedComic, "enabled", true);
+			}
 		}
 	}
 

@@ -69,8 +69,8 @@ var DB = new function() {
 		"ON strip (strip, comic);");
 	statement.execute();
 
-	statement = this.dbConn.createStatement("CREATE INDEX IF NOT EXISTS read_index " +
-		"ON strip (read);");
+	statement = this.dbConn.createStatement("CREATE INDEX IF NOT EXISTS comic_read_index " +
+		"ON strip (comic, read);");
 	statement.execute();
 
 

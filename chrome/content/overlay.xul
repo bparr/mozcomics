@@ -16,9 +16,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 	<script src="overlay.js" />
 
 	<statusbar id="status-bar">
-		<statusbarpanel id="mozcomics-statusbarpanel" class="statusbarpanel-iconic" onclick="MozComics.togglePane();" >
-			<image id="mozcomics-statusbar-image" src="chrome://mozcomics/skin/plugin.png" />
-		</statusbarpanel>
+		<statusbarpanel id="mozcomics-statusbarpanel" class="statusbarpanel-iconic-text" onclick="MozComics.togglePane();"
+			src="chrome://mozcomics/skin/plugin.png" label="" />
 	</statusbar>
 
 	<vbox id="appcontent">
@@ -29,6 +28,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			<popupset>
 				<popup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu();">
 					<menuitem label="&mozcomics.menu.findReadStrips;" oncommand="MozComics.Comics.findReadStrips()"/>
+					<menuitem label="&mozcomics.menu.markAllStripsRead;" oncommand="MozComics.Comics.markAllStripsRead()"/>
 					<menuitem label="&mozcomics.menu.deleteComic;" oncommand="MozComics.Comics.deleteComic()"/>
 				</popup>
 			</popupset>
@@ -41,7 +41,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.Comics.addComic()"/>
 					<toolbarbutton id="mozcomics-tb-update" tooltiptext="&mozcomics.toolbar.updateAll;" oncommand="MozComics.Update.updateAll()"/>
 					<spacer flex="1"/>
-					<menulist id="mozcomics-tb-bookmark-menu" persist="value">
+					<menulist id="mozcomics-tb-bookmark-menu" persist="value" onkeypress="MozComics.handleKeyPress(event, this.id);">
 						<menupopup>
 							<menuitem label="&mozcomics.toolbar.strip;" value="0"/>
 							<menuitem label="&mozcomics.toolbar.chapter;" value="1"/>
@@ -106,8 +106,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 									flex="1" />
 
 								<splitter class="tree-splitter"/>
-								<treecol id="mozcomics-comic-rating"
-									label="&mozcomics.comic.rating;"
+								<treecol id="mozcomics-comic-unread"
+									label="&mozcomics.comic.unread;"
 									persist="width ordinal hidden"
 									onclick="MozComics.ComicPicker.update(this)"
 									class="sortDirectionIndicator"
@@ -125,8 +125,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 							<checkbox id="mozcomics-strip-updateread" label="&mozcomics.strip.updateRead;" persist="checked" checked="true"/>
 							<label id="mozcomics-strip-comic" class="text-link" href="" value="" />
 							<label id="mozcomics-strip-title" class="text-link" href="" value="" />
-							<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip" />
+							<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip"/>
 							<tooltip id="mozcomics-strip-image-tooltip" label="" />
+							<label id="mozcomics-strip-tooltip-label" value="" />
 						</vbox>
 						<vbox id="mozcomics-strip-none" align="center" hidden="true">
 							<label value="&mozcomics.strip.none;" />

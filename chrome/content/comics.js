@@ -10,9 +10,12 @@ MozComics.Comics = new function() {
 
 	this.init = init;
 	this.unload = unload;
+	this.comicsResourceCallback = comicsResourceCallback;
+	this.updateStatusBarPanel = updateStatusBarPanel;
 	this.addComic = addComic;
 	this.deleteComic = deleteComic;
 	this.findReadStrips = findReadStrips;
+	this.markAllStripsRead = markAllStripsRead;
 	this.refreshCache = refreshCache;
 
 	this.getComic = getComic;
@@ -28,13 +31,30 @@ MozComics.Comics = new function() {
 	this.enabled = [];
 
 	function init() {
-		this.id = ComicsResource.addCallback(this.refreshCache);
+		this.id = ComicsResource.addCallback(this.comicsResourceCallback);
+		this.updateStatusBarPanel();
 		this.refreshCache();
 	}
 
 	function unload() {
 		ComicsResource.saveStatesToDB(this.id);
 		ComicsResource.removeCallback(this.id);
+	}
+
+	function comicsResourceCallback(totalUnread, fullRefresh) {
+		self.updateStatusBarPanel();
+
+		if(fullRefresh) {
+			self.refreshCache();
+		}
+		else {
+			MozComics.ComicPicker.treeview.update();
+		}
+	}
+
+	function updateStatusBarPanel() {
+		var label = (MozComics.Prefs.get('showUnreadCount')) ? ComicsResource.totalUnread : "";
+		MozComics.Dom.statusBarPanel.label = label;
 	}
 
 	function addComic() {
@@ -60,17 +80,21 @@ MozComics.Comics = new function() {
 		ComicsResource.findReadStrips(MozComics.ComicPicker.selectedComic);
 	}
 
+	function markAllStripsRead() {
+		ComicsResource.markAllStripsRead(MozComics.ComicPicker.selectedComic);
+	}
+
 	function refreshCache(callUpdate) {
 		// refresh comic arrays
-		self.showing = [];
-		self.enabled = [];
+		this.showing = [];
+		this.enabled = [];
 
 		for(var comic in ComicsResource.all) {
-			if(self.getComicProp(comic, "showing")) {
-				self.showing.push(self.getComic(comic));
+			if(this.getComicProp(comic, "showing")) {
+				this.showing.push(this.getComic(comic));
 
-				if(self.getComicProp(comic, "enabled")) {
-					self.enabled.push(self.getComic(comic));
+				if(this.getComicProp(comic, "enabled")) {
+					this.enabled.push(this.getComic(comic));
 				}
 			}
 		}
@@ -107,20 +131,24 @@ MozComics.Comics = new function() {
 		}
 	}
 
-	function enableAll() {
+	function enableAll(ignoreUpdatingCache) {
 		for(var comic in ComicsResource.all) {
 			this.setComicProp(comic, "enabled", true, true);
 		}
 
-		this.refreshCache(true);
+		if(!ignoreUpdatingCache) {
+			this.refreshCache(true);
+		}
 	}
 
-	function disableAll() {
+	function disableAll(ignoreUpdatingCache) {
 		for(var comic in ComicsResource.all) {
 			this.setComicProp(comic, "enabled", false, true);
 		}
 
-		this.refreshCache(true);
+		if(!ignoreUpdatingCache) {
+			this.refreshCache(true);
+		}
 	}
 }
 

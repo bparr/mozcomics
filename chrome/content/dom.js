@@ -11,7 +11,7 @@ MozComics.Dom = new function() {
 	function init() {
 		this._getDomElement("pane", "mozcomics-pane");
 		this._getDomElement("paneSplitter", "mozcomics-splitter");
-		this._getDomElement("statusbarImage", "mozcomics-statusbar-image");
+		this._getDomElement("statusBarPanel", "mozcomics-statusbarpanel");
 
 		// cache navigation elements
 		this._getDomElement("bookmarkMenu", "mozcomics-tb-bookmark-menu");
@@ -26,7 +26,7 @@ MozComics.Dom = new function() {
 		this._getDomElement("showRead", "mozcomics-comicpicker-showread");
 
 		// cache strip elements
-		this._getDomElement("stripPane", "mozcomics-strip-pane");
+		this._getDomElement("focusableStripPane", "mozcomics-strip-pane");
 		this._getDomElement("stripFound", "mozcomics-strip-found");
 		this._getDomElement("stripNone", "mozcomics-strip-none");
 		this._getDomElement("updateRead", "mozcomics-strip-updateread");
@@ -34,13 +34,14 @@ MozComics.Dom = new function() {
 		this._getDomElement("title", "mozcomics-strip-title");
 		this._getDomElement("image", "mozcomics-strip-image");
 		this._getDomElement("imageTooltip", "mozcomics-strip-image-tooltip");
+		this._getDomElement("imageTooltipLabel", "mozcomics-strip-tooltip-label");
 
 		// add event listeners
 		this.comicPickerTree.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
 		this.comicPickerToolbarIcon.setAttribute("expand", this.comicPickerPane.hidden);
 
 		// add scroll methods to scrollboxes
-		this.stripPane = this.stripPane.boxObject.QueryInterface(Components.interfaces.nsIScrollBoxObject);
+		this.stripPane = this.focusableStripPane.boxObject.QueryInterface(Components.interfaces.nsIScrollBoxObject);
 	}
 
 	function _getDomElement(varName, id) {

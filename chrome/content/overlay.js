@@ -47,6 +47,12 @@ var MozComics = new function() {
 		MozComics.Strips.init();
 		MozComics.ComicPicker.init();
 		MozComics.Comics.init();
+
+		if(MozComics.Prefs.get('firstRun')) {
+			var url = MozComics.Utils.URLS.FIRST_RUN;
+			gBrowser.selectedTab = gBrowser.addTab(url, null);
+			MozComics.Prefs.set('firstRun', false);
+		}
 	}
 
 	function onUnload() {
@@ -60,7 +66,7 @@ var MozComics = new function() {
 		var nowHidden = !MozComics.Dom.pane.hidden;
 		MozComics.Dom.pane.hidden = nowHidden;
 		MozComics.Dom.paneSplitter.hidden = nowHidden;
-		(nowHidden) ? MozComics.Dom.pane.blur() : MozComics.Dom.pane.focus();
+		(nowHidden) ? MozComics.Dom.focusableStripPane.blur() : MozComics.Dom.focusableStripPane.focus();
 	}
 
 	function toggleComicPickerPane() {
@@ -70,7 +76,7 @@ var MozComics = new function() {
 
 	function handleKeyPress(event, from) {
 		var key = String.fromCharCode(event.which);
-		if(from == "mozcomics-strip-pane" && !event.ctrlKey && !event.altKey && !event.metaKey) {
+		if(!event.ctrlKey && !event.altKey && !event.metaKey) {
 			if(event.shiftKey) {
 				if(event.keyCode == event.DOM_VK_BACK_SPACE) {
 					MozComics.Strips.setToForwardStrip();
@@ -93,6 +99,9 @@ var MozComics = new function() {
 					MozComics.Strips.setToLastStrip();
 				}
 				else if(key == 'r') {
+					MozComics.Strips.setToRandomStrip();
+				}
+				else if(key == 'u') {
 					MozComics.Dom.updateRead.checked = !MozComics.Dom.updateRead.checked;
 				}
 				else if(key == 's') {
@@ -114,8 +123,12 @@ var MozComics = new function() {
 		}
 	}
 
-	function showPreferences() { // TODO implement
+	function showPreferences() {
+		window.openDialog('chrome://mozcomics/content/preferences.xul',
+			'mozcomics-preferences', 'chrome,modal=yes'
+		);
 
+		MozComics.Comics.updateStatusBarPanel();
 	}
 }
 

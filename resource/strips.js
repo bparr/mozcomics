@@ -7,12 +7,16 @@ var EXPORTED_SYMBOLS = ["StripsResource"];
 
 Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/db.js");
+Components.utils.import("resource://mozcomics/prefs.js");
+Components.utils.import("resource://mozcomics/comics.js");
 
 /*
  * Handle finding strips.
  */
 var StripsResource = new function() {
 	var self = this;
+
+	var busy = false;
 
 	this.findStrip = findStrip;
 	this.updateReadTime = updateReadTime;
@@ -35,6 +39,7 @@ var StripsResource = new function() {
 	STATEMENT_PREFIX = "SELECT " + COLUMNS.join(",") + " FROM strip WHERE (?) ";
 	STATEMENTS = [
 		STATEMENT_PREFIX + "AND strip = :strip;", // get a specific strip
+
 		STATEMENT_PREFIX + "ORDER BY strip ASC, comic ASC LIMIT :limit;", // get the first strip
 
 		STATEMENT_PREFIX + "AND ((strip < :lastStrip) OR " // get the previous strip
@@ -57,14 +62,27 @@ var StripsResource = new function() {
 		"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
 	);
 
+	var updateStripReadTimeCallback = {
+		handleResult: function(response) {},
+		handleError: function(error) {},
+		handleCompletion: function(reason) {
+			ComicsResource.callCallbacks();
+		}
+	};
 
-	function findStrip(data) {
-		data.params.randomQueue = [];
+
+	function findStrip(data, force) {
+		if(busy && !force) {
+			return;
+		}
+		busy = true;
+
 		var enabledComics = data.enabledComics;
 
 		var len = enabledComics.length;
 		if(len == 0) {
 			// don't bother searching if no comics are enabled
+			busy = false;
 			data.onComplete(false, data.statementId);
 			return;
 		}
@@ -104,6 +122,11 @@ var StripsResource = new function() {
 			statement.params.bookmark = data.bookmark;
 		}
 
+		// bind limit
+		if(queryString.indexOf(":limit") > -1) {
+			statement.params.limit = Prefs.get("preloadAmount");
+		}
+
 		statement.executeAsync({
 			data: data,
 			rows: [],
@@ -116,34 +139,42 @@ var StripsResource = new function() {
 
 			handleError: function(error) {},
 			handleCompletion: function(reason) {
+				this.data.params.stripQueue = [];
 				if(reason == DB.REASON_FINISHED) {
 					// successfully found strip(s)
 					if(this.rows.length > 0) {
+						var preloadImages = Prefs.get("preloadImages");
 						var firstRow = DB.cloneRow(this.rows[0], COLUMNS);
-						this.data.preloadImage(firstRow.image);
-
-						for(var i = 1, len = this.rows.length; i < len; i++) {
-							var row = this.rows[i];
-							if(this.data.statementId == self.S.random) {
-								this.data.params.randomQueue.push(DB.cloneRow(row, COLUMNS));
-							}
-							this.data.preloadImage(row.getResultByName("image"));
+						if(preloadImages) {
+							this.data.preloadImage(firstRow.image);
 						}
 
+						for(var i = 1, len = this.rows.length; i < len; i++) {
+							var row = DB.cloneRow(this.rows[i], COLUMNS);
+							this.data.params.stripQueue.push(row);
+
+							if(preloadImages) {
+								this.data.preloadImage(row.image);
+							}
+						}
+
+						busy = false;
 						this.data.onComplete(firstRow, this.data.statementId);
 					}
 					// unsuccessful in finding a strip, but a fallback statement exists
 					else if(this.data.onFailStatementId) {
 						this.data.statementId = this.data.onFailStatementId;
 						this.data.onFailStatementId = null;
-						findStrip(this.data);
+						findStrip(this.data, true);
 					}
 					// unsuccessful with no fallback statement
 					else {
+						busy = false;
 						this.data.onComplete(false, this.data.statementId);
 					}
 				}
 				else {
+					busy = false;
 					Utils.alert(Utils.getString("findStrip.sqlError"));
 				}
 			}
@@ -155,7 +186,7 @@ var StripsResource = new function() {
 		updateStripReadTime.params.comic = comic;
 		updateStripReadTime.params.strip = strip;
 		updateStripReadTime.params.read = read;
-		updateStripReadTime.executeAsync();
+		updateStripReadTime.executeAsync(updateStripReadTimeCallback);
 	}
 }
 

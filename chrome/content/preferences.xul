@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<!--
+Copyright (c) 2009 Ben Parr
+Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
+-->
+<!DOCTYPE overlay [
+	<!ENTITY % globalDTD SYSTEM "chrome://global/locale/global.dtd"> %globalDTD;
+	<!ENTITY % mozcomicsDTD SYSTEM "chrome://mozcomics/locale/mozcomics.dtd"> %mozcomicsDTD;
+]>
+
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://mozcomics/skin/mozcomics.css" type="text/css"?>
+
+<prefwindow id="mozcomics-preferences" title="&mozcomics.preferences.title;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	
+	<prefpane id="mozcomics-preferences-general" label="&mozcomics.preferences.general;" >
+		<preferences>
+			<preference id="mozcomics-preferences-showUnreadCount" name="extensions.mozcomics.showUnreadCount" type="bool" />
+			<preference id="mozcomics-preferences-wrapAround" name="extensions.mozcomics.wrapAround" type="bool" />
+			<preference id="mozcomics-preferences-loadLastViewedAtStart" name="extensions.mozcomics.loadLastViewedAtStart" type="bool" />
+			<preference id="mozcomics-preferences-defaultToMarkRead" name="extensions.mozcomics.defaultToMarkRead" type="bool" />
+			<preference id="mozcomics-preferences-multipleEnabledComics" name="extensions.mozcomics.multipleEnabledComics" type="bool" />
+			<preference id="mozcomics-preferences-showMouseoverBelowImage" name="extensions.mozcomics.showMouseoverBelowImage" type="bool" />
+			<preference id="mozcomics-preferences-defaultStrip" name="extensions.mozcomics.defaultStrip" type="int" />
+
+			<preference id="mozcomics-preferences-preloadAmount" name="extensions.mozcomics.preloadAmount" type="int" />
+			<preference id="mozcomics-preferences-preloadImages" name="extensions.mozcomics.preloadImages" type="bool" />
+
+			<preference id="mozcomics-preferences-updateOnStart" name="extensions.mozcomics.updateOnStart" type="bool" />
+			<preference id="mozcomics-preferences-autoUpdate" name="extensions.mozcomics.autoUpdate" type="bool" />
+			<preference id="mozcomics-preferences-updateInterval" name="extensions.mozcomics.updateInterval" type="int" />
+		</preferences>
+
+		<groupbox>
+			<caption label="&mozcomics.preferences.userInterface;" />
+
+			<checkbox label="&mozcomics.preferences.showUnreadCount;" preference="mozcomics-preferences-showUnreadCount" />
+			<checkbox label="&mozcomics.preferences.wrapAround;" preference="mozcomics-preferences-wrapAround" />
+			<checkbox label="&mozcomics.preferences.loadLastViewedAtStart;" preference="mozcomics-preferences-loadLastViewedAtStart" />
+			<checkbox label="&mozcomics.preferences.defaultToMarkRead;" preference="mozcomics-preferences-defaultToMarkRead" />
+			<checkbox label="&mozcomics.preferences.multipleEnabledComics;" preference="mozcomics-preferences-multipleEnabledComics" />
+			<checkbox label="&mozcomics.preferences.showMouseoverBelowImage;" preference="mozcomics-preferences-showMouseoverBelowImage" />
+			<hbox align="center">
+				<label value="&mozcomics.preferences.defaultStrip;"/>
+				<radiogroup orient="horizontal" preference="mozcomics-preferences-defaultStrip">
+					<radio label="&mozcomics.preferences.first;" value="0"/>
+					<radio label="&mozcomics.preferences.last;" value="1"/>
+					<radio label="&mozcomics.preferences.random;" value="2"/>
+				</radiogroup>
+			</hbox>
+		</groupbox>
+
+		<groupbox>
+			<caption label="&mozcomics.preferences.preloading;" />
+
+			<hbox align="center">
+				<label value="&mozcomics.preferences.preloadAmount;" />
+				<textbox type="number" min="1" max="20" size="2" preference="mozcomics-preferences-preloadAmount" />
+			</hbox>
+			<checkbox label="&mozcomics.preferences.preloadImages;" preference="mozcomics-preferences-preloadImages" />
+		</groupbox>
+
+		<groupbox>
+			<caption label="&mozcomics.preferences.update;" />
+
+			<checkbox label="&mozcomics.preferences.updateOnStart;" preference="mozcomics-preferences-updateOnStart" />
+			<checkbox label="&mozcomics.preferences.autoUpdate;" preference="mozcomics-preferences-autoUpdate" />
+			<hbox align="center">
+				<label value="&mozcomics.preferences.updateInterval;" />
+				<textbox type="number" min="10" size="4" preference="mozcomics-preferences-updateInterval" />
+			</hbox>
+		</groupbox>
+	</prefpane>
+
+</prefwindow>
