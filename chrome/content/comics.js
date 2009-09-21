@@ -41,7 +41,7 @@ MozComics.Comics = new function() {
 		ComicsResource.removeCallback(this.id);
 	}
 
-	function comicsResourceCallback(totalUnread, fullRefresh) {
+	function comicsResourceCallback(fullRefresh) {
 		self.updateStatusBarPanel();
 
 		if(fullRefresh) {

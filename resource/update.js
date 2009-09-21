@@ -41,6 +41,9 @@ var Update = new function() {
 	);
 	var deleteStripStatement = DB.dbConn.createStatement(
 		"DELETE FROM strip WHERE comic=:comic and strip=:strip;");
+	var updateComicUpdatedTimeStatement = DB.dbConn.createStatement(
+		"UPDATE comic set updated=:updated WHERE comic = :comic;"
+	);
 
 
 	if(Prefs.get("updateOnStart")) {
@@ -159,13 +162,17 @@ var Update = new function() {
 			// certain columns are not settable from the JSON
 			comic.comic = null;
 			comic.state = null;
-			comic.updated = updated;
+
+			// update the updated once all strips have been inserted in order
+			// to maintain consistency if strip insert queries fail
+			comic.updated = 0;
 
 			// save some states in the old comic so that they persist to the new one
 			var oldComic = ComicsResource.guids[comic.guid];
 			if(oldComic) {
 				comic.comic = oldComic.comic;
 				comic.state = oldComic.state;
+				comic.updated = oldComic.updated;
 			}
 			else if(!addingNewComic) {
 				// no comics should be added if only updating installed comics
@@ -204,7 +211,7 @@ var Update = new function() {
 	}
 
 	function _updateStrips(comic, strips, updated, addingNewComic, completedTracker) {
-		var stripStatements = [];
+		var statements = [];
 		for(var i = 0, len = strips.length; i < len; i++) {
 			var strip = strips[i];
 			if(!strip.strip) {
@@ -216,7 +223,7 @@ var Update = new function() {
 					var deleteStrip = deleteStripStatement.clone();
 					deleteStrip.params.comic = comic;
 					deleteStrip.params.strip = strip.strip;
-					stripStatements.push(deleteStrip);
+					statements.push(deleteStrip);
 					break;
 
 				default: // add/update
@@ -233,18 +240,17 @@ var Update = new function() {
 							updateStrip.params[columnName] = strip[columnName];
 						}
 					}
-					stripStatements.push(updateStrip);
+					statements.push(updateStrip);
 					break;
 			}
 		}
 
-		if(stripStatements.length == 0) {
-			completedTracker.numComplete++;
-			_onStripsComplete(addingNewComic, completedTracker);
-			return;
-		}
+		var updateComicUpdatedTime = updateComicUpdatedTimeStatement.clone();
+		updateComicUpdatedTime.params.comic = comic;
+		updateComicUpdatedTime.params.updated = updated;
+		statements.push(updateComicUpdatedTime);
 
-		DB.dbConn.executeAsync(stripStatements, stripStatements.length, {
+		DB.dbConn.executeAsync(statements, statements.length, {
 			addingNewComic: addingNewComic,
 			completedTracker: completedTracker,
 
