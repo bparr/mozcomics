@@ -17,7 +17,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 	<statusbar id="status-bar">
 		<statusbarpanel id="mozcomics-statusbarpanel" class="statusbarpanel-iconic-text" onclick="MozComics.togglePane();"
-			src="chrome://mozcomics/skin/plugin.png" label="" />
+			src="chrome://mozcomics/skin/logo16.png" label="" />
 	</statusbar>
 
 	<vbox id="appcontent">
