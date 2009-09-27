@@ -14,7 +14,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 		<em:description>A comic viewing extension.</em:description>
 		<em:creator>Ben Parr</em:creator>
 		<em:contributor>Mark James (icons) - http://www.famfamfam.com/lab/icons/silk/</em:contributor>
-		<em:homepageURL>http://www.bparr.com/</em:homepageURL>
+		<em:homepageURL>http://www.mozcomics.com/</em:homepageURL>
+		<em:iconURL>chrome://mozcomics/skin/logo32.png</em:iconURL>
+		<em:optionsURL>chrome://mozcomics/content/preferences.xul</em:optionsURL>
 
 		<!-- Firefox -->	 
 		<em:targetApplication>
