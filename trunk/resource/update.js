@@ -198,10 +198,9 @@ var Update = new function() {
 				completedTracker: completedTracker,
 
 				handleResult: function(response) {
-					var row = response.getNextRow();
-					var newComicId = row.getResultByName("comic");
-					ComicsResource.updateComic(DB.cloneRow(row, DB.comicColumns));
-					_updateStrips(newComicId, this.strips, this.updated, 
+					var newComic = DB.cloneRow(response.getNextRow(), DB.comicColumns);
+					newComic.updated = this.updated;
+					_updateStrips(newComic, this.strips, this.updated, 
 						this.addingNewComic, this.completedTracker);
 				},
 				handleError: function(error) {},
@@ -210,7 +209,7 @@ var Update = new function() {
 		}
 	}
 
-	function _updateStrips(comic, strips, updated, addingNewComic, completedTracker) {
+	function _updateStrips(newComic, strips, updated, addingNewComic, completedTracker) {
 		var statements = [];
 		for(var i = 0, len = strips.length; i < len; i++) {
 			var strip = strips[i];
@@ -221,14 +220,14 @@ var Update = new function() {
 			switch(parseInt(strip.action)) {
 				case 1: // delete
 					var deleteStrip = deleteStripStatement.clone();
-					deleteStrip.params.comic = comic;
+					deleteStrip.params.comic = newComic.comic;
 					deleteStrip.params.strip = strip.strip;
 					statements.push(deleteStrip);
 					break;
 
 				default: // add/update
 					// certain columns are not settable from the JSON
-					strip.comic = comic;
+					strip.comic = newComic.comic;
 					strip.read = null;
 					strip.user_rating = null;
 					strip.updated = updated;
@@ -246,23 +245,27 @@ var Update = new function() {
 		}
 
 		var updateComicUpdatedTime = updateComicUpdatedTimeStatement.clone();
-		updateComicUpdatedTime.params.comic = comic;
+		updateComicUpdatedTime.params.comic = newComic.comic;
 		updateComicUpdatedTime.params.updated = updated;
 		statements.push(updateComicUpdatedTime);
 
 		DB.dbConn.executeAsync(statements, statements.length, {
+			newComic: newComic,
 			addingNewComic: addingNewComic,
 			completedTracker: completedTracker,
 
 			handleResult: function(response) {},
 			handleError: function(error) {},
 			handleCompletion: function(reason) {
-				this.completedTracker.numComplete++;
-				_onStripsComplete(this.addingNewComic, this.completedTracker);
-
-				if(reason != DB.REASON_FINISHED) {
+				if(reason == DB.REASON_FINISHED) {
+					ComicsResource.updateComic(this.newComic);
+				}
+				else {
 					Utils.alert(Utils.getString("update.sqlError"));
 				}
+
+				this.completedTracker.numComplete++;
+				_onStripsComplete(this.addingNewComic, this.completedTracker);
 			}
 		});
 	}
