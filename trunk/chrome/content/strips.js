@@ -38,14 +38,14 @@ MozComics.Strips = new function() {
 		stripQueue: []
 	}
 
-	// used by setToRandomStrip to know if the showRead checkbox changed
-	// checked state since the last time a random strip was requested
 	this.lastShowRead = null;
+	this.lastBookmarkType = null;
 
 	this.lastStripRequest = null;
 
 	function init() {
 		this.lastShowRead = MozComics.Dom.showRead.checked;
+		this.lastBookmarkType = MozComics.Dom.bookmarkMenu.value;
 	}
 
 	function refresh() {
@@ -189,11 +189,13 @@ MozComics.Strips = new function() {
 		if(statementId == S.first ||
 			statementId == S.last ||
 			statementId != self.lastStripRequest ||
-			MozComics.Dom.showRead.checked != self.lastShowRead) {
+			MozComics.Dom.showRead.checked != self.lastShowRead ||
+			MozComics.Dom.bookmarkMenu.value != self.lastBookmarkType) {
 
 			data.params.stripQueue = [];
 			self.lastStripRequest = statementId;
 			self.lastShowRead = MozComics.Dom.showRead.checked;
+			self.lastBookmarkType = MozComics.Dom.bookmarkMenu.value;
 		}
 
 
