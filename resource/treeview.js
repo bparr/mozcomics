@@ -42,6 +42,8 @@ TreeView.prototype.cycleHeader = function(col, elem) {};
 
 // update tree with a specific sort
 TreeView.prototype.update = function(sortColumn) {
+	var firstRow = this.xulTree.treeBoxObject.getFirstVisibleRow()
+
 	var sortColumnId;
 	var sortOrder = (this.xulTree.getAttribute("sortDirection") == "ascending") ? 1 : -1;
 
@@ -87,5 +89,9 @@ TreeView.prototype.update = function(sortColumn) {
 	}
 	this.xulTree.ownerDocument.getElementById(sortColumnId)
 		.setAttribute("sortDirection", sortOrder == 1 ? "ascending" : "descending");
+
+	if(firstRow) {
+		this.xulTree.treeBoxObject.scrollToRow(firstRow);
+	}
 }
 

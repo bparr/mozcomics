@@ -128,6 +128,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 							<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip"/>
 							<tooltip id="mozcomics-strip-image-tooltip" label="" />
 							<label id="mozcomics-strip-tooltip-label" value="" />
+							<image id="mozcomics-strip-hiddenImage" src="" />
 						</vbox>
 						<vbox id="mozcomics-strip-none" align="center" hidden="true">
 							<label value="&mozcomics.strip.none;" />

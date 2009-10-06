@@ -18,6 +18,14 @@ var Comic = function(row) {
 		this[column] = row[column];
 	}
 
+	if(this.extra) {
+			try {
+				var extra = JSON.parse(this.extra);
+				this.extra = extra;
+			}
+			catch(e) {}
+	}
+
 	// Each instance of the MozComics object has its own set of comic states.
 	// Assign each instance of the MozComics object an id (callbackId) in
 	// order to know which set of states we are dealing with.
