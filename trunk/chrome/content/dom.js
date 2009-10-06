@@ -35,6 +35,7 @@ MozComics.Dom = new function() {
 		this._getDomElement("image", "mozcomics-strip-image");
 		this._getDomElement("imageTooltip", "mozcomics-strip-image-tooltip");
 		this._getDomElement("imageTooltipLabel", "mozcomics-strip-tooltip-label");
+		this._getDomElement("hiddenImage", "mozcomics-strip-hiddenImage");
 
 		// add event listeners
 		this.comicPickerTree.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);

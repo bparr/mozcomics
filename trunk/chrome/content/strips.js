@@ -249,15 +249,27 @@ MozComics.Strips = new function() {
 			MozComics.Dom.image.src = row.image;
 			MozComics.Dom.image.hidden = false;
 
-			var mouseover = null;
+			var extra = {};
 			try {
-				var extra = JSON.parse(row.extra);
-				mouseover = MozComics.Utils.unescapeHtml(extra.mouseover);
+				extra = JSON.parse(row.extra);
 			}
 			catch(e) {}
 
-			MozComics.Dom.imageTooltip.label = mouseover ? mouseover : "";
-			MozComics.Dom.imageTooltip.hidden = !mouseover;
+			// handle mouseover extra property
+			MozComics.Dom.imageTooltip.hidden = !extra.imageTooltip;
+			MozComics.Dom.imageTooltip.label = "";
+			if(extra.mouseover) {
+				var mouseover = MozComics.Utils.unescapeHtml(extra.mouseover);
+				MozComics.Dom.imageTooltip.label = mouseover;
+			}
+
+			// handle hiddenImage extra propery
+			MozComics.Dom.hiddenImage.hidden = !extra.hiddenImage;
+			MozComics.Dom.hiddenImage.src = "";
+			if(extra.hiddenImage) {
+				MozComics.Dom.hiddenImage.src = extra.hiddenImage;
+			}
+
 
 			if(MozComics.Prefs.get("showMouseoverBelowImage")) {
 				MozComics.Dom.imageTooltipLabel.value = mouseover ? mouseover : "";
