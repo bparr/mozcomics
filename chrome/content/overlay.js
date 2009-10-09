@@ -90,10 +90,10 @@ var MozComics = new function() {
 
 	function handleKeyPress(event, from) {
 		var key = String.fromCharCode(event.which);
-		event.preventDefault();
 		if(!event.ctrlKey && !event.altKey && !event.metaKey) {
 			if(event.shiftKey) {
 				if(event.keyCode == event.DOM_VK_BACK_SPACE) {
+					event.preventDefault();
 					MozComics.Strips.setToForwardStrip();
 				}
 			}
@@ -105,6 +105,7 @@ var MozComics = new function() {
 					MozComics.Strips.setToNextStrip();
 				}
 				else if(event.keyCode == event.DOM_VK_BACK_SPACE) {
+					event.preventDefault();
 					MozComics.Strips.setToBackStrip();
 				}
 				else if(key == 'f') {
