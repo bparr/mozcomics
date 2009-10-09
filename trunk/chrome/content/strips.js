@@ -186,9 +186,7 @@ MozComics.Strips = new function() {
 		self._unloadLastStrip();
 
 		var statementId = data.statementId;
-		if(statementId == S.first ||
-			statementId == S.last ||
-			statementId != self.lastStripRequest ||
+		if(statementId != self.lastStripRequest ||
 			MozComics.Dom.showRead.checked != self.lastShowRead ||
 			MozComics.Dom.bookmarkMenu.value != self.lastBookmarkType) {
 
@@ -204,6 +202,7 @@ MozComics.Strips = new function() {
 			if(data.params.stripQueue.length == 0) {
 				data.onComplete = function(row, statementId) {
 					if(row) {
+						self._preloadImage(row.image);
 						data.params.stripQueue.unshift(row);
 					}
 				};
@@ -221,7 +220,6 @@ MozComics.Strips = new function() {
 			statementId: statementId,
 			onFailStatementId: null,
 			params: self.params,
-			preloadImage: self._preloadImage,
 			onComplete: self._updatePane,
 			enabledComics: MozComics.Comics.enabled,
 			showRead: MozComics.Dom.showRead.checked,
@@ -230,11 +228,17 @@ MozComics.Strips = new function() {
 	}
 
 	function _preloadImage(src) {
-		var img = new Image();
-		img.src = src;
+		if(MozComics.Prefs.get("preloadImages")) {
+			var image = new Image();
+			image.src = src;
+		}
 	}
 
 	function _updatePane(row, statementId) {
+		if(self.params.stripQueue.length > 0) {
+			self._preloadImage(self.params.stripQueue[0].image);
+		}
+
 		self._updateParamVariables(row, statementId);
 		self._updateDatePicker(row);
 
@@ -256,11 +260,17 @@ MozComics.Strips = new function() {
 			catch(e) {}
 
 			// handle mouseover extra property
-			MozComics.Dom.imageTooltip.hidden = !extra.imageTooltip;
+			MozComics.Dom.imageTooltip.hidden = !extra.mouseover;
 			MozComics.Dom.imageTooltip.label = "";
+			MozComics.Dom.imageTooltipLabel.value = "";
+			MozComics.Dom.imageTooltipLabel.hidden = true;
 			if(extra.mouseover) {
 				var mouseover = MozComics.Utils.unescapeHtml(extra.mouseover);
 				MozComics.Dom.imageTooltip.label = mouseover;
+				if(MozComics.Prefs.get("showMouseoverBelowImage")) {
+					MozComics.Dom.imageTooltipLabel.value = mouseover;
+					MozComics.Dom.imageTooltipLabel.hidden = false;
+				}
 			}
 
 			// handle hiddenImage extra propery
@@ -270,15 +280,6 @@ MozComics.Strips = new function() {
 				MozComics.Dom.hiddenImage.src = extra.hiddenImage;
 			}
 
-
-			if(MozComics.Prefs.get("showMouseoverBelowImage")) {
-				MozComics.Dom.imageTooltipLabel.value = mouseover ? mouseover : "";
-				MozComics.Dom.imageTooltipLabel.hidden = !mouseover;
-			}
-			else {
-				MozComics.Dom.imageTooltipLabel.value = "";
-				MozComics.Dom.imageTooltipLabel.hidden = true;
-			}
 
 			if(MozComics.Prefs.get("defaultToMarkRead")) {
 				MozComics.Dom.updateRead.checked = true;

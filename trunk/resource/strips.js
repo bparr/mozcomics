@@ -40,7 +40,7 @@ var StripsResource = new function() {
 	STATEMENTS = [
 		STATEMENT_PREFIX + "AND strip = :strip;", // get a specific strip
 
-		STATEMENT_PREFIX + "ORDER BY strip ASC, comic ASC LIMIT :limit;", // get the first strip
+		STATEMENT_PREFIX + "ORDER BY strip ASC, comic ASC LIMIT 1;", // get the first strip
 
 		STATEMENT_PREFIX + "AND ((strip < :lastStrip) OR " // get the previous strip
 			+ "(strip = :lastStrip AND comic < :lastComic)) ORDER BY strip DESC, comic DESC LIMIT :limit;",
@@ -48,7 +48,7 @@ var StripsResource = new function() {
 		STATEMENT_PREFIX + "AND ((strip > :lastStrip) OR " // get the next strip
 			+ "(strip = :lastStrip AND comic > :lastComic)) ORDER BY strip ASC, comic ASC LIMIT :limit;",
 
-		STATEMENT_PREFIX + "ORDER BY strip DESC, comic DESC LIMIT :limit;", // get the last strip
+		STATEMENT_PREFIX + "ORDER BY strip DESC, comic DESC LIMIT 1;", // get the last strip
 
 		STATEMENT_PREFIX + "ORDER BY RANDOM() LIMIT :limit;", // get a random strip
 
@@ -143,19 +143,10 @@ var StripsResource = new function() {
 				if(reason == DB.REASON_FINISHED) {
 					// successfully found strip(s)
 					if(this.rows.length > 0) {
-						var preloadImages = Prefs.get("preloadImages");
 						var firstRow = DB.cloneRow(this.rows[0], COLUMNS);
-						if(preloadImages) {
-							this.data.preloadImage(firstRow.image);
-						}
-
 						for(var i = 1, len = this.rows.length; i < len; i++) {
 							var row = DB.cloneRow(this.rows[i], COLUMNS);
 							this.data.params.stripQueue.push(row);
-
-							if(preloadImages) {
-								this.data.preloadImage(row.image);
-							}
 						}
 
 						busy = false;

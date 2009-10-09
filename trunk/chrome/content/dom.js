@@ -10,8 +10,8 @@ MozComics.Dom = new function() {
 	// cache Dom elements
 	function init() {
 		this._getDomElement("pane", "mozcomics-pane");
-		this._getDomElement("paneSplitter", "mozcomics-splitter");
-		this._getDomElement("statusBarPanel", "mozcomics-statusbarpanel");
+		this._getDomElement("paneSplitter", "mozcomics-splitter", true);
+		this._getDomElement("statusBarPanel", "mozcomics-statusbarpanel", true);
 
 		// cache navigation elements
 		this._getDomElement("bookmarkMenu", "mozcomics-tb-bookmark-menu");
@@ -37,17 +37,26 @@ MozComics.Dom = new function() {
 		this._getDomElement("imageTooltipLabel", "mozcomics-strip-tooltip-label");
 		this._getDomElement("hiddenImage", "mozcomics-strip-hiddenImage");
 
+		// cache toolbar buttons that should be hidden if this instance of
+		// MozComics is in a stand alone window
+		this._getDomElement("tbOpenWindow", "mozcomics-tb-openWindow");
+		this._getDomElement("tbClose", "mozcomics-tb-close");
+
 		// add event listeners
 		this.comicPickerTree.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
 		this.comicPickerToolbarIcon.setAttribute("expand", this.comicPickerPane.hidden);
 
 		// add scroll methods to scrollboxes
 		this.stripPane = this.focusableStripPane.boxObject.QueryInterface(Components.interfaces.nsIScrollBoxObject);
+
+		MozComics.isWindow = !this.paneSplitter;
+		this.tbOpenWindow.hidden = MozComics.isWindow;
+		this.tbClose.hidden = MozComics.isWindow;
 	}
 
-	function _getDomElement(varName, id) {
+	function _getDomElement(varName, id, skipThrow) {
 		this[varName] = document.getElementById(id);
-		if(!this[varName]) {
+		if(!this[varName] && !skipThrow) {
 			throw ("Could not find " + varName);
 		}
 	}

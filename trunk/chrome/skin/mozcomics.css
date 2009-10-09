@@ -78,4 +78,6 @@
 	list-style-image: url('chrome://mozcomics/skin/tb_last.png');
 }
 
-
+#mozcomics-tb-openWindow {
+	list-style-image: url('chrome://mozcomics/skin/tb_openWindow.png');
+}
