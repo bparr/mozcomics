@@ -7,8 +7,11 @@ var MozComics = new function() {
 
 	this.init = init;
 
+	this.isWindow = null;
+
 	this.onChromeLoad = onChromeLoad;
 	this.onUnload = onUnload;
+	this.openWindow = openWindow;
 	this.togglePane = togglePane;
 	this.toggleComicPickerPane = toggleComicPickerPane;
 	this.handleKeyPress = handleKeyPress;
@@ -62,7 +65,18 @@ var MozComics = new function() {
 		MozComics.Comics.unload();
 	}
 
+	function openWindow() {
+		this.togglePane();
+		window.open('chrome://mozcomics/content/window.xul',
+			'_blank', 'chrome,resizable=yes'
+		);
+	}
+
 	function togglePane() {
+		if(this.isWindow) {
+			return;
+		}
+
 		var nowHidden = !MozComics.Dom.pane.hidden;
 		MozComics.Dom.pane.hidden = nowHidden;
 		MozComics.Dom.paneSplitter.hidden = nowHidden;
@@ -76,6 +90,7 @@ var MozComics = new function() {
 
 	function handleKeyPress(event, from) {
 		var key = String.fromCharCode(event.which);
+		event.preventDefault();
 		if(!event.ctrlKey && !event.altKey && !event.metaKey) {
 			if(event.shiftKey) {
 				if(event.keyCode == event.DOM_VK_BACK_SPACE) {

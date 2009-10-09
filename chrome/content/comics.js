@@ -53,12 +53,21 @@ MozComics.Comics = new function() {
 	}
 
 	function updateStatusBarPanel() {
+		if(MozComics.isWindow) {
+			return;
+		}
+
 		var label = (MozComics.Prefs.get('showUnreadCount')) ? ComicsResource.totalUnread : "";
 		MozComics.Dom.statusBarPanel.label = label;
 	}
 
 	function addComic() {
-		window.loadURI(MozComics.Utils.URLS.COMIC_LIST);
+		if(MozComics.isWindow) {
+			window.open(MozComics.Utils.URLS.COMIC_LIST);
+		}
+		else {
+			window.loadURI(MozComics.Utils.URLS.COMIC_LIST);
+		}
 	}
 
 	function deleteComic() {
