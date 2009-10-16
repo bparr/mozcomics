@@ -9,6 +9,7 @@ Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/db.js");
 Components.utils.import("resource://mozcomics/prefs.js");
 Components.utils.import("resource://mozcomics/comics.js");
+Components.utils.import("resource://mozcomics/callback.js");
 
 /*
  * Handle finding strips.
@@ -21,7 +22,7 @@ var StripsResource = new function() {
 	this.findStrip = findStrip;
 	this.updateReadTime = updateReadTime;
 
-	this.INFINITE = 10000000000000; // will fail when used for time after 2286-11-20 17:46:40
+	this.INFINITY = 10000000000000; // will fail when used for time after 2286-11-20 17:46:40
 
 	// indexes in STATEMENTS of types of strip statements
 	this.S = {
@@ -32,7 +33,8 @@ var StripsResource = new function() {
 		last: 4,
 		random: 5,
 		back: 6,
-		forward: 7
+		forward: 7,
+		lastRead: 8
 	}
 
 	COLUMNS = ["comic", "strip", "title", "url", "image", "extra", "read"];
@@ -55,20 +57,9 @@ var StripsResource = new function() {
 		STATEMENT_PREFIX + "AND read < :lastRead ORDER BY read DESC LIMIT :limit;", // get the back strip
 
 		STATEMENT_PREFIX + "AND read > :lastRead ORDER BY read ASC LIMIT :limit;", // get the forward strip
+
+		STATEMENT_PREFIX + "AND read IS NOT NULL ORDER BY read DESC LIMIT 1;" // get the last read strip
 	];
-
-
-	var updateStripReadTimeStatement = DB.dbConn.createStatement(
-		"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
-	);
-
-	var updateStripReadTimeCallback = {
-		handleResult: function(response) {},
-		handleError: function(error) {},
-		handleCompletion: function(reason) {
-			ComicsResource.callCallbacks();
-		}
-	};
 
 
 	function findStrip(data, force) {
@@ -99,7 +90,7 @@ var StripsResource = new function() {
 		}
 
 		if(data.bookmark > 0) {
-			t += " AND bookmark = :bookmark";
+			t = "(" + t + ") AND bookmark = :bookmark";
 		}
 
 		var queryString = STATEMENTS[data.statementId].replace("?", t);
@@ -124,7 +115,7 @@ var StripsResource = new function() {
 
 		// bind limit
 		if(queryString.indexOf(":limit") > -1) {
-			statement.params.limit = Prefs.get("preloadAmount");
+			statement.params.limit = Prefs.user.preloadAmount;
 		}
 
 		statement.executeAsync({
@@ -172,12 +163,8 @@ var StripsResource = new function() {
 		});
 	}
 
-	function updateReadTime(comic, strip, read) {
-		var updateStripReadTime = updateStripReadTimeStatement.clone();
-		updateStripReadTime.params.comic = comic;
-		updateStripReadTime.params.strip = strip;
-		updateStripReadTime.params.read = read;
-		updateStripReadTime.executeAsync(updateStripReadTimeCallback);
+	function updateReadTime(comic, strip) {
+		return DB.updateReadTimes(comic, [strip]);
 	}
 }
 

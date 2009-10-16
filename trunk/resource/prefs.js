@@ -5,10 +5,15 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 var EXPORTED_SYMBOLS = ["Prefs"];
 
+Components.utils.import("resource://mozcomics/callback.js");
+
 /*
- * Expose a generic get and set functions for MozComic preferences
+ * Cache MozComics preferences (user and default)
  */
 var Prefs = new function() {
+	this.user = null;
+	this.default = null;
+
 	var userSetBranch = Components.classes["@mozilla.org/preferences-service;1"]
 			.getService(Components.interfaces.nsIPrefService)
 			.getBranch("extensions.mozcomics.");
@@ -17,23 +22,32 @@ var Prefs = new function() {
 			.getService(Components.interfaces.nsIPrefService)
 			.getDefaultBranch("extensions.mozcomics.");
 
-	this.get = function(prefName) {
-		return _getFromBranch(prefName, userSetBranch);
-	}
+	this.recache = function() {
+		this.user = {};
+		this.default = {};
+		var prefNames = defaultBranch.getChildList('', {});
+		for(var i = 0, len = prefNames.length; i < len; i++) {
+			var prefName = prefNames[i];
+			this.user[prefName] = _getFromBranch(prefName, userSetBranch);
+			this.default[prefName] = _getFromBranch(prefName, defaultBranch);
+		}
 
-	this.getDefault = function(prefName) {
-		return _getFromBranch(prefName, defaultBranch);
+		Callback.callType("prefsChanged");
 	}
 
 	this.set = function(prefName, value){
+		this.user[prefName] = value;
+
 		var prefType = userSetBranch.getPrefType(prefName);
 		if(prefType == userSetBranch.PREF_BOOL) {
-			return userSetBranch.setBoolPref(prefName, value);
+			userSetBranch.setBoolPref(prefName, value);
 		}
 		else if(prefType == userSetBranch.PREF_STRING) {
-			return userSetBranch.setCharPref(prefName, value);
+			userSetBranch.setCharPref(prefName, value);
 		}
-		return userSetBranch.setIntPref(prefName, value);
+		else {
+			userSetBranch.setIntPref(prefName, value);
+		}
 	}
 
 	function _getFromBranch(prefName, branch) {
@@ -46,6 +60,9 @@ var Prefs = new function() {
 		}
 		return branch.getIntPref(prefName);
 	}
-}
 
+
+	// initially cache preferences
+	this.recache();
+}
 

@@ -9,6 +9,7 @@ Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/db.js");
 Components.utils.import("resource://mozcomics/comics.js");
 Components.utils.import("resource://mozcomics/prefs.js");
+Components.utils.import("resource://mozcomics/callback.js");
 
 /*
  * Update local database. Also used to add a comic to the database.
@@ -46,7 +47,7 @@ var Update = new function() {
 	);
 
 
-	if(Prefs.get("updateOnStart")) {
+	if(Prefs.user.updateOnStart) {
 		this.updateAll();
 	}
 	this.setAutoUpdateTimer();
@@ -55,12 +56,12 @@ var Update = new function() {
 	function setAutoUpdateTimer() {
 		this.timer.cancel();
 
-		if(Prefs.get("autoUpdate")) {
+		if(Prefs.user.autoUpdate) {
 			// stored as number of minutes
-			var updateInterval = Prefs.get("updateInterval");
+			var updateInterval = Prefs.user.updateInterval;
 
 			if(updateInterval < this.MIN_INTERVAL) {
-				updateInterval = Prefs.getDefault("updateInterval");
+				updateInterval = Prefs.default.updateInterval;
 				Prefs.set("updateInterval", updateInterval);
 			}
 
@@ -272,7 +273,7 @@ var Update = new function() {
 
 	function _onStripsComplete(addingNewComic, completedTracker) {
 		if(completedTracker.numComplete == completedTracker.total) {
-			ComicsResource.callCallbacks(true);
+			Callback.callType("comicsChanged");
 
 			if(!addingNewComic) {
 				self.setAutoUpdateTimer();

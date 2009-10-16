@@ -31,7 +31,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 				<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.Comics.addComic()"/>
 				<toolbarbutton id="mozcomics-tb-update" tooltiptext="&mozcomics.toolbar.updateAll;" oncommand="MozComics.Update.updateAll()"/>
 				<spacer flex="1"/>
-				<menulist id="mozcomics-tb-bookmark-menu" persist="value" onkeypress="MozComics.handleKeyPress(event, this.id);">
+				<menulist id="mozcomics-tb-bookmark-menu" persist="value" oncommand="MozComics.Strips.deleteCache();" onfocus="MozComics.focusStripPane();">
 					<menupopup>
 						<menuitem label="&mozcomics.toolbar.strip;" value="0"/>
 						<menuitem label="&mozcomics.toolbar.chapter;" value="1"/>
@@ -46,26 +46,29 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 				<toolbarbutton id="mozcomics-tb-back" tooltiptext="&mozcomics.toolbar.back;" oncommand="MozComics.Strips.setToBackStrip()"/>
 				<toolbarbutton id="mozcomics-tb-forward" tooltiptext="&mozcomics.toolbar.forward;" oncommand="MozComics.Strips.setToForwardStrip()"/>
 				<spacer flex="1"/>
-				<toolbarbutton id="mozcomics-tb-openWindow" tooltiptext="&mozcomics.toolbar.forward;" oncommand="MozComics.openWindow()"/>
+				<toolbarbutton id="mozcomics-tb-openWindow" tooltiptext="&mozcomics.toolbar.openWindow;" oncommand="MozComics.openWindow()"/>
 				<toolbarbutton id="mozcomics-tb-close" class="tabs-closebutton" oncommand="MozComics.togglePane()"/>
 			</hbox>
 
 			<hbox flex="1">
 				<vbox id="mozcomics-comicpicker-pane" persist="width, hidden" hidden="false">
 					<vbox align="center">
-						<checkbox id="mozcomics-comicpicker-showread" label="&mozcomics.comicpicker.showRead;" persist="checked" checked="false"/>
+						<checkbox id="mozcomics-comicpicker-showread" label="&mozcomics.comicpicker.showRead;" 
+							persist="checked" checked="false"
+							oncommand="MozComics.Strips.deleteCache();"/>
+
 						<hbox>
-							<button label="&mozcomics.comicpicker.all;" oncommand="MozComics.Comics.enableAll();" />
-							<button label="&mozcomics.comicpicker.none;" oncommand="MozComics.Comics.disableAll();" />
+							<button id="mozcomics-comicpicker-enableAll" label="&mozcomics.comicpicker.all;" oncommand="MozComics.Comics.enableAll();" />
+							<button id="mozcomics-comicpicker-disableAll" label="&mozcomics.comicpicker.none;" oncommand="MozComics.Comics.disableAll();" />
 						</hbox>
 						<hbox>
-							<menulist id="mozcomics-comicpicker-datemenu" persist="value">
+							<menulist id="mozcomics-comicpicker-datemenu" persist="value" oncommand="MozComics.Strips.updateDatePicker();">
 								<menupopup>
-									<menuitem label="&mozcomics.comicpicker.pubDate;" value="pubDate"/>
-									<menuitem label="&mozcomics.comicpicker.readDate;" value="readDate"/>
+									<menuitem label="&mozcomics.comicpicker.pubDate;" value="pubDate" />
+									<menuitem label="&mozcomics.comicpicker.readDate;" value="readDate" />
 								</menupopup>
 							</menulist>
-							<datepicker id="mozcomics-comicpicker-date" type="popup" value=""/>
+							<datepicker id="mozcomics-comicpicker-date" type="popup" value="" />
 						</hbox>
 					</vbox>
 					<tree id="mozcomics-comicPicker"
@@ -111,14 +114,17 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 				<splitter id="mozcomics-pane-splitter" resizebefore="closest" resizeafter="closest" />
 
-				<scrollbox orient="horizantal" id="mozcomics-strip-pane" flex="1" pack="center" onkeypress="MozComics.handleKeyPress(event, this.id);">
+				<scrollbox orient="horizantal" id="mozcomics-strip-pane" flex="1" pack="center"
+					onkeydown="MozComics.handleKeyDown(event, this.id);"
+					onkeyup="MozComics.handleKeyUp(event, this.id);">
+
 					<vbox id="mozcomics-strip-found" align="center" hidden="true">
 						<checkbox id="mozcomics-strip-updateread" label="&mozcomics.strip.updateRead;" persist="checked" checked="true"/>
-						<label id="mozcomics-strip-comic" class="text-link" href="" value="" />
-						<label id="mozcomics-strip-title" class="text-link" href="" value="" />
+						<label id="mozcomics-strip-comic" class="text-link" href="" />
+						<label id="mozcomics-strip-title" class="text-link" href="" />
 						<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip"/>
 						<tooltip id="mozcomics-strip-image-tooltip" label="" />
-						<label id="mozcomics-strip-tooltip-label" value="" />
+						<label id="mozcomics-strip-tooltip-label" />
 						<image id="mozcomics-strip-hiddenImage" src="" />
 					</vbox>
 					<vbox id="mozcomics-strip-none" align="center" hidden="true">

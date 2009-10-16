@@ -29,6 +29,10 @@
 	-moz-user-focus: normal;
 }
 
+#mozcomics-strip-comic, #mozcomics-strip-title, #mozcomics-strip-tooltip-label {
+	text-align: center;
+}
+
 #mozcomics-tb-comicpicker {
 	list-style-image: url('chrome://mozcomics/skin/tb_comicPicker_contract.png');
 }
