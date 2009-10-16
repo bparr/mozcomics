@@ -27,9 +27,12 @@ var Prefs = new function() {
 		this.default = {};
 		var prefNames = defaultBranch.getChildList('', {});
 		for(var i = 0, len = prefNames.length; i < len; i++) {
-			var prefName = prefNames[i];
-			this.user[prefName] = _getFromBranch(prefName, userSetBranch);
-			this.default[prefName] = _getFromBranch(prefName, defaultBranch);
+			try {
+				var prefName = prefNames[i];
+				this.user[prefName] = _getFromBranch(prefName, userSetBranch);
+				this.default[prefName] = _getFromBranch(prefName, defaultBranch);
+			}
+			catch(e) {};
 		}
 
 		Callback.callType("prefsChanged");
