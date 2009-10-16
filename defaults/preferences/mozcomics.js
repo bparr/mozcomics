@@ -7,9 +7,9 @@ pref("extensions.mozcomics.firstRun", true);
 
 // user interface
 pref("extensions.mozcomics.showUnreadCount", true);
+pref("extensions.mozcomics.alwaysOpenInNewWindow", false);
 pref("extensions.mozcomics.wrapAround", true);
-pref("extensions.mozcomics.loadLastViewedAtStart", true);
-pref("extensions.mozcomics.lastViewed", "");
+pref("extensions.mozcomics.useArrowsToSwitchStrip", true);
 pref("extensions.mozcomics.defaultToMarkRead", true);
 pref("extensions.mozcomics.multipleEnabledComics", true);
 pref("extensions.mozcomics.showMouseoverBelowImage", false);

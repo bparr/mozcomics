@@ -16,8 +16,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 	<prefpane id="mozcomics-preferences-general" label="&mozcomics.preferences.general;" >
 		<preferences>
 			<preference id="mozcomics-preferences-showUnreadCount" name="extensions.mozcomics.showUnreadCount" type="bool" />
+			<preference id="mozcomics-preferences-alwaysOpenInNewWindow" name="extensions.mozcomics.alwaysOpenInNewWindow" type="bool" />
 			<preference id="mozcomics-preferences-wrapAround" name="extensions.mozcomics.wrapAround" type="bool" />
-			<preference id="mozcomics-preferences-loadLastViewedAtStart" name="extensions.mozcomics.loadLastViewedAtStart" type="bool" />
+			<preference id="mozcomics-preferences-useArrowsToSwitchStrip" name="extensions.mozcomics.useArrowsToSwitchStrip" type="bool" />
 			<preference id="mozcomics-preferences-defaultToMarkRead" name="extensions.mozcomics.defaultToMarkRead" type="bool" />
 			<preference id="mozcomics-preferences-multipleEnabledComics" name="extensions.mozcomics.multipleEnabledComics" type="bool" />
 			<preference id="mozcomics-preferences-showMouseoverBelowImage" name="extensions.mozcomics.showMouseoverBelowImage" type="bool" />
@@ -35,8 +36,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			<caption label="&mozcomics.preferences.userInterface;" />
 
 			<checkbox label="&mozcomics.preferences.showUnreadCount;" preference="mozcomics-preferences-showUnreadCount" />
+			<checkbox label="&mozcomics.preferences.alwaysOpenInNewWindow;" preference="mozcomics-preferences-alwaysOpenInNewWindow" />
 			<checkbox label="&mozcomics.preferences.wrapAround;" preference="mozcomics-preferences-wrapAround" />
-			<checkbox label="&mozcomics.preferences.loadLastViewedAtStart;" preference="mozcomics-preferences-loadLastViewedAtStart" />
+			<checkbox label="&mozcomics.preferences.useArrowsToSwitchStrip;" preference="mozcomics-preferences-useArrowsToSwitchStrip" />
 			<checkbox label="&mozcomics.preferences.defaultToMarkRead;" preference="mozcomics-preferences-defaultToMarkRead" />
 			<checkbox label="&mozcomics.preferences.multipleEnabledComics;" preference="mozcomics-preferences-multipleEnabledComics" />
 			<checkbox label="&mozcomics.preferences.showMouseoverBelowImage;" preference="mozcomics-preferences-showMouseoverBelowImage" />
@@ -46,6 +48,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					<radio label="&mozcomics.preferences.first;" value="0"/>
 					<radio label="&mozcomics.preferences.last;" value="1"/>
 					<radio label="&mozcomics.preferences.random;" value="2"/>
+					<radio label="&mozcomics.preferences.lastRead;" value="3"/>
 				</radiogroup>
 			</hbox>
 		</groupbox>

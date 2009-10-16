@@ -8,78 +8,56 @@ MozComics.Strips = new function() {
 
 	Components.utils.import("resource://mozcomics/strips.js");
 	var S = StripsResource.S;
-	var INFINITE = StripsResource.INFINITE;
+	var INFINITY = StripsResource.INFINITY;
 
 	this.init = init;
 	this.refresh = refresh;
 	this.firstRefresh = true;
 	this.unload = unload;
 
-	this.setToDefaultStrip = setToDefaultStrip;
-	this.setToFirstStrip = setToFirstStrip;
-	this.setToPreviousStrip = setToPreviousStrip;
-	this.setToNextStrip = setToNextStrip;
-	this.setToLastStrip = setToLastStrip;
-	this.setToRandomStrip = setToRandomStrip;
-	this.setToBackStrip = setToBackStrip;
-	this.setToForwardStrip = setToForwardStrip;
+	this.lastStripRequest = null;
 
-	this._generateDefaultData = _generateDefaultData;
+	this.deleteCache = deleteCache;
+	this.setToDefaultStrip = setToDefaultStrip;
+	this.repeatLastRequest = repeatLastRequest;
+	this._setStrip = _setStrip;
+	this.setToFirstStrip = function() { this._setStrip(S.first); };
+	this.setToPreviousStrip = function() { this._setStrip(S.previous); };
+	this.setToNextStrip = function() { this._setStrip(S.next); };
+	this.setToLastStrip = function() { this._setStrip(S.last); };
+	this.setToRandomStrip = function() { this._setStrip(S.random); };
+	this.setToBackStrip = function() { this._setStrip(S.back); };
+	this.setToForwardStrip = function() { this._setStrip(S.forward); };
+	this.setToLastReadStrip = function() { this._setStrip(S.lastRead); };
+	this.setByDatePicker = setByDatePicker;
+
 	this._preloadImage = _preloadImage;
 	this._updatePane = _updatePane;
-	this._unloadLastStrip = _unloadLastStrip;
+	this._unloadCurrentStrip = _unloadCurrentStrip;
 	this._updateParamVariables = _updateParamVariables;
-	this._updateDatePicker = _updateDatePicker;
+
+	this.datePickerDates = null;
+	this._updateDatePickerDates = _updateDatePickerDates;
+	this.updateDatePicker = updateDatePicker;
 
 	this.params = {
 		lastComic: null,
 		lastStrip: null,
-		lastRead: null,
+		lastRead: INFINITY,
 		stripQueue: []
 	}
 
-	this.lastShowRead = null;
-	this.lastBookmarkType = null;
-
-	this.lastStripRequest = null;
-
 	function init() {
-		this.lastShowRead = MozComics.Dom.showRead.checked;
-		this.lastBookmarkType = MozComics.Dom.bookmarkMenu.value;
 	}
 
 	function refresh() {
-		if(self.firstRefresh) {
-			self.firstRefresh = false;
-
-			// attempt to load last viewed strip stored in preference
-			var lastViewed = MozComics.Prefs.get("lastViewed").split(",");
-			if(MozComics.Prefs.get("loadLastViewedAtStart") && lastViewed.length == 2) {
-				var data = _generateDefaultData(S.get);
-				data.enabledComics = [{comic: lastViewed[0]}];
-				data.params.strip = lastViewed[1];
-				data.showRead = true;
-				data.onComplete = function(row, statementId) {
-					if(row) {
-						self._updatePane(row);
-					}
-					else {
-						self.refresh();
-					}
-				};
-
-				StripsResource.findStrip(data);
-				return;
-			}
-		}
-
-		self.params.lastRead = INFINITE;
+		self.params.lastRead = INFINITY;
 		self.params.stripQueue = [];
 
 		// change strip to default if no strip showing, or the one that is
 		// showing is from a comic that is no longer enabled
 		if(MozComics.Dom.stripFound.hidden ||
-			!self.params.lastComic ||
+			self.params.lastComic == null ||
 			!MozComics.Comics.getComic(self.params.lastComic) ||
 			!MozComics.Comics.getComicProp(self.params.lastComic, "enabled")) {
 
@@ -88,23 +66,15 @@ MozComics.Strips = new function() {
 	}
 
 	function unload() {
-		// save currently viewed strip to preference
-		if(this.params.lastComic && 
-			this.params.lastStrip && 
-			Math.abs(this.params.lastComic) < INFINITE &&
-			Math.abs(this.params.lastStrip) < INFINITE) {
+		this._unloadCurrentStrip();
+	}
 
-			MozComics.Prefs.set("lastViewed", 
-				this.params.lastComic + "," + this.params.lastStrip
-			);
-		}
-		else {
-			MozComics.Prefs.set("lastViewed", "");
-		}
+	function deleteCache() {
+		this.params.stripQueue = [];
 	}
 
 	function setToDefaultStrip() {
-		switch(MozComics.Prefs.get("defaultStrip")) {
+		switch(MozComics.Prefs.user.defaultStrip) {
 			case 0:
 				this.setToFirstStrip();
 				break;
@@ -117,88 +87,70 @@ MozComics.Strips = new function() {
 				this.setToRandomStrip();
 				break;
 
+			case 3:
+				this.setToLastReadStrip();
+				break;
+
 			default:
 				this.setToLastStrip();
 				break;
 		}
 	}
 
-	function setToFirstStrip() {
-		var data = _generateDefaultData(S.first);
-		_findStrip(data);
+	function repeatLastRequest() {
+		if(this.lastStripRequest != null) {
+			this._setStrip(this.lastStripRequest);
+		}
 	}
 
-	function setToPreviousStrip() {
-		if(this.params.lastComic && this.params.lastStrip) {
-			var data = _generateDefaultData(S.previous);
+	function _setStrip(statementId) {
+		var currentReadTime = this._unloadCurrentStrip();
+		if(statementId == S.back && currentReadTime && currentReadTime < this.params.lastRead) {
+			this.params.lastRead = currentReadTime;
+		}
 
-			if(MozComics.Prefs.get("wrapAround")) {
+		if(statementId != this.lastStripRequest) {
+			this.deleteCache();
+			this.lastStripRequest = statementId;
+		}
+
+		// lastComic and lastStrip need to be numbers for previous and next search
+		if(this.params.lastComic == null || this.params.lastStrip == null) {
+			if(statementId == S.previous || statementId == S.next) {
+				this._updatePane(false, statementId);
+				return;
+			}
+		}
+
+		// generate data from StripsResource.findStrip
+		var data =  {
+			statementId: statementId,
+			onFailStatementId: null,
+			params: this.params,
+			onComplete: this._updatePane,
+			enabledComics: MozComics.Comics.enabled,
+			showRead: MozComics.Dom.showRead.checked,
+			bookmark: MozComics.Dom.bookmarkMenu.value
+		};
+
+		if(statementId == S.back || statementId == S.forward || statementId == S.lastRead) {
+			data.showRead = true;
+		}
+
+		if(statementId == S.lastRead) {
+			data.onFailStatementId = S.first;
+		}
+		else if(MozComics.Prefs.user.wrapAround) {
+			if(statementId == S.previous) {
 				data.onFailStatementId = S.last;
 			}
-
-			_findStrip(data);
-		}
-		else {
-			this._updatePane(false, S.previous);
-		}
-	}
-
-	function setToNextStrip() {
-		if(this.params.lastComic && this.params.lastStrip) {
-			var data = _generateDefaultData(S.next);
-
-			if(MozComics.Prefs.get("wrapAround")) {
+			else if(statementId == S.next) {
 				data.onFailStatementId = S.first;
 			}
-
-			_findStrip(data);
 		}
-		else {
-			this._updatePane(false, S.previous);
-		}
-	}
-
-	function setToLastStrip() {
-		var data = _generateDefaultData(S.last);
-		_findStrip(data);
-	}
-
-
-	function setToRandomStrip() {
-		var data = _generateDefaultData(S.random);
-		_findStrip(data);
-	}
-
-
-	function setToBackStrip() {
-		var data = _generateDefaultData(S.back);
-		data.showRead = true;
-		_findStrip(data);
-	}
-
-	function setToForwardStrip() {
-		var data = _generateDefaultData(S.forward);
-		data.showRead = true;
-		_findStrip(data);
-	}
-
-	function _findStrip(data) {
-		self._unloadLastStrip();
-
-		var statementId = data.statementId;
-		if(statementId != self.lastStripRequest ||
-			MozComics.Dom.showRead.checked != self.lastShowRead ||
-			MozComics.Dom.bookmarkMenu.value != self.lastBookmarkType) {
-
-			data.params.stripQueue = [];
-			self.lastStripRequest = statementId;
-			self.lastShowRead = MozComics.Dom.showRead.checked;
-			self.lastBookmarkType = MozComics.Dom.bookmarkMenu.value;
-		}
-
 
 		if(data.params.stripQueue.length > 0) {
-			self._updatePane(data.params.stripQueue.shift(), statementId);
+			this._updatePane(data.params.stripQueue.shift(), statementId);
 			if(data.params.stripQueue.length == 0) {
 				data.onComplete = function(row, statementId) {
 					if(row) {
@@ -214,21 +166,28 @@ MozComics.Strips = new function() {
 		}
 	}
 
-	function _generateDefaultData(statementId) {
-		statementId = (statementId != undefined) ? statementId : null;
-		return {
-			statementId: statementId,
-			onFailStatementId: null,
-			params: self.params,
-			onComplete: self._updatePane,
-			enabledComics: MozComics.Comics.enabled,
-			showRead: MozComics.Dom.showRead.checked,
-			bookmark: MozComics.Dom.bookmarkMenu.value
-		};
+	function setByDatePicker() {
+		var d = MozComics.Dom.comicPickerDate.dateValue;
+		var time = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - 1;
+
+		this.params.stripQueue = [];
+
+		var dateType = MozComics.Dom.comicPickerDateMenu.value;
+		switch(dateType) {
+			case "pubDate":
+				this.params.lastComic = INFINITY;
+				this.params.lastStrip = Math.floor(time / 1000);
+				this.setToNextStrip();
+				break;
+			case "readDate":
+				this.params.lastRead = time;
+				this.setToForwardStrip();
+				break;
+		}
 	}
 
 	function _preloadImage(src) {
-		if(MozComics.Prefs.get("preloadImages")) {
+		if(MozComics.Prefs.user.preloadImages) {
 			var image = new Image();
 			image.src = src;
 		}
@@ -240,15 +199,16 @@ MozComics.Strips = new function() {
 		}
 
 		self._updateParamVariables(row, statementId);
-		self._updateDatePicker(row);
+		self._updateDatePickerDates(row);
 
 		MozComics.Dom.stripFound.hidden = !row;
 		MozComics.Dom.stripNone.hidden = !!row;
 		if(row) {
 			var comic = MozComics.Comics.getComic(row.comic);
-			MozComics.Dom.comic.value = comic.name;
+			MozComics.Dom.comic.textContent = comic.name;
 			MozComics.Dom.comic.href = comic.url;
-			MozComics.Dom.title.value = row.title;
+			var title = (row.title) ? row.title : MozComics.Utils.getString("strip.noTitle");
+			MozComics.Dom.title.textContent = title;
 			MozComics.Dom.title.href = row.url;
 			MozComics.Dom.image.src = row.image;
 			MozComics.Dom.image.hidden = false;
@@ -262,13 +222,13 @@ MozComics.Strips = new function() {
 			// handle mouseover extra property
 			MozComics.Dom.imageTooltip.hidden = !extra.mouseover;
 			MozComics.Dom.imageTooltip.label = "";
-			MozComics.Dom.imageTooltipLabel.value = "";
+			MozComics.Dom.imageTooltipLabel.textContent = "";
 			MozComics.Dom.imageTooltipLabel.hidden = true;
 			if(extra.mouseover) {
 				var mouseover = MozComics.Utils.unescapeHtml(extra.mouseover);
 				MozComics.Dom.imageTooltip.label = mouseover;
-				if(MozComics.Prefs.get("showMouseoverBelowImage")) {
-					MozComics.Dom.imageTooltipLabel.value = mouseover;
+				if(MozComics.Prefs.user.showMouseoverBelowImage) {
+					MozComics.Dom.imageTooltipLabel.textContent = mouseover;
 					MozComics.Dom.imageTooltipLabel.hidden = false;
 				}
 			}
@@ -281,7 +241,7 @@ MozComics.Strips = new function() {
 			}
 
 
-			if(MozComics.Prefs.get("defaultToMarkRead")) {
+			if(MozComics.Prefs.user.defaultToMarkRead) {
 				MozComics.Dom.updateRead.checked = true;
 			}
 
@@ -296,13 +256,11 @@ MozComics.Strips = new function() {
 	}
 
 	// update show read if the updateRead checkbox was checked
-	function _unloadLastStrip() {
-		if(this.params.lastComic && this.params.lastStrip && MozComics.Dom.updateRead.checked) {
-			var d = new Date();
-			StripsResource.updateReadTime(
-				this.params.lastComic, this.params.lastStrip, d.getTime()
-			);
+	function _unloadCurrentStrip() {
+		if(this.params.lastComic != null && this.params.lastStrip != null && MozComics.Dom.updateRead.checked) {
+			return StripsResource.updateReadTime(this.params.lastComic, this.params.lastStrip);
 		}
+		return false;
 	}
 
 	function _updateParamVariables(row, statementId) {
@@ -316,18 +274,18 @@ MozComics.Strips = new function() {
 					this.params.lastRead = row.read;
 					break;
 				default: // some other navigation
-					this.params.lastRead = INFINITE;
+					this.params.lastRead = INFINITY;
 			}
 		}
 		else {
 			switch(statementId) {
 				case S.previous:
-					this.params.lastComic = -1 * INFINITE;
-					this.params.lastStrip = -1 * INFINITE;
+					this.params.lastComic = -1 * INFINITY;
+					this.params.lastStrip = -1 * INFINITY;
 					break;
 				case S.next:
-					this.params.lastComic = INFINITE;
-					this.params.lastStrip = INFINITE;
+					this.params.lastComic = INFINITY;
+					this.params.lastStrip = INFINITY;
 					break;
 				default: // some other navigation
 					this.params.lastComic = null;
@@ -337,29 +295,42 @@ MozComics.Strips = new function() {
 
 			switch(statementId) {
 				case S.back:
-					this.params.lastRead = -1 * INFINITE;
+					this.params.lastRead = -1 * INFINITY;
 					break;
 				case S.forward:
 				default: // some other navigation
-					this.params.lastRead = INFINITE;
+					this.params.lastRead = INFINITY;
 			}
 		}
 	}
 
-	function _updateDatePicker(row) {
-		var dateType = MozComics.Dom.comicPickerDateMenu.value;
+	function _updateDatePickerDates(row) {
+		if(row) {
+			this.datePickerDates = {
+				"pubDate": MozComics.Utils.sqlToDate(row.strip).getTime(),
+				"readDate": row.read
+			};
+		}
+		else {
+			var d = new Date();
+			this.datePickerDates = {
+				"pubDate": d.getTime(),
+				"readDate": d.getTime()
+			};
+		}
+
+		this.updateDatePicker();
+	}
+
+	function updateDatePicker() {
 		var datepicker = MozComics.Dom.comicPickerDate;
+		var dateType = MozComics.Dom.comicPickerDateMenu.value;
 		var d = new Date();
 
-		if(row) {
-			switch(dateType) {
-				case "pubDate":
-					d.setTime(row.strip * 1000);
-					break;
-				case "readDate":
-					d.setTime((row.read) ? row.read : 0);
-					break;
-			}
+		switch(dateType) {
+			case "pubDate":
+			case "readDate":
+				d.setTime(this.datePickerDates[dateType]);
 		}
 
 		datepicker.dateValue = d;

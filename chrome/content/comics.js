@@ -10,7 +10,6 @@ MozComics.Comics = new function() {
 
 	this.init = init;
 	this.unload = unload;
-	this.comicsResourceCallback = comicsResourceCallback;
 	this.updateStatusBarPanel = updateStatusBarPanel;
 	this.addComic = addComic;
 	this.deleteComic = deleteComic;
@@ -26,30 +25,16 @@ MozComics.Comics = new function() {
 	this.enableAll = enableAll;
 	this.disableAll = disableAll;
 
-	this.id = null; // id for this instance of the MozComics object
 	this.showing = [];
 	this.enabled = [];
 
 	function init() {
-		this.id = ComicsResource.addCallback(this.comicsResourceCallback);
 		this.updateStatusBarPanel();
 		this.refreshCache();
 	}
 
 	function unload() {
-		ComicsResource.saveStatesToDB(this.id);
-		ComicsResource.removeCallback(this.id);
-	}
-
-	function comicsResourceCallback(fullRefresh) {
-		self.updateStatusBarPanel();
-
-		if(fullRefresh) {
-			self.refreshCache();
-		}
-		else {
-			MozComics.ComicPicker.treeview.update();
-		}
+		ComicsResource.saveStatesToDB(MozComics.callbackId);
 	}
 
 	function updateStatusBarPanel() {
@@ -57,17 +42,12 @@ MozComics.Comics = new function() {
 			return;
 		}
 
-		var label = (MozComics.Prefs.get('showUnreadCount')) ? ComicsResource.totalUnread : "";
+		var label = (MozComics.Prefs.user.showUnreadCount) ? ComicsResource.totalUnread : "";
 		MozComics.Dom.statusBarPanel.label = label;
 	}
 
 	function addComic() {
-		if(MozComics.isWindow) {
-			window.open(MozComics.Utils.URLS.COMIC_LIST);
-		}
-		else {
-			window.loadURI(MozComics.Utils.URLS.COMIC_LIST);
-		}
+		MozComics.showWebpage(MozComics.Utils.URLS.COMIC_LIST);
 	}
 
 	function deleteComic() {
@@ -126,14 +106,14 @@ MozComics.Comics = new function() {
 	}
 
 	function getComicProp(comic, prop) {
-		return self.getComic(comic).get(prop, self.id);
+		return self.getComic(comic).get(prop, MozComics.callbackId);
 	}
 
 	// ignoreUpdatingCache is a flag used when setComicProp is called
 	// multiple times in a function so that refreshCache is not called
 	// every time a property is changed
 	function setComicProp(comic, prop, val, ignoreUpdatingCache) {
-		this.getComic(comic).set(prop, val, this.id);
+		this.getComic(comic).set(prop, val, MozComics.callbackId);
 
 		if(!ignoreUpdatingCache) {
 			this.refreshCache(true);

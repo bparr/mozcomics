@@ -5,6 +5,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 var EXPORTED_SYMBOLS = ["DB"];
 
+Components.utils.import("resource://mozcomics/utils.js");
+Components.utils.import("resource://mozcomics/callback.js");
+
 /*
  * Establish database connection, and database schema. Also provide a few
  * database related objects/functions.
@@ -21,6 +24,7 @@ var DB = new function() {
 	this.dbConn = storageService.openDatabase(file); // database connection
 	this.REASON_FINISHED = Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED;
 	this.cloneRow = cloneRow;
+	this.updateReadTimes = updateReadTimes;
 
 	// list of columns in the comic table
 	this.comicColumns = ["comic", "type", "name", "url", "description", "extra",
@@ -73,6 +77,10 @@ var DB = new function() {
 		"ON strip (comic, read);");
 	statement.execute();
 
+	var updateStripReadTimeStatement = this.dbConn.createStatement(
+		"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
+	);
+
 
 	// row is from a statement run asynchronously. Return an object with
 	// properties listed in the columns array.
@@ -86,6 +94,36 @@ var DB = new function() {
 			catch(e) {}
 		}
 		return clone;
+	}
+
+	function updateReadTimes(comic, strips, d) {
+		d = (d) ? d : new Date();
+		var read = d.getTime();
+
+		var updateStatements = [];
+		for(var i = 0, len = strips.length; i < len; i++) {
+			var updateStripReadTime = updateStripReadTimeStatement.clone();
+			updateStripReadTime.params.comic = comic;
+			updateStripReadTime.params.strip = strips[i];
+
+			// add i to read in order to make read times different
+			updateStripReadTime.params.read = read + i;
+
+			updateStatements.push(updateStripReadTime);
+		}
+
+		DB.dbConn.executeAsync(updateStatements, updateStatements.length, {
+			handleResult: function(response) {},
+			handleError: function(error) {},
+			handleCompletion: function(reason) {
+				Callback.callType("stripRead");
+				if(reason != DB.REASON_FINISHED) {
+					Utils.alert(Utils.getString("updateReadTime.sqlError"));
+				}
+			}
+		});
+
+		return read;
 	}
 
 	function _createParamsArray(columnArray) {

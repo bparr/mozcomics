@@ -16,6 +16,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.toolbar.last                         "Last">
 <!ENTITY mozcomics.toolbar.back                         "Back">
 <!ENTITY mozcomics.toolbar.forward                      "Forward">
+<!ENTITY mozcomics.toolbar.openWindow                   "New Window">
 
 <!ENTITY mozcomics.menu.findReadStrips                  "Find Read Strips">
 <!ENTITY mozcomics.menu.markAllStripsRead               "Mark All Strips Read">
@@ -39,9 +40,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.preferences.general                  "General">
 <!ENTITY mozcomics.preferences.userInterface            "User Interface">
 <!ENTITY mozcomics.preferences.showUnreadCount          "Show unread count in status bar">
+<!ENTITY mozcomics.preferences.alwaysOpenInNewWindow    "Always open MozComics in a new stand-alone window">
 <!ENTITY mozcomics.preferences.wrapAround               "Wrap around">
-<!ENTITY mozcomics.preferences.wrapAround               "Wrap around">
-<!ENTITY mozcomics.preferences.loadLastViewedAtStart    "Load last viewed strip at start">
+<!ENTITY mozcomics.preferences.useArrowsToSwitchStrip   "Use arrow keys to switch strip">
 <!ENTITY mozcomics.preferences.defaultToMarkRead        "Default to marked read">
 <!ENTITY mozcomics.preferences.multipleEnabledComics    "Allow multiple comics to be enabled at a time">
 <!ENTITY mozcomics.preferences.showMouseoverBelowImage  "Show mouseover text/images below strip image">
@@ -49,6 +50,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.preferences.first                    "First">
 <!ENTITY mozcomics.preferences.last                     "Last">
 <!ENTITY mozcomics.preferences.random                   "Random">
+<!ENTITY mozcomics.preferences.lastRead                 "Last Read">
 <!ENTITY mozcomics.preferences.preloading               "Preloading">
 <!ENTITY mozcomics.preferences.preloadAmount            "Number of strips to preload:">
 <!ENTITY mozcomics.preferences.preloadImages            "Preload images">

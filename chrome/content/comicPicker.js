@@ -49,7 +49,7 @@ MozComics.ComicPicker = new function() {
 
 		var selectedComic = this.selectedComic;
 		if(selectedComic) {
-			if(MozComics.Prefs.get("multipleEnabledComics")) {
+			if(MozComics.Prefs.user.multipleEnabledComics) {
 				// toggle enabled property of selected comic
 				var nowEnabled = !MozComics.Comics.getComicProp(selectedComic, "enabled");
 				MozComics.Comics.setComicProp(selectedComic, "enabled", nowEnabled);

@@ -11,21 +11,47 @@ var MozComics = new function() {
 
 	this.onChromeLoad = onChromeLoad;
 	this.onUnload = onUnload;
+	this.showWebpage = showWebpage;
 	this.openWindow = openWindow;
+	this._openMozComicsWindow = _openMozComicsWindow;
 	this.togglePane = togglePane;
 	this.toggleComicPickerPane = toggleComicPickerPane;
-	this.handleKeyPress = handleKeyPress;
+	this.focusStripPane = focusStripPane;
+	this.handleKeyDown = handleKeyDown;
+	this.handleKeyUp = handleKeyUp;
 	this.buildComicsContextMenu = buildComicsContextMenu;
 	this.showPreferences = showPreferences;
+	this._getCurrentScrollXPos = _getCurrentScrollXPos;
+
+	this.lastScrollXPos = null;
 
 	var MAX_BOOKMARK = 2;
+
+	this.callbackId = null;
+	this.callbackFunctions = {
+		stripRead: function() {
+			MozComics.Comics.updateStatusBarPanel();
+			MozComics.ComicPicker.treeview.update();
+		},
+
+		comicsChanged: function() {
+			MozComics.Comics.updateStatusBarPanel();
+			MozComics.Comics.refreshCache();
+		},
+
+		prefsChanged: function() {
+			MozComics.Dom.enableAll.disabled = !MozComics.Prefs.user.multipleEnabledComics;
+			MozComics.Comics.updateStatusBarPanel();
+		}
+	}
 
 	function init() {
 		// load code from resource module
 		Components.utils.import("resource://mozcomics/utils.js"); this.Utils = Utils;
 		Components.utils.import("resource://mozcomics/prefs.js"); this.Prefs = Prefs;
 		Components.utils.import("resource://mozcomics/update.js"); this.Update = Update;
-		
+		Components.utils.import("resource://mozcomics/callback.js"); this.Callback = Callback;
+
 		// load other javascript files
 		var scriptFiles = [
 			"comicPicker",
@@ -51,10 +77,16 @@ var MozComics = new function() {
 		MozComics.ComicPicker.init();
 		MozComics.Comics.init();
 
-		if(MozComics.Prefs.get('firstRun')) {
-			var url = MozComics.Utils.URLS.FIRST_RUN;
-			gBrowser.selectedTab = gBrowser.addTab(url, null);
+		MozComics.callbackId = MozComics.Callback.add(MozComics.callbackFunctions);
+		MozComics.Prefs.recache();
+
+		if(MozComics.Prefs.user.firstRun) {
+			MozComics.showWebpage(MozComics.Utils.URLS.FIRST_RUN);
 			MozComics.Prefs.set('firstRun', false);
+		}
+
+		if(MozComics.isWindow) {
+			MozComics.focusStripPane();
 		}
 	}
 
@@ -63,10 +95,25 @@ var MozComics = new function() {
 
 		MozComics.Strips.unload();
 		MozComics.Comics.unload();
+
+		MozComics.Callback.remove(MozComics.callbackId);
+	}
+
+	function showWebpage(url) {
+		if(MozComics.isWindow) {
+			window.open(MozComics.Utils.URLS.COMIC_LIST);
+		}
+		else {
+			gBrowser.selectedTab = gBrowser.addTab(url, null);
+		}
 	}
 
 	function openWindow() {
 		this.togglePane();
+		this._openMozComicsWindow();
+	}
+
+	function _openMozComicsWindow() {
 		window.open('chrome://mozcomics/content/window.xul',
 			'_blank', 'chrome,resizable=yes'
 		);
@@ -78,18 +125,29 @@ var MozComics = new function() {
 		}
 
 		var nowHidden = !MozComics.Dom.pane.hidden;
-		MozComics.Dom.pane.hidden = nowHidden;
-		MozComics.Dom.paneSplitter.hidden = nowHidden;
-		(nowHidden) ? MozComics.Dom.focusableStripPane.blur() : MozComics.Dom.focusableStripPane.focus();
+		if(!nowHidden && MozComics.Prefs.user.alwaysOpenInNewWindow) {
+			this._openMozComicsWindow();
+		}
+		else {
+			MozComics.Dom.pane.hidden = nowHidden;
+			MozComics.Dom.paneSplitter.hidden = nowHidden;
+			(nowHidden) ? MozComics.Dom.focusableStripPane.blur() : MozComics.focusStripPane();
+		}
 	}
 
 	function toggleComicPickerPane() {
-		MozComics.Dom.comicPickerPane.hidden = !MozComics.Dom.comicPickerPane.hidden;
-		MozComics.Dom.comicPickerToolbarIcon.setAttribute("expand", MozComics.Dom.comicPickerPane.hidden);
+		var nowHidden = !MozComics.Dom.comicPickerPane.hidden;
+		MozComics.Dom.comicPickerPane.hidden = nowHidden;
+		MozComics.Dom.comicPickerToolbarIcon.setAttribute("expand", nowHidden);
+		MozComics.Dom.comicPickerPaneSplitter.hidden = nowHidden;
 	}
 
-	function handleKeyPress(event, from) {
-		var key = String.fromCharCode(event.which);
+	function focusStripPane() {
+		MozComics.Dom.focusableStripPane.focus();
+	}
+
+	function handleKeyDown(event, from) {
+		var key = String.fromCharCode(event.which).toLowerCase();
 		if(!event.ctrlKey && !event.altKey && !event.metaKey) {
 			if(event.shiftKey) {
 				if(event.keyCode == event.DOM_VK_BACK_SPACE) {
@@ -98,10 +156,19 @@ var MozComics = new function() {
 				}
 			}
 			else {
-				if(event.keyCode == event.DOM_VK_LEFT || key == 'p') {
+				if(event.keyCode == event.DOM_VK_LEFT && MozComics.lastScrollXPos === null) {
+					MozComics.lastScrollXPos = MozComics._getCurrentScrollXPos();
+				}
+				else if(event.keyCode == event.DOM_VK_RIGHT && MozComics.lastScrollXPos === null) {
+					MozComics.lastScrollXPos = MozComics._getCurrentScrollXPos();					
+				}
+				else if(event.keyCode == event.DOM_VK_RETURN || event.keyCode == event.DOM_VK_ENTER) {
+					MozComics.Strips.repeatLastRequest();
+				}
+				else if(key == 'p') {
 					MozComics.Strips.setToPreviousStrip();
 				}
-				else if(event.keyCode == event.DOM_VK_RIGHT || key == 'n') {
+				else if(key == 'n') {
 					MozComics.Strips.setToNextStrip();
 				}
 				else if(event.keyCode == event.DOM_VK_BACK_SPACE) {
@@ -122,12 +189,38 @@ var MozComics = new function() {
 				}
 				else if(key == 's') {
 					MozComics.Dom.showRead.checked = !MozComics.Dom.showRead.checked;
+					MozComics.Strips.deleteCache();
 				}
 				else if(key == 'b') {
 					var newValue = (parseInt(MozComics.Dom.bookmarkMenu.value) + 1) % MAX_BOOKMARK;
 					MozComics.Dom.bookmarkMenu.value = newValue;
+					MozComics.Strips.deleteCache();
 				}
 			}
+		}
+	}
+
+	function handleKeyUp(event, from) {
+		var currentScrollXPos = MozComics._getCurrentScrollXPos();
+		var lastScrollXPos = MozComics.lastScrollXPos;
+		MozComics.lastScrollXPos = null;
+		if(event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) {
+			return;
+		}
+
+		if(lastScrollXPos === null || currentScrollXPos != lastScrollXPos) {
+			return;
+		}
+
+		if(!MozComics.Prefs.user.useArrowsToSwitchStrip) {
+			return;
+		}
+
+		if(event.keyCode == event.DOM_VK_LEFT) {
+			MozComics.Strips.setToPreviousStrip();
+		}
+		else if(event.keyCode == event.DOM_VK_RIGHT) {
+			MozComics.Strips.setToNextStrip();
 		}
 	}
 
@@ -144,7 +237,13 @@ var MozComics = new function() {
 			'mozcomics-preferences', 'chrome,modal=yes'
 		);
 
-		MozComics.Comics.updateStatusBarPanel();
+		MozComics.Prefs.recache();
+	}
+
+	function _getCurrentScrollXPos() {
+		var x = {};
+		MozComics.Dom.stripPane.getPosition(x, {});
+		return x.value;
 	}
 }
 

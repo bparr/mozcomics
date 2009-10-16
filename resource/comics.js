@@ -7,6 +7,7 @@ var EXPORTED_SYMBOLS = ["ComicsResource"];
 
 Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/db.js");
+Components.utils.import("resource://mozcomics/callback.js");
 
 /*
  * Object to contain an indiviual comic, and expose different states.
@@ -123,9 +124,28 @@ var ComicsResource = new function() {
 	this.findReadStrips = findReadStrips;
 	this.markAllStripsRead = markAllStripsRead;
 
-	this.addCallback = addCallback;
-	this.removeCallback = removeCallback;
-	this.callCallbacks = callCallbacks;
+	this.callbackFunctions = {
+		onAdd: function(id) {
+			// add set of states for this id
+			for(var comicId in self.all) {
+				var comic = self.all[comicId];
+				comic.states[id] = comic.state;
+			}
+		},
+		onRemove: function(id) {
+			// delete set of states for this id
+			for(var comicId in self.all) {
+				delete self.all[comicId].states[id];
+			}
+		},
+		onCallType: function(type) {
+			if(type == "stripRead" || type == "comicsChanged") {
+				self.populateUnreadCounts();
+			}
+		}
+	};
+	Callback.addResource(this.callbackFunctions);
+
 
 	// create statements
 	var getUnreadCountsStatement = DB.dbConn.createStatement(
@@ -145,9 +165,6 @@ var ComicsResource = new function() {
 
 	var getUnreadStripsStatement = DB.dbConn.createStatement(
 		"SELECT strip, url FROM strip WHERE comic=:comic AND read ISNULL;"
-	);
-	var updateStripReadTimeStatement = DB.dbConn.createStatement(
-		"UPDATE strip SET read = :read WHERE comic = :comic AND strip = :strip;"
 	);
 
 
@@ -181,7 +198,9 @@ var ComicsResource = new function() {
 		var comic = new Comic(row);
 
 		var oldComic = self.all[comic.comic];
-		for(var id in callbacks) {
+		var callbackIds = Callback.getIds();
+		for(var i = 0, len = callbackIds.length; i < len; i++) {
+			var id = callbackIds[i];
 			// persist states from old comic
 			if(oldComic && oldComic.states[id]) {
 				comic.states[id] = oldComic.states[id];
@@ -212,7 +231,7 @@ var ComicsResource = new function() {
 			handleError: function(error) {},
 			handleCompletion: function(reason) {
 				if(reason == DB.REASON_FINISHED) {
-					self.callCallbacks(true);
+					Callback.callType("comicsChanged");
 				}
 				else {
 					Utils.alert(Utils.getString("deleteComic.sqlError"));
@@ -268,7 +287,7 @@ var ComicsResource = new function() {
 							readStrips.push(row.getResultByName("strip"));
 						}
 					}
-					_processReadStrips(readStrips, this.selectedComic);
+					_processReadStrips(this.selectedComic, readStrips);
 				}
 				else {
 					Utils.alert(Utils.getString("findReadStrips.sqlError"));
@@ -296,7 +315,7 @@ var ComicsResource = new function() {
 					for(var i = 0, len = this.rows.length; i < len; i++) {
 						readStrips.push(this.rows[i].getResultByName("strip"));
 					}
-					_processReadStrips(readStrips, this.selectedComic);
+					_processReadStrips(this.selectedComic, readStrips);
 				}
 				else {
 					Utils.alert(Utils.getString("markAllStripsRead.sqlError"));
@@ -305,76 +324,18 @@ var ComicsResource = new function() {
 		});
 	}
 
-	function _processReadStrips(readStrips, selectedComic) {
+	function _processReadStrips(selectedComic, readStrips) {
 		if(readStrips.length > 0) {
 			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
 				.getService(Components.interfaces.nsIPrompt);
 
 			var result = prompt.confirm("", Utils.getString("processReadStrips.youSure", readStrips.length));
 			if(result) {
-				var d = new Date();
-				var read = d.getTime();
-
-				var updateStatements = [];
-				for(var i = 0, len = readStrips.length; i < len; i++) {
-					var updateStripReadTime = updateStripReadTimeStatement.clone();
-					updateStripReadTime.params.comic = selectedComic.comic;
-					updateStripReadTime.params.strip = readStrips[i];
-
-					// add i to read in order to make read times different
-					updateStripReadTime.params.read = read + i;
-
-					updateStatements.push(updateStripReadTime);
-				}
-
-				DB.dbConn.executeAsync(updateStatements, updateStatements.length, {
-					handleResult: function(response) {},
-					handleError: function(error) {},
-					handleCompletion: function(reason) {
-						self.callCallbacks();
-						if(reason != DB.REASON_FINISHED) {
-							Utils.alert(Utils.getString("processReadStrips.sqlError"));
-						}
-					}
-				});
+				DB.updateReadTimes(selectedComic.comic, readStrips);
 			}
 		}
 		else {
 			Utils.alert(Utils.getString("processReadStrips.noneFound"));
-		}
-	}
-
-
-	var callbacks = {};
-	var nextCallbackId = 1;
-	function addCallback(callback) {
-		var id = nextCallbackId++;
-		callbacks[id] = callback;
-
-		// add set of states for this id
-		for(var comicId in this.all) {
-			var comic = this.all[comicId];
-			comic.states[id] = comic.state;
-		}
-
-		return id;
-	}
-
-	function removeCallback(id) {
-		// delete set of states for this id
-		for(var comicId in this.all) {
-			delete this.all[comicId].states[id];
-		}
-
-		delete callbacks[id];
-	}
-
-
-	function callCallbacks(arg) {
-		this.populateUnreadCounts();
-
-		for(var id in callbacks) {
-			callbacks[id](arg);
 		}
 	}
 }
