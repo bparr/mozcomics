@@ -53,10 +53,10 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.preferences.multipleEnabledComics    "Allow multiple comics to be enabled at a time">
 <!ENTITY mozcomics.preferences.showMouseoverBelowImage  "Show mouseover text/images below strip image">
 <!ENTITY mozcomics.preferences.defaultStrip             "Default Strip">
+<!ENTITY mozcomics.preferences.lastRead                 "Last Read">
 <!ENTITY mozcomics.preferences.first                    "First">
 <!ENTITY mozcomics.preferences.last                     "Last">
 <!ENTITY mozcomics.preferences.random                   "Random">
-<!ENTITY mozcomics.preferences.lastRead                 "Last Read">
 <!ENTITY mozcomics.preferences.preloading               "Preloading">
 <!ENTITY mozcomics.preferences.preloadAmount            "Number of strips to preload:">
 <!ENTITY mozcomics.preferences.preloadImages            "Preload images">

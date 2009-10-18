@@ -47,10 +47,10 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			<hbox align="center">
 				<label value="&mozcomics.preferences.defaultStrip;"/>
 				<radiogroup orient="horizontal" preference="mozcomics-preferences-defaultStrip">
-					<radio label="&mozcomics.preferences.first;" value="0"/>
-					<radio label="&mozcomics.preferences.last;" value="1"/>
-					<radio label="&mozcomics.preferences.random;" value="2"/>
-					<radio label="&mozcomics.preferences.lastRead;" value="3"/>
+					<radio label="&mozcomics.preferences.lastRead;" value="0"/>
+					<radio label="&mozcomics.preferences.first;" value="1"/>
+					<radio label="&mozcomics.preferences.last;" value="2"/>
+					<radio label="&mozcomics.preferences.random;" value="3"/>
 				</radiogroup>
 			</hbox>
 		</groupbox>
