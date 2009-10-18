@@ -17,21 +17,25 @@ MozComics.Dom = new function() {
 		this._getDomElement("lastSuccessfulUpdate", "mozcomics-update-last-successful");
 		this._getDomElement("loadingImage", "mozcomics-tb-loading-image");
 
-		// cache comicPicker elements
-		this._getDomElement("comicPickerPane", "mozcomics-comicpicker-pane");
-		this._getDomElement("comicPickerPaneSplitter", "mozcomics-pane-splitter");
-		this._getDomElement("comicPickerToolbarIcon", "mozcomics-tb-comicpicker");
-		this._getDomElement("advanced", "mozcomics-comicpicker-advanced");
-		this._getDomElement("advancedToggle", "mozcomics-comicpicker-advanced-toggle");
-		this._getDomElement("comicPickerTree", "mozcomics-comicPicker");
-		this._getDomElement("comicPickerContextMenu", "mozcomics-comicpicker-menu");
-		this._getDomElement("comicPickerDateMenu", "mozcomics-comicpicker-datemenu");
-		this._getDomElement("comicPickerDate", "mozcomics-comicpicker-date");
-		this._getDomElement("showRead", "mozcomics-comicpicker-showread");
-		this._getDomElement("updateRead", "mozcomics-comicpicker-updateread");
+		// cache sidebar elements
+		this._getDomElement("sidebar", "mozcomics-sidebar");
+		this._getDomElement("sidebarSplitter", "mozcomics-sidebar-splitter");
+		this._getDomElement("sidebarToolbarIcon", "mozcomics-tb-sidebar");
+
+		// cache advanced elements
+		this._getDomElement("advanced", "mozcomics-advanced");
+		this._getDomElement("advancedToggle", "mozcomics-advanced-toggle");
+		this._getDomElement("advancedDateMenu", "mozcomics-advanced-datemenu");
+		this._getDomElement("advancedDate", "mozcomics-advanced-date");
+		this._getDomElement("showRead", "mozcomics-advanced-showread");
+		this._getDomElement("updateRead", "mozcomics-advanced-updateread");
+		this._getDomElement("bookmarkMenu", "mozcomics-advanced-bookmark-menu");
+
+		// cache comic picker elements
 		this._getDomElement("enableAll", "mozcomics-comicpicker-enableAll");
 		this._getDomElement("disableAll", "mozcomics-comicpicker-disableAll");
-		this._getDomElement("bookmarkMenu", "mozcomics-comicpicker-bookmark-menu");
+		this._getDomElement("comicPicker", "mozcomics-comicPicker");
+		this._getDomElement("comicPickerContextMenu", "mozcomics-comicpicker-menu");
 
 		// cache strip elements
 		this._getDomElement("focusableStripPane", "mozcomics-strip-pane");
@@ -51,16 +55,16 @@ MozComics.Dom = new function() {
 		this._getDomElement("tbClose", "mozcomics-tb-close");
 		this.tbClose.hidden = MozComics.isWindow;
 
-		// initialize state of comic picker toolbar icon and splitter
-		this.comicPickerToolbarIcon.setAttribute("expand", this.comicPickerPane.hidden);
-		this.comicPickerPaneSplitter.hidden = this.comicPickerPane.hidden;
+		// initialize state of sidebar toolbar icon and splitter
+		this.sidebarToolbarIcon.setAttribute("expand", this.sidebar.hidden);
+		this.sidebarSplitter.hidden = this.sidebar.hidden;
 
 		// initialize state of advanced toggle
 		this.advancedToggle.setAttribute("expand", this.advanced.hidden);
 
 		// add event listeners
-		this.comicPickerTree.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
-		this.comicPickerDate.addEventListener("change", function(e) { MozComics.Strips.setByDatePicker(); }, false);
+		this.comicPicker.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
+		this.advancedDate.addEventListener("change", function(e) { MozComics.Strips.setByDatePicker(); }, false);
 		this.image.addEventListener("load", function(e) {
 			MozComics.Dom.loadingImage.style.visibility = 'hidden';
 

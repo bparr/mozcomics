@@ -9,25 +9,25 @@
 	padding: 0;
 }
 
-#mozcomics-comicpicker-pane {
+#mozcomics-sidebar {
 	width: 300px;
 	background-color: white;
 	overflow: auto;
 }
 
-#mozcomics-comicpicker-advanced-toggle {
+#mozcomics-advanced-toggle {
 	list-style-image: url("chrome://mozcomics/skin/toggle_minus.png");
 }
 
-#mozcomics-comicpicker-advanced-toggle[expand="true"] {
+#mozcomics-advanced-toggle[expand="true"] {
 	list-style-image: url("chrome://mozcomics/skin/toggle_plus.png");
 }
 
-#mozcomics-comicpicker-pane treechildren::-moz-tree-checkbox {
+#mozcomics-sidebar treechildren::-moz-tree-checkbox {
   list-style-image: none;
 }
 
-#mozcomics-comicpicker-pane treechildren::-moz-tree-checkbox(checked) {
+#mozcomics-sidebar treechildren::-moz-tree-checkbox(checked) {
   list-style-image: url("chrome://mozcomics/skin/checked.png");
 }
 
@@ -59,12 +59,12 @@
 	padding-top: 8px;
 }
 
-#mozcomics-tb-comicpicker {
-	list-style-image: url('chrome://mozcomics/skin/tb_comicPicker_contract.png');
+#mozcomics-tb-sidebar {
+	list-style-image: url('chrome://mozcomics/skin/tb_sidebar_contract.png');
 }
 
-#mozcomics-tb-comicpicker[expand="true"] {
-	list-style-image: url('chrome://mozcomics/skin/tb_comicPicker_expand.png');
+#mozcomics-tb-sidebar[expand="true"] {
+	list-style-image: url('chrome://mozcomics/skin/tb_sidebar_expand.png');
 }
 
 
