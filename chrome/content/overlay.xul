@@ -25,7 +25,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 		<vbox flex="1">
 			<hbox class="toolbar">
-				<toolbarbutton id="mozcomics-tb-comicpicker" tooltiptext="&mozcomics.toolbar.comicPicker;" oncommand="MozComics.toggleComicPickerPane();"/>
+				<toolbarbutton id="mozcomics-tb-sidebar" tooltiptext="&mozcomics.toolbar.sidebar;" oncommand="MozComics.toggleSidebar();"/>
 				<toolbarbutton id="mozcomics-tb-preferences" tooltiptext="&mozcomics.toolbar.preferences;" oncommand="MozComics.showPreferences();"/>
 				<toolbarseparator/>
 				<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.Comics.addComic()"/>
@@ -51,42 +51,42 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			</hbox>
 
 			<hbox flex="1">
-				<vbox id="mozcomics-comicpicker-pane" persist="width, hidden" hidden="false">
+				<vbox id="mozcomics-sidebar" persist="width, hidden" hidden="false">
 					<vbox align="center">
 						<label class="text-link" onclick="MozComics.toggleAdvanced();">
 							<hbox align="center">
-								<image id="mozcomics-comicpicker-advanced-toggle" />
-								<label>&mozcomics.comicpicker.advanced;</label>
+								<image id="mozcomics-advanced-toggle" />
+								<label>&mozcomics.advanced.label;</label>
 							</hbox>
 						</label>
-						<vbox id="mozcomics-comicpicker-advanced" align="center" persist="hidden" hidden="true">
-							<checkbox id="mozcomics-comicpicker-showread" label="&mozcomics.comicpicker.showRead;" 
+						<vbox id="mozcomics-advanced" align="center" persist="hidden" hidden="true">
+							<checkbox id="mozcomics-advanced-showread" label="&mozcomics.advanced.showRead;" 
 								persist="checked" checked="true"
 								oncommand="MozComics.Strips.deleteCache();"/>
 
-							<checkbox id="mozcomics-comicpicker-updateread" label="&mozcomics.comicpicker.updateRead;" persist="checked" checked="true"/>
+							<checkbox id="mozcomics-advanced-updateread" label="&mozcomics.advanced.updateRead;" persist="checked" checked="true"/>
 
 							<hbox align="center">
-								<label value="&mozcomics.comicpicker.bookmark;" />
-								<menulist id="mozcomics-comicpicker-bookmark-menu" persist="value" 
+								<label value="&mozcomics.advanced.bookmark;" />
+								<menulist id="mozcomics-advanced-bookmark-menu" persist="value" 
 									oncommand="MozComics.Strips.deleteCache();"
 									onfocus="MozComics.focusStripPane();">
 
 									<menupopup>
-										<menuitem label="&mozcomics.comicpicker.strip;" value="0"/>
-										<menuitem label="&mozcomics.comicpicker.chapter;" value="1"/>
+										<menuitem label="&mozcomics.advanced.strip;" value="0"/>
+										<menuitem label="&mozcomics.advanced.chapter;" value="1"/>
 									</menupopup>
 								</menulist>
 							</hbox>
 
 							<hbox>
-								<menulist id="mozcomics-comicpicker-datemenu" persist="value" oncommand="MozComics.Strips.updateDatePicker();">
+								<menulist id="mozcomics-advanced-datemenu" persist="value" oncommand="MozComics.Strips.updateDatePicker();">
 									<menupopup>
-										<menuitem label="&mozcomics.comicpicker.pubDate;" value="pubDate" />
-										<menuitem label="&mozcomics.comicpicker.readDate;" value="readDate" />
+										<menuitem label="&mozcomics.advanced.pubDate;" value="pubDate" />
+										<menuitem label="&mozcomics.advanced.readDate;" value="readDate" />
 									</menupopup>
 								</menulist>
-								<datepicker id="mozcomics-comicpicker-date" type="popup" value="" />
+								<datepicker id="mozcomics-advanced-date" type="popup" value="" />
 							</hbox>
 						</vbox>
 
@@ -138,7 +138,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					</tree>
 				</vbox>
 
-				<splitter id="mozcomics-pane-splitter" resizebefore="closest" resizeafter="closest" />
+				<splitter id="mozcomics-sidebar-splitter" resizebefore="closest" resizeafter="closest" />
 
 				<scrollbox orient="horizantal" id="mozcomics-strip-pane" flex="1" pack="center"
 					onkeydown="MozComics.handleKeyDown(event, this.id);"

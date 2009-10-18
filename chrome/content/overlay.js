@@ -15,7 +15,7 @@ var MozComics = new function() {
 	this.openWindow = openWindow;
 	this._openMozComicsWindow = _openMozComicsWindow;
 	this.togglePane = togglePane;
-	this.toggleComicPickerPane = toggleComicPickerPane;
+	this.toggleSidebar = toggleSidebar;
 	this.toggleAdvanced = toggleAdvanced;
 	this.focusStripPane = focusStripPane;
 	this.handleKeyDown = handleKeyDown;
@@ -139,11 +139,11 @@ var MozComics = new function() {
 		}
 	}
 
-	function toggleComicPickerPane() {
-		var nowHidden = !MozComics.Dom.comicPickerPane.hidden;
-		MozComics.Dom.comicPickerPane.hidden = nowHidden;
-		MozComics.Dom.comicPickerToolbarIcon.setAttribute("expand", nowHidden);
-		MozComics.Dom.comicPickerPaneSplitter.hidden = nowHidden;
+	function toggleSidebar() {
+		var nowHidden = !MozComics.Dom.sidebar.hidden;
+		MozComics.Dom.sidebar.hidden = nowHidden;
+		MozComics.Dom.sidebarToolbarIcon.setAttribute("expand", nowHidden);
+		MozComics.Dom.sidebarSplitter.hidden = nowHidden;
 	}
 
 	function toggleAdvanced() {
@@ -167,7 +167,7 @@ var MozComics = new function() {
 			}
 			else {
 				if(event.keyCode == event.DOM_VK_SPACE) {
-					MozComics.toggleComicPickerPane();
+					MozComics.toggleSidebar();
 				}
 				else if(event.keyCode == event.DOM_VK_LEFT && MozComics.lastScrollXPos === null) {
 					MozComics.lastScrollXPos = MozComics._getCurrentScrollXPos();

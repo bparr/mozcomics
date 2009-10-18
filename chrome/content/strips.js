@@ -178,12 +178,12 @@ MozComics.Strips = new function() {
 	}
 
 	function setByDatePicker() {
-		var d = MozComics.Dom.comicPickerDate.dateValue;
+		var d = MozComics.Dom.advancedDate.dateValue;
 		var time = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - 1;
 
 		this.params.stripQueue = [];
 
-		var dateType = MozComics.Dom.comicPickerDateMenu.value;
+		var dateType = MozComics.Dom.advancedDateMenu.value;
 		switch(dateType) {
 			case "pubDate":
 				this.params.lastComic = INFINITY;
@@ -351,8 +351,8 @@ MozComics.Strips = new function() {
 	}
 
 	function updateDatePicker() {
-		var datepicker = MozComics.Dom.comicPickerDate;
-		var dateType = MozComics.Dom.comicPickerDateMenu.value;
+		var datepicker = MozComics.Dom.advancedDate;
+		var dateType = MozComics.Dom.advancedDateMenu.value;
 		var d = new Date();
 
 		switch(dateType) {

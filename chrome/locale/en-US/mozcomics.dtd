@@ -3,7 +3,7 @@ Copyright (c) 2009 Ben Parr
 Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
 -->
 
-<!ENTITY mozcomics.toolbar.comicPicker                  "Toggle Comic Picker">
+<!ENTITY mozcomics.toolbar.sidebar                      "Toggle Sidebar">
 <!ENTITY mozcomics.toolbar.preferences                  "Preferences">
 <!ENTITY mozcomics.toolbar.addComic                     "Add Comic">
 <!ENTITY mozcomics.toolbar.updateAll                    "Update Comics">
@@ -32,14 +32,14 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.comicpicker.all                      "All">
 <!ENTITY mozcomics.comicpicker.none                     "None">
 
-<!ENTITY mozcomics.comicpicker.advanced                 "Advanced">
-<!ENTITY mozcomics.comicpicker.bookmark                 "Strip Type:">
-<!ENTITY mozcomics.comicpicker.strip                    "All">
-<!ENTITY mozcomics.comicpicker.chapter                  "Only Chapters">
-<!ENTITY mozcomics.comicpicker.showRead                 "Show Read Comics">
-<!ENTITY mozcomics.comicpicker.updateRead               "Update Read Time">
-<!ENTITY mozcomics.comicpicker.pubDate                  "Pub. Date">
-<!ENTITY mozcomics.comicpicker.readDate                 "Read Date">
+<!ENTITY mozcomics.advanced.label                       "Advanced">
+<!ENTITY mozcomics.advanced.bookmark                    "Strip Type:">
+<!ENTITY mozcomics.advanced.strip                       "All">
+<!ENTITY mozcomics.advanced.chapter                     "Start of Chapter">
+<!ENTITY mozcomics.advanced.showRead                    "Show Read Comics">
+<!ENTITY mozcomics.advanced.updateRead                  "Update Read Time">
+<!ENTITY mozcomics.advanced.pubDate                     "Pub. Date">
+<!ENTITY mozcomics.advanced.readDate                    "Read Date">
 
 <!ENTITY mozcomics.preferences.title                    "MozComics - Preferences">
 <!ENTITY mozcomics.preferences.general                  "General">
