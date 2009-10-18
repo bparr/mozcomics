@@ -112,6 +112,8 @@ var MozComics = new function() {
 
 	function openWindow() {
 		this.togglePane();
+		MozComics.Strips.unload();
+		MozComics.Comics.unload();
 		this._openMozComicsWindow();
 	}
 
