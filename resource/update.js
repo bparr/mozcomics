@@ -275,6 +275,8 @@ var Update = new function() {
 
 	function _onStripsComplete(addingNewComic, completedTracker) {
 		if(completedTracker.numComplete == completedTracker.total) {
+			var d = new Date();
+			Prefs.set("lastSuccessfulUpdate", d.getTime() / 1000);
 			Callback.callType("comicsChanged");
 
 			if(!addingNewComic) {

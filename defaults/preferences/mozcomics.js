@@ -4,6 +4,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 */
 
 pref("extensions.mozcomics.firstRun", true);
+pref("extensions.mozcomics.databaseVersion", 1);
 
 // user interface
 pref("extensions.mozcomics.showUnreadCount", true);
@@ -24,4 +25,5 @@ pref("extensions.mozcomics.preloadImages", true);
 pref("extensions.mozcomics.updateOnStart", true);
 pref("extensions.mozcomics.autoUpdate", true);
 pref("extensions.mozcomics.updateInterval", 20);
+pref("extensions.mozcomics.lastSuccessfulUpdate", 0);
 

@@ -19,6 +19,7 @@ var Utils = new function() {
 	this.getString = getString;
 	this.unescapeHtml = unescapeHtml;
 	this.sqlToDate = sqlToDate;
+	this.relativeDate = relativeDate;
 
 	var stringBundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
 		.getService(Components.interfaces.nsIStringBundleService)
@@ -66,6 +67,69 @@ var Utils = new function() {
 		d2.setMilliseconds(d.getUTCMilliseconds());
 
 		return d2;
+	}
+
+	/*
+	 * Convert a unix time to a relative date (e.g., "5 minutes ago")
+	 *
+	 * Based off of Zotero's toRelativeDate function by CHNM: http://www.zotero.org/
+	 * which was adapted from http://snipplr.com/view/10290/javascript-parse-relative-date/
+	 */
+	function relativeDate(time) {
+		if(time == 0) {
+			return this.getString("update.never");
+		}
+
+		var now = new Date();
+		var inSeconds = (now.getTime() / 1000) - time;
+		var inMinutes = inSeconds / 60;
+		var inHours = inMinutes / 60;
+		var inDays = inHours / 24;
+		var inYears = inDays / 365;
+
+		// in seconds
+		inSeconds = Math.round(inSeconds);
+		if(inSeconds == 1) {
+			return this.getString("update.oneSecondAgo");
+		}
+		if(inMinutes < 1.01) {
+			return this.getString("update.secondsAgo", inSeconds);
+		}
+		
+		// in minutes
+		inMinutes = Math.round(inMinutes);
+		if(inMinutes == 1) {
+			return this.getString("update.oneMinuteAgo");
+		}
+		if(inHours < 1.01) {
+			return this.getString("update.minutesAgo", inMinutes);
+		}
+		
+		// in hours
+		inHours = Math.round(inHours);
+		if(inHours == 1) {
+			return this.getString("update.oneHourAgo");
+		}
+		if (inDays < 1.01) {
+			return this.getString("update.hoursAgo", inHours);
+		}
+		
+		// in days
+		inDays = Math.round(inDays);
+		if(inDays == 1) {
+			return this.getString("update.oneDayAgo");
+		}
+		if(inYears < 1.01) {
+			return this.getString("update.daysAgo", inDays);
+		}
+		
+		// in years
+		inYears = Math.round(inYears);
+		if (inYears == 1) {
+			return this.getString("update.oneYearAgo");
+		}
+		
+		return this.getString("update.yearsAgo", inYears);
 	}
 }
 

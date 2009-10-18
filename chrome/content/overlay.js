@@ -21,6 +21,7 @@ var MozComics = new function() {
 	this.handleKeyDown = handleKeyDown;
 	this.handleKeyUp = handleKeyUp;
 	this.buildComicsContextMenu = buildComicsContextMenu;
+	this.buildUpdateTooltip = buildUpdateTooltip;
 	this.showPreferences = showPreferences;
 	this._getCurrentScrollXPos = _getCurrentScrollXPos;
 
@@ -240,6 +241,12 @@ var MozComics = new function() {
 		for(var i = 0, len = menu.childNodes.length; i < len; i++) {
 			menu.childNodes[i].setAttribute('hidden', hideItems);
 		}
+	}
+
+	function buildUpdateTooltip() {
+		var relativeDate = MozComics.Utils.relativeDate(MozComics.Prefs.user.lastSuccessfulUpdate);
+		var lastSuccess = MozComics.Utils.getString("update.lastSuccess", relativeDate);
+		MozComics.Dom.lastSuccessfulUpdate.value = lastSuccess;
 	}
 
 	function showPreferences() {
