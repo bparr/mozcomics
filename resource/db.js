@@ -7,6 +7,7 @@ var EXPORTED_SYMBOLS = ["DB"];
 
 Components.utils.import("resource://mozcomics/utils.js");
 Components.utils.import("resource://mozcomics/callback.js");
+Components.utils.import("resource://mozcomics/prefs.js");
 
 /*
  * Establish database connection, and database schema. Also provide a few
@@ -96,20 +97,32 @@ var DB = new function() {
 		return clone;
 	}
 
+
+	var historyService = Components.classes["@mozilla.org/browser/nav-history-service;1"]
+		.getService(Components.interfaces.nsIGlobalHistory2);
+	var ioService = Components.classes["@mozilla.org/network/io-service;1"]
+		.getService(Components.interfaces.nsIIOService);
+
 	function updateReadTimes(comic, strips, d) {
 		d = (d) ? d : new Date();
 		var read = d.getTime();
 
 		var updateStatements = [];
 		for(var i = 0, len = strips.length; i < len; i++) {
+			var strip = strips[i];
 			var updateStripReadTime = updateStripReadTimeStatement.clone();
 			updateStripReadTime.params.comic = comic;
-			updateStripReadTime.params.strip = strips[i];
+			updateStripReadTime.params.strip = strip.strip;
 
 			// add i to read in order to make read times different
 			updateStripReadTime.params.read = read + i;
 
 			updateStatements.push(updateStripReadTime);
+
+			if(Prefs.user.addReadToBrowserHistory) {
+				var uri = ioService.newURI(strip.url, null, null);
+				historyService.addURI(uri, false, true, null);
+			}
 		}
 
 		DB.dbConn.executeAsync(updateStatements, updateStatements.length, {

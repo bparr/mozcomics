@@ -264,6 +264,7 @@ var ComicsResource = new function() {
 		getUnreadStrips.params.comic = selectedComic.comic;
 		getUnreadStrips.executeAsync({
 			selectedComic: selectedComic,
+			columns: ["strip", "url"],
 			rows: [],
 
 			handleResult: function(response) {
@@ -281,10 +282,10 @@ var ComicsResource = new function() {
 
 					var readStrips = [];
 					for(var i = 0, len = this.rows.length; i < len; i++) {
-						var row = this.rows[i];
-						var uri = ioService.newURI(row.getResultByName("url"), null, null);
+						var row = DB.cloneRow(this.rows[i], this.columns);
+						var uri = ioService.newURI(row.url, null, null);
 						if(historyService.isVisited(uri)) {
-							readStrips.push(row.getResultByName("strip"));
+							readStrips.push(row);
 						}
 					}
 					_processReadStrips(this.selectedComic, readStrips);
@@ -301,6 +302,7 @@ var ComicsResource = new function() {
 		getUnreadStrips.params.comic = selectedComic.comic;
 		getUnreadStrips.executeAsync({
 			selectedComic: selectedComic,
+			columns: ["strip", "url"],
 			rows: [],
 
 			handleResult: function(response) {
@@ -313,7 +315,8 @@ var ComicsResource = new function() {
 				if(reason == DB.REASON_FINISHED) {
 					var readStrips = [];
 					for(var i = 0, len = this.rows.length; i < len; i++) {
-						readStrips.push(this.rows[i].getResultByName("strip"));
+						var row = DB.cloneRow(this.rows[i], this.columns);
+						readStrips.push(row);
 					}
 					_processReadStrips(this.selectedComic, readStrips);
 				}
