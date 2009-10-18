@@ -150,12 +150,13 @@ var Update = new function() {
 			throw ("Update failed: suspected foul play with update site");
 		}
 
-		var updated = response.time;
-
 		for(var i = 0; i < comicsLen; i++) {
 			var comic = response.comics[i];
 			if(!comic.guid) {
 				throw ("Update failed: guid not defined for a comic");
+			}
+			if(!comic.updated) {
+				throw ("Update failed: updated not defined for a comic");
 			}
 
 			comic.guid = comic.guid.toLowerCase();
@@ -166,6 +167,7 @@ var Update = new function() {
 
 			// update the updated once all strips have been inserted in order
 			// to maintain consistency if strip insert queries fail
+			var updated = comic.updated;
 			comic.updated = 0;
 
 			// save some states in the old comic so that they persist to the new one
