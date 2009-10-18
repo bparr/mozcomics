@@ -6,7 +6,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.toolbar.comicPicker                  "Toggle Comic Picker">
 <!ENTITY mozcomics.toolbar.preferences                  "Preferences">
 <!ENTITY mozcomics.toolbar.addComic                     "Add Comic">
-<!ENTITY mozcomics.toolbar.updateAll                    "Update All">
+<!ENTITY mozcomics.toolbar.updateAll                    "Update Comics">
 <!ENTITY mozcomics.toolbar.loadingImage                 "Loading...">
 <!ENTITY mozcomics.toolbar.first                        "First">
 <!ENTITY mozcomics.toolbar.previous                     "Previous">

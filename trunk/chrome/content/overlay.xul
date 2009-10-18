@@ -29,7 +29,12 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 				<toolbarbutton id="mozcomics-tb-preferences" tooltiptext="&mozcomics.toolbar.preferences;" oncommand="MozComics.showPreferences();"/>
 				<toolbarseparator/>
 				<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.Comics.addComic()"/>
-				<toolbarbutton id="mozcomics-tb-update" tooltiptext="&mozcomics.toolbar.updateAll;" oncommand="MozComics.Update.updateAll()"/>
+				<toolbarbutton id="mozcomics-tb-update" tooltip="_child" oncommand="MozComics.Update.updateAll()">
+					<tooltip onpopupshowing="MozComics.buildUpdateTooltip();" noautohide="true">
+						<label value="&mozcomics.toolbar.updateAll;" />
+						<label id="mozcomics-update-last-successful" value="" />
+					</tooltip>
+				</toolbarbutton>
 				<spacer flex="1"/>
 				<toolbarbutton id="mozcomics-tb-loading-image" tooltip="&mozcomics.toolbar.loadingImage;" disabled="true" />
 				<toolbarbutton id="mozcomics-tb-first" tooltiptext="&mozcomics.toolbar.first;" oncommand="MozComics.Strips.setToFirstStrip()"/>
@@ -143,7 +148,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 						<label id="mozcomics-strip-comic" class="text-link" href="" />
 						<label id="mozcomics-strip-title" class="text-link" href="" />
 						<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip"/>
-						<tooltip id="mozcomics-strip-image-tooltip" label="" />
+						<tooltip id="mozcomics-strip-image-tooltip" label="" noautohide="true" />
 						<label id="mozcomics-strip-tooltip-label" />
 						<image id="mozcomics-strip-hiddenImage" src="" />
 					</vbox>

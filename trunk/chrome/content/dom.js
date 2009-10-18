@@ -14,6 +14,7 @@ MozComics.Dom = new function() {
 		this._getDomElement("statusBarPanel", "mozcomics-statusbarpanel", true);
 
 		// cache navigation elements
+		this._getDomElement("lastSuccessfulUpdate", "mozcomics-update-last-successful");
 		this._getDomElement("loadingImage", "mozcomics-tb-loading-image");
 
 		// cache comicPicker elements
