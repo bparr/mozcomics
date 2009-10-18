@@ -20,7 +20,7 @@ var StripsResource = new function() {
 	var busy = false;
 
 	this.findStrip = findStrip;
-	this.updateReadTime = updateReadTime;
+	this.updateReadTime = DB.updateReadTimes;
 
 	this.INFINITY = 10000000000000; // will fail when used for time after 2286-11-20 17:46:40
 
@@ -161,10 +161,6 @@ var StripsResource = new function() {
 				}
 			}
 		});
-	}
-
-	function updateReadTime(comic, strip) {
-		return DB.updateReadTimes(comic, [strip]);
 	}
 }
 

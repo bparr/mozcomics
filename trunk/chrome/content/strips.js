@@ -43,6 +43,7 @@ MozComics.Strips = new function() {
 	this.params = {
 		lastComic: null,
 		lastStrip: null,
+		lastUrl: null,
 		lastRead: INFINITY,
 		stripQueue: []
 	}
@@ -257,8 +258,15 @@ MozComics.Strips = new function() {
 
 	// update show read if the updateRead checkbox was checked
 	function _unloadCurrentStrip() {
-		if(this.params.lastComic != null && this.params.lastStrip != null && MozComics.Dom.updateRead.checked) {
-			return StripsResource.updateReadTime(this.params.lastComic, this.params.lastStrip);
+		if(this.params.lastComic != null && this.params.lastStrip != null &&
+			this.params.lastUrl != null && MozComics.Dom.updateRead.checked) {
+
+			var strip = {
+				strip: this.params.lastStrip,
+				url: this.params.lastUrl
+			};
+
+			return StripsResource.updateReadTime(this.params.lastComic, [strip]);
 		}
 		return false;
 	}
@@ -267,6 +275,7 @@ MozComics.Strips = new function() {
 		if(row) {
 			this.params.lastComic = row.comic;
 			this.params.lastStrip = row.strip;
+			this.params.lastUrl = row.url;
 
 			switch(statementId) {
 				case S.back:
@@ -278,6 +287,8 @@ MozComics.Strips = new function() {
 			}
 		}
 		else {
+			this.lastUrl = null;
+
 			switch(statementId) {
 				case S.previous:
 					this.params.lastComic = -1 * INFINITY;
