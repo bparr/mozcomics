@@ -51,7 +51,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 						<label class="text-link" onclick="MozComics.toggleAdvanced();">
 							<hbox align="center">
 								<image id="mozcomics-comicpicker-advanced-toggle" />
-								<label value="&mozcomics.comicpicker.advanced;" />
+								<label>&mozcomics.comicpicker.advanced;</label>
 							</hbox>
 						</label>
 						<vbox id="mozcomics-comicpicker-advanced" align="center" persist="hidden" hidden="true">
