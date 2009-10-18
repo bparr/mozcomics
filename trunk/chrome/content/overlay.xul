@@ -31,12 +31,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 				<toolbarbutton id="mozcomics-tb-addcomic" tooltiptext="&mozcomics.toolbar.addComic;" oncommand="MozComics.Comics.addComic()"/>
 				<toolbarbutton id="mozcomics-tb-update" tooltiptext="&mozcomics.toolbar.updateAll;" oncommand="MozComics.Update.updateAll()"/>
 				<spacer flex="1"/>
-				<menulist id="mozcomics-tb-bookmark-menu" persist="value" oncommand="MozComics.Strips.deleteCache();" onfocus="MozComics.focusStripPane();">
-					<menupopup>
-						<menuitem label="&mozcomics.toolbar.strip;" value="0"/>
-						<menuitem label="&mozcomics.toolbar.chapter;" value="1"/>
-					</menupopup>
-				</menulist>
+				<toolbarbutton id="mozcomics-tb-loading-image" tooltip="&mozcomics.toolbar.loadingImage;" disabled="true" />
 				<toolbarbutton id="mozcomics-tb-first" tooltiptext="&mozcomics.toolbar.first;" oncommand="MozComics.Strips.setToFirstStrip()"/>
 				<toolbarbutton id="mozcomics-tb-previous" tooltiptext="&mozcomics.toolbar.previous;" oncommand="MozComics.Strips.setToPreviousStrip()"/>
 				<toolbarbutton id="mozcomics-tb-random" tooltiptext="&mozcomics.toolbar.random;" oncommand="MozComics.Strips.setToRandomStrip()"/>
@@ -53,22 +48,48 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			<hbox flex="1">
 				<vbox id="mozcomics-comicpicker-pane" persist="width, hidden" hidden="false">
 					<vbox align="center">
-						<checkbox id="mozcomics-comicpicker-showread" label="&mozcomics.comicpicker.showRead;" 
-							persist="checked" checked="false"
-							oncommand="MozComics.Strips.deleteCache();"/>
+						<label class="text-link" onclick="MozComics.toggleAdvanced();">
+							<hbox align="center">
+								<image id="mozcomics-comicpicker-advanced-toggle" />
+								<label value="&mozcomics.comicpicker.advanced;" />
+							</hbox>
+						</label>
+						<vbox id="mozcomics-comicpicker-advanced" align="center" persist="hidden" hidden="true">
+							<checkbox id="mozcomics-comicpicker-showread" label="&mozcomics.comicpicker.showRead;" 
+								persist="checked" checked="true"
+								oncommand="MozComics.Strips.deleteCache();"/>
 
-						<hbox>
-							<button id="mozcomics-comicpicker-enableAll" label="&mozcomics.comicpicker.all;" oncommand="MozComics.Comics.enableAll();" />
-							<button id="mozcomics-comicpicker-disableAll" label="&mozcomics.comicpicker.none;" oncommand="MozComics.Comics.disableAll();" />
-						</hbox>
-						<hbox>
-							<menulist id="mozcomics-comicpicker-datemenu" persist="value" oncommand="MozComics.Strips.updateDatePicker();">
-								<menupopup>
-									<menuitem label="&mozcomics.comicpicker.pubDate;" value="pubDate" />
-									<menuitem label="&mozcomics.comicpicker.readDate;" value="readDate" />
-								</menupopup>
-							</menulist>
-							<datepicker id="mozcomics-comicpicker-date" type="popup" value="" />
+							<checkbox id="mozcomics-comicpicker-updateread" label="&mozcomics.comicpicker.updateRead;" persist="checked" checked="true"/>
+
+							<hbox align="center">
+								<label value="&mozcomics.comicpicker.bookmark;" />
+								<menulist id="mozcomics-comicpicker-bookmark-menu" persist="value" 
+									oncommand="MozComics.Strips.deleteCache();"
+									onfocus="MozComics.focusStripPane();">
+
+									<menupopup>
+										<menuitem label="&mozcomics.comicpicker.strip;" value="0"/>
+										<menuitem label="&mozcomics.comicpicker.chapter;" value="1"/>
+									</menupopup>
+								</menulist>
+							</hbox>
+
+							<hbox>
+								<menulist id="mozcomics-comicpicker-datemenu" persist="value" oncommand="MozComics.Strips.updateDatePicker();">
+									<menupopup>
+										<menuitem label="&mozcomics.comicpicker.pubDate;" value="pubDate" />
+										<menuitem label="&mozcomics.comicpicker.readDate;" value="readDate" />
+									</menupopup>
+								</menulist>
+								<datepicker id="mozcomics-comicpicker-date" type="popup" value="" />
+							</hbox>
+						</vbox>
+
+						<spacer height="8px" />
+						<hbox align="center">
+							<label value="&mozcomics.comicpicker.enabled;" />
+							<button id="mozcomics-comicpicker-enableAll" label="&mozcomics.comicpicker.all;" onclick="MozComics.Comics.enableAll();" />
+							<button id="mozcomics-comicpicker-disableAll" label="&mozcomics.comicpicker.none;" onclick="MozComics.Comics.disableAll();" />
 						</hbox>
 					</vbox>
 					<tree id="mozcomics-comicPicker"
@@ -119,7 +140,6 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					onkeyup="MozComics.handleKeyUp(event, this.id);">
 
 					<vbox id="mozcomics-strip-found" align="center" hidden="true">
-						<checkbox id="mozcomics-strip-updateread" label="&mozcomics.strip.updateRead;" persist="checked" checked="true"/>
 						<label id="mozcomics-strip-comic" class="text-link" href="" />
 						<label id="mozcomics-strip-title" class="text-link" href="" />
 						<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip"/>

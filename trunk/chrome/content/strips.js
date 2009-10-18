@@ -105,6 +105,8 @@ MozComics.Strips = new function() {
 	}
 
 	function _setStrip(statementId) {
+		MozComics.Dom.loadingImage.style.visibility = 'visible';
+
 		var currentReadTime = this._unloadCurrentStrip();
 		if(statementId == S.back && currentReadTime && currentReadTime < this.params.lastRead) {
 			this.params.lastRead = currentReadTime;
@@ -199,6 +201,10 @@ MozComics.Strips = new function() {
 			self._preloadImage(self.params.stripQueue[0].image);
 		}
 
+		if(row && self.params.lastUrl == row.url) {
+			MozComics.Dom.loadingImage.style.visibility = 'hidden';
+		}
+
 		self._updateParamVariables(row, statementId);
 		self._updateDatePickerDates(row);
 
@@ -249,6 +255,9 @@ MozComics.Strips = new function() {
 			if(statementId == S.back || statementId == S.forward) {
 				MozComics.Dom.updateRead.checked = false;
 			}
+		}
+		else {
+			MozComics.Dom.loadingImage.style.visibility = 'hidden';
 		}
 
 		if(!MozComics.Dom.pane.hidden) {

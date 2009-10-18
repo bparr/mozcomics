@@ -14,25 +14,28 @@ MozComics.Dom = new function() {
 		this._getDomElement("statusBarPanel", "mozcomics-statusbarpanel", true);
 
 		// cache navigation elements
-		this._getDomElement("bookmarkMenu", "mozcomics-tb-bookmark-menu");
+		this._getDomElement("loadingImage", "mozcomics-tb-loading-image");
 
 		// cache comicPicker elements
 		this._getDomElement("comicPickerPane", "mozcomics-comicpicker-pane");
 		this._getDomElement("comicPickerPaneSplitter", "mozcomics-pane-splitter");
 		this._getDomElement("comicPickerToolbarIcon", "mozcomics-tb-comicpicker");
+		this._getDomElement("advanced", "mozcomics-comicpicker-advanced");
+		this._getDomElement("advancedToggle", "mozcomics-comicpicker-advanced-toggle");
 		this._getDomElement("comicPickerTree", "mozcomics-comicPicker");
 		this._getDomElement("comicPickerContextMenu", "mozcomics-comicpicker-menu");
 		this._getDomElement("comicPickerDateMenu", "mozcomics-comicpicker-datemenu");
 		this._getDomElement("comicPickerDate", "mozcomics-comicpicker-date");
 		this._getDomElement("showRead", "mozcomics-comicpicker-showread");
+		this._getDomElement("updateRead", "mozcomics-comicpicker-updateread");
 		this._getDomElement("enableAll", "mozcomics-comicpicker-enableAll");
 		this._getDomElement("disableAll", "mozcomics-comicpicker-disableAll");
+		this._getDomElement("bookmarkMenu", "mozcomics-comicpicker-bookmark-menu");
 
 		// cache strip elements
 		this._getDomElement("focusableStripPane", "mozcomics-strip-pane");
 		this._getDomElement("stripFound", "mozcomics-strip-found");
 		this._getDomElement("stripNone", "mozcomics-strip-none");
-		this._getDomElement("updateRead", "mozcomics-strip-updateread");
 		this._getDomElement("comic", "mozcomics-strip-comic");
 		this._getDomElement("title", "mozcomics-strip-title");
 		this._getDomElement("image", "mozcomics-strip-image");
@@ -51,15 +54,18 @@ MozComics.Dom = new function() {
 		this.comicPickerToolbarIcon.setAttribute("expand", this.comicPickerPane.hidden);
 		this.comicPickerPaneSplitter.hidden = this.comicPickerPane.hidden;
 
+		// initialize state of advanced toggle
+		this.advancedToggle.setAttribute("expand", this.advanced.hidden);
+
 		// add event listeners
 		this.comicPickerTree.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
 		this.comicPickerDate.addEventListener("change", function(e) { MozComics.Strips.setByDatePicker(); }, false);
 		this.image.addEventListener("load", function(e) {
-			var width = MozComics.Dom.image.clientWidth + 'px';
-			// TODO fix annoying links
-			//MozComics.Dom.comic.style.width = width;
-			//MozComics.Dom.title.style.width = width;
-			MozComics.Dom.imageTooltipLabel.style.width = width;
+			MozComics.Dom.loadingImage.style.visibility = 'hidden';
+
+			MozComics.Dom.stripFound.style.width = 'auto';
+			var width = MozComics.Dom.image.clientWidth;
+			MozComics.Dom.stripFound.style.width = width + 'px';
 		}, false);
 
 		// add scroll methods to scrollboxes

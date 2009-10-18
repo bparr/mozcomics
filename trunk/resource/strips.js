@@ -158,6 +158,7 @@ var StripsResource = new function() {
 				else {
 					busy = false;
 					Utils.alert(Utils.getString("findStrip.sqlError"));
+					this.data.onComplete(false, this.data.statementId);
 				}
 			}
 		});
