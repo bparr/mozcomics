@@ -11,6 +11,7 @@ var EXPORTED_SYMBOLS = ["Utils"];
 var Utils = new function() {
 	this.URLS = {
 		FIRST_RUN: "http://www.mozcomics.com/firstRun",
+		PREFERENCE_SUPPORT: "http://www.mozcomics.com/preferenceSupport",
 		COMIC_LIST: "http://www.mozcomics.com/browse/",
 		UPDATE: "http://www.mozcomics.com/update?"
 	};
