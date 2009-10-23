@@ -36,22 +36,23 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.advanced.bookmark                    "Strip Type:">
 <!ENTITY mozcomics.advanced.strip                       "All">
 <!ENTITY mozcomics.advanced.chapter                     "Start of Chapter">
-<!ENTITY mozcomics.advanced.showRead                    "Show Read Comics">
+<!ENTITY mozcomics.advanced.showRead                    "Show Read Strips">
 <!ENTITY mozcomics.advanced.updateRead                  "Update Read Time">
 <!ENTITY mozcomics.advanced.pubDate                     "Pub. Date">
 <!ENTITY mozcomics.advanced.readDate                    "Read Date">
 
 <!ENTITY mozcomics.preferences.title                    "MozComics - Preferences">
+<!ENTITY mozcomics.preferences.moreInformation          "More information about these preferences">
 <!ENTITY mozcomics.preferences.general                  "General">
 <!ENTITY mozcomics.preferences.userInterface            "User Interface">
 <!ENTITY mozcomics.preferences.showUnreadCount          "Show unread count in status bar">
 <!ENTITY mozcomics.preferences.alwaysOpenInNewWindow    "Always open MozComics in a new stand-alone window">
-<!ENTITY mozcomics.preferences.wrapAround               "Wrap around">
+<!ENTITY mozcomics.preferences.wrapAround               "Wrap around when navigating strips">
 <!ENTITY mozcomics.preferences.useArrowsToSwitchStrip   "Use arrow keys to switch strip">
 <!ENTITY mozcomics.preferences.addReadToBrowserHistory  "Add urls of read strips to browser history">
-<!ENTITY mozcomics.preferences.defaultToMarkRead        "Default to marked read">
+<!ENTITY mozcomics.preferences.defaultToMarkRead        "Default to marking a strip as read">
 <!ENTITY mozcomics.preferences.multipleEnabledComics    "Allow multiple comics to be enabled at a time">
-<!ENTITY mozcomics.preferences.showMouseoverBelowImage  "Show mouseover text/images below strip image">
+<!ENTITY mozcomics.preferences.showMouseoverBelowImage  "Show mouseover text below strip image">
 <!ENTITY mozcomics.preferences.defaultStrip             "Default Strip">
 <!ENTITY mozcomics.preferences.lastRead                 "Last Read">
 <!ENTITY mozcomics.preferences.first                    "First">
@@ -59,7 +60,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.preferences.random                   "Random">
 <!ENTITY mozcomics.preferences.preloading               "Preloading">
 <!ENTITY mozcomics.preferences.preloadAmount            "Number of strips to preload:">
-<!ENTITY mozcomics.preferences.preloadImages            "Preload images">
+<!ENTITY mozcomics.preferences.preloadImages            "Preload next image">
 <!ENTITY mozcomics.preferences.update                   "Update">
 <!ENTITY mozcomics.preferences.updateOnStart            "Update on start of Firefox">
 <!ENTITY mozcomics.preferences.autoUpdate               "Auto updating">

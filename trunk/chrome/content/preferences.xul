@@ -75,6 +75,18 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 				<textbox type="number" min="10" size="4" preference="mozcomics-preferences-updateInterval" />
 			</hbox>
 		</groupbox>
+
+		<label id="mozcomics-preferences-link" class="text-link" value="&mozcomics.preferences.moreInformation;" href="" />
+		<script>
+		<![CDATA[
+			Components.utils.import("resource://mozcomics/utils.js");
+
+			window.addEventListener('load', function(e) {
+				var link = document.getElementById("mozcomics-preferences-link");
+				link.href = Utils.URLS.PREFERENCE_SUPPORT;
+			}, false);			
+		]]>
+		</script>
 	</prefpane>
 
 </prefwindow>
