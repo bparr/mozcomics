@@ -11,7 +11,10 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
 <?xml-stylesheet href="chrome://mozcomics/skin/mozcomics.css" type="text/css"?>
 
-<prefwindow id="mozcomics-preferences" title="&mozcomics.preferences.title;" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+<prefwindow id="mozcomics-preferences"
+	title="&mozcomics.preferences.title;"
+	onload="moveToAlertPosition();"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 	
 	<prefpane id="mozcomics-preferences-general" label="&mozcomics.preferences.general;" >
 		<preferences>
