@@ -227,6 +227,9 @@ MozComics.Strips = new function() {
 			MozComics.Dom.title.href = row.url;
 			MozComics.Dom.image.src = row.image;
 			MozComics.Dom.image.hidden = false;
+			if(!row.image) {
+				MozComics.Dom.loadingImage.style.visibility = 'hidden';
+			}
 
 			var extra = {};
 			try {

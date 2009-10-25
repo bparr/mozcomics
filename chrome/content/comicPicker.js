@@ -55,8 +55,7 @@ MozComics.ComicPicker = new function() {
 				MozComics.Comics.setComicProp(selectedComic, "enabled", nowEnabled);
 			}
 			else {
-				MozComics.Comics.disableAll(true);
-				MozComics.Comics.setComicProp(selectedComic, "enabled", true);
+				MozComics.Comics.onlyEnable(selectedComic);
 			}
 		}
 	}
