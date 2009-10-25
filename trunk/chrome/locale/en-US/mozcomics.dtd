@@ -38,7 +38,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.advanced.strip                       "All">
 <!ENTITY mozcomics.advanced.chapter                     "Start of Chapter">
 <!ENTITY mozcomics.advanced.showRead                    "Show Read Strips">
-<!ENTITY mozcomics.advanced.updateRead                  "Update Read Time">
+<!ENTITY mozcomics.advanced.updateRead                  "Update Read Times">
 <!ENTITY mozcomics.advanced.pubDate                     "Pub. Date">
 <!ENTITY mozcomics.advanced.readDate                    "Read Date">
 
@@ -51,7 +51,6 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.preferences.wrapAround               "Wrap around when navigating strips">
 <!ENTITY mozcomics.preferences.useArrowsToSwitchStrip   "Use arrow keys to switch strip">
 <!ENTITY mozcomics.preferences.addReadToBrowserHistory  "Add urls of read strips to browser history">
-<!ENTITY mozcomics.preferences.defaultToMarkRead        "Default to marking a strip as read">
 <!ENTITY mozcomics.preferences.multipleEnabledComics    "Allow multiple comics to be enabled at a time">
 <!ENTITY mozcomics.preferences.showMouseoverBelowImage  "Show mouseover text below strip image">
 <!ENTITY mozcomics.preferences.defaultStrip             "Default Strip">

@@ -20,7 +20,6 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			<preference id="mozcomics-preferences-wrapAround" name="extensions.mozcomics.wrapAround" type="bool" />
 			<preference id="mozcomics-preferences-useArrowsToSwitchStrip" name="extensions.mozcomics.useArrowsToSwitchStrip" type="bool" />
 			<preference id="mozcomics-preferences-addReadToBrowserHistory" name="extensions.mozcomics.addReadToBrowserHistory" type="bool" />
-			<preference id="mozcomics-preferences-defaultToMarkRead" name="extensions.mozcomics.defaultToMarkRead" type="bool" />
 			<preference id="mozcomics-preferences-multipleEnabledComics" name="extensions.mozcomics.multipleEnabledComics" type="bool" />
 			<preference id="mozcomics-preferences-showMouseoverBelowImage" name="extensions.mozcomics.showMouseoverBelowImage" type="bool" />
 			<preference id="mozcomics-preferences-defaultStrip" name="extensions.mozcomics.defaultStrip" type="int" />
@@ -41,7 +40,6 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			<checkbox label="&mozcomics.preferences.wrapAround;" preference="mozcomics-preferences-wrapAround" />
 			<checkbox label="&mozcomics.preferences.useArrowsToSwitchStrip;" preference="mozcomics-preferences-useArrowsToSwitchStrip" />
 			<checkbox label="&mozcomics.preferences.addReadToBrowserHistory;" preference="mozcomics-preferences-addReadToBrowserHistory" />
-			<checkbox label="&mozcomics.preferences.defaultToMarkRead;" preference="mozcomics-preferences-defaultToMarkRead" />
 			<checkbox label="&mozcomics.preferences.multipleEnabledComics;" preference="mozcomics-preferences-multipleEnabledComics" />
 			<checkbox label="&mozcomics.preferences.showMouseoverBelowImage;" preference="mozcomics-preferences-showMouseoverBelowImage" />
 			<hbox align="center">

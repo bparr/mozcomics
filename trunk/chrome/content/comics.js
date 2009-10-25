@@ -10,6 +10,7 @@ MozComics.Comics = new function() {
 
 	this.init = init;
 	this.unload = unload;
+	this.saveStatesToDB = saveStatesToDB;
 	this.updateStatusBarPanel = updateStatusBarPanel;
 	this.addComic = addComic;
 	this.deleteComic = deleteComic;
@@ -35,6 +36,12 @@ MozComics.Comics = new function() {
 	}
 
 	function unload() {
+		if(!MozComics.Dom.pane.hidden) {
+			this.saveStatesToDB();
+		}
+	}
+
+	function saveStatesToDB() {
 		ComicsResource.saveStatesToDB(MozComics.callbackId);
 	}
 
