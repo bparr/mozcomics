@@ -24,6 +24,7 @@ MozComics.Comics = new function() {
 
 	this.enableAll = enableAll;
 	this.disableAll = disableAll;
+	this.onlyEnable = onlyEnable;
 
 	this.showing = [];
 	this.enabled = [];
@@ -138,6 +139,16 @@ MozComics.Comics = new function() {
 		if(!ignoreUpdatingCache) {
 			this.refreshCache(true);
 		}
+	}
+
+	// default to selected comic if no argument was passed
+	function onlyEnable(comic) {
+		if(comic == undefined || comic == null) {
+			comic = MozComics.ComicPicker.selectedComic;
+		}
+
+		this.disableAll(true);
+		this.setComicProp(comic, "enabled", true);
 	}
 }
 

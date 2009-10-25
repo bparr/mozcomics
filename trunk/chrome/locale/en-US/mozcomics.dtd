@@ -17,6 +17,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.toolbar.forward                      "Forward">
 <!ENTITY mozcomics.toolbar.openWindow                   "New Window">
 
+<!ENTITY mozcomics.menu.onlyEnable                      "Only Enable This Comic">
 <!ENTITY mozcomics.menu.findReadStrips                  "Find Read Strips">
 <!ENTITY mozcomics.menu.markAllStripsRead               "Mark All Strips Read">
 <!ENTITY mozcomics.menu.deleteComic                     "Delete Comic">
