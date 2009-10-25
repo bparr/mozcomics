@@ -12,7 +12,6 @@ pref("extensions.mozcomics.alwaysOpenInNewWindow", false);
 pref("extensions.mozcomics.wrapAround", true);
 pref("extensions.mozcomics.useArrowsToSwitchStrip", true);
 pref("extensions.mozcomics.addReadToBrowserHistory", true);
-pref("extensions.mozcomics.defaultToMarkRead", true);
 pref("extensions.mozcomics.multipleEnabledComics", true);
 pref("extensions.mozcomics.showMouseoverBelowImage", false);
 pref("extensions.mozcomics.defaultStrip", 0);

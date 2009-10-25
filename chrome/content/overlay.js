@@ -8,6 +8,7 @@ var MozComics = new function() {
 	this.init = init;
 
 	this.isWindow = null;
+	this.hasBeenOpened = false;
 
 	this.onChromeLoad = onChromeLoad;
 	this.onUnload = onUnload;
@@ -75,7 +76,15 @@ var MozComics = new function() {
 		window.addEventListener("unload", MozComics.onUnload, false);
 
 		MozComics.Dom.init();
-		MozComics.Strips.init();
+
+		if(MozComics.isWindow) {
+			MozComics.hasBeenOpened = true;
+			MozComics.focusStripPane();
+		}
+		else {
+			MozComics.hasBeenOpened = !MozComics.Dom.pane.hidden;
+		}
+
 		MozComics.ComicPicker.init();
 		MozComics.Comics.init();
 
@@ -86,17 +95,13 @@ var MozComics = new function() {
 			MozComics.showWebpage(MozComics.Utils.URLS.FIRST_RUN);
 			MozComics.Prefs.set('firstRun', false);
 		}
-
-		if(MozComics.isWindow) {
-			MozComics.focusStripPane();
-		}
 	}
 
 	function onUnload() {
 		window.removeEventListener("unload", MozComics.onUnload, false);
 
-		MozComics.Strips.unload();
 		MozComics.Comics.unload();
+		MozComics.Dom.unload();
 
 		MozComics.Callback.remove(MozComics.callbackId);
 	}
@@ -112,8 +117,6 @@ var MozComics = new function() {
 
 	function openWindow() {
 		this.togglePane();
-		MozComics.Strips.unload();
-		MozComics.Comics.unload();
 		this._openMozComicsWindow();
 	}
 
@@ -134,6 +137,15 @@ var MozComics = new function() {
 		}
 		else {
 			MozComics.Dom.pane.hidden = nowHidden;
+			if(!this.hasBeenOpened) {
+				this.hasBeenOpened = true;
+				MozComics.Strips.refresh();
+			}
+
+			if(nowHidden) {
+				MozComics.Comics.saveStatesToDB();
+			}
+
 			MozComics.Dom.paneSplitter.hidden = nowHidden;
 			(nowHidden) ? MozComics.Dom.focusableStripPane.blur() : MozComics.focusStripPane();
 		}

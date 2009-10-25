@@ -5,7 +5,10 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 MozComics.Dom = new function() {
 	this.init = init;
+	this.unload = unload;
 	this._getDomElement = _getDomElement;
+
+	this._eventFunctions = {};
 
 	// cache Dom elements
 	function init() {
@@ -63,18 +66,39 @@ MozComics.Dom = new function() {
 		this.advancedToggle.setAttribute("expand", this.advanced.hidden);
 
 		// add event listeners
-		this.comicPicker.addEventListener("click", function(e) { MozComics.ComicPicker.onClick(e); }, true);
-		this.advancedDate.addEventListener("change", function(e) { MozComics.Strips.setByDatePicker(); }, false);
-		this.image.addEventListener("load", function(e) {
+		this._eventFunctions.comicPicker = function(e) {
+			MozComics.ComicPicker.onClick(e);
+		};
+		this.comicPicker.addEventListener("click", this._eventFunctions.comicPicker, true);
+
+		this._eventFunctions.advancedDate = function(e) {
+			MozComics.Strips.setByDatePicker();
+		};
+		this.advancedDate.addEventListener("change", this._eventFunctions.advancedDate, false);
+
+		this._eventFunctions.image = function(e) {
 			MozComics.Dom.loadingImage.style.visibility = 'hidden';
 
 			MozComics.Dom.stripFound.style.width = 'auto';
 			var width = MozComics.Dom.image.clientWidth;
 			MozComics.Dom.stripFound.style.width = width + 'px';
-		}, false);
+		};
+		this.image.addEventListener("load", this._eventFunctions.image, false);
 
 		// add scroll methods to scrollboxes
 		this.stripPane = this.focusableStripPane.boxObject.QueryInterface(Components.interfaces.nsIScrollBoxObject);
+	}
+
+	function unload() {
+		this.comicPicker.removeEventListener("click", this._eventFunctions.comicPicker, true);
+		this.advancedDate.removeEventListener("change", this._eventFunctions.advancedDate, false);
+		this.image.removeEventListener("load", this._eventFunctions.image, false);
+
+		// force persist of values that would have been otherwise lost
+		// see https://bugzilla.mozilla.org/show_bug.cgi?id=15232
+		this.advanced.setAttribute('hidden', !!this.advanced.hidden);
+		this.showRead.setAttribute('checked', !!this.showRead.checked);
+		this.updateRead.setAttribute('checked', !!this.updateRead.checked);
 	}
 
 	function _getDomElement(varName, id, skipThrow) {

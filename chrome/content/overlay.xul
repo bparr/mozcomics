@@ -52,7 +52,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			</hbox>
 
 			<hbox flex="1">
-				<vbox id="mozcomics-sidebar" persist="width, hidden" hidden="false">
+				<vbox id="mozcomics-sidebar" persist="width hidden" hidden="false">
 					<vbox align="center">
 						<label class="text-link" onclick="MozComics.toggleAdvanced();">
 							<hbox align="center">
