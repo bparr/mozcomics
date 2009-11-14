@@ -113,7 +113,7 @@ var MozComics = new function() {
 			window.open(MozComics.Utils.URLS.COMIC_LIST);
 		}
 		else {
-			gBrowser.selectedTab = gBrowser.addTab(url, null);
+			gBrowser.selectedTab = gBrowser.addTab(url);
 		}
 	}
 
