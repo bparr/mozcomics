@@ -10,9 +10,10 @@ MozComics.ComicPicker = new function() {
 	this.update = update;
 	this.refreshTree = refreshTree;
 	this.onClick = onClick;
+	this.rowClicked = rowClicked;
 
-	this.xulTree;
-	this.table;
+	this.xulTree = null;
+	this.table = null;
 	this.xulVarPrefix = "mozcomics-comic-";
 	this.treeview = null;
 	
@@ -20,13 +21,18 @@ MozComics.ComicPicker = new function() {
 		this.xulTree = MozComics.Dom.comicPicker;
 	}
 
-	// update value and order of rows in tree without creating a new treeview
+	/*
+	 * Update value and order of rows in tree without creating a new treeview.
+	 */
 	function update(sortColumn) {
 		this.treeview.update(sortColumn);
 		MozComics.Strips.refresh();
 	};
 
-	// create a new treeview
+	/*
+	 * Create a new treeview.
+	 * Used when the comics themselves change (i.e. comic added or deleted).
+	 */
 	function refreshTree() {
 		this.table = MozComics.Comics.showing;
 		this.treeview = new TreeView(this.xulTree, this.table, this.xulVarPrefix,
@@ -34,6 +40,9 @@ MozComics.ComicPicker = new function() {
 		MozComics.Strips.refresh();
 	}
 
+	/*
+	 * Change enabled states depending on which comic was clicked.
+	 */
 	function onClick(e) {
 		// Only care about primary button clicks on treechildren element
 		if (!e || e.button != 0 || e.originalTarget.localName != 'treechildren') {
@@ -41,9 +50,7 @@ MozComics.ComicPicker = new function() {
 		}
 
 		// make sure user is actually double clicking a row
-		var row = {}, col = {}, obj = {};
-		this.xulTree.treeBoxObject.getCellAt(e.clientX, e.clientY, row, col, obj);
-		if (!obj.value) {
+		if(!this.rowClicked(e)) {
 			return;
 		}
 
@@ -55,16 +62,28 @@ MozComics.ComicPicker = new function() {
 				MozComics.Comics.setComicProp(selectedComic, "enabled", nowEnabled);
 			}
 			else {
+				// if the user only wants one selected comic at a time, then 
+				// make sure only the clicked comic is enabled
 				MozComics.Comics.onlyEnable(selectedComic);
 			}
 		}
 	}
 
+	/*
+	 * Determines if a row, instead of just empty space in the tree, was clicked.
+	 */
+	function rowClicked(e) {
+		var row = {}, col = {}, obj = {};
+		this.xulTree.treeBoxObject.getCellAt(e.clientX, e.clientY, row, col, obj);
+		return !!obj.value;
+	}
+
 	this.__defineGetter__("selectedComic", function() {
-		if(this.xulTree.currentIndex < 0) {
+		var index = this.xulTree.currentIndex;
+		if(index < 0) {
 			return false;
 		}
-		return this.table[this.xulTree.currentIndex];
+		return this.table[index];
 	});
 }
 

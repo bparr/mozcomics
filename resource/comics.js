@@ -179,6 +179,11 @@ var ComicsResource = new function() {
 
 	this.populateUnreadCounts();
 
+
+	/*
+	 * Store the number of unread strips for each comic,
+	 * and total unread strips
+	 */
 	function populateUnreadCounts() {
 		this.unreadCounts = {};
 		for(var comic in this.all) {
@@ -194,6 +199,9 @@ var ComicsResource = new function() {
 	}
 
 
+	/*
+	 * Update a specific comic in cache
+	 */
 	function updateComic(row) {
 		var comic = new Comic(row);
 
@@ -215,6 +223,9 @@ var ComicsResource = new function() {
 		return comic;
 	}
 
+	/*
+	 * Delete a comic from cache and database
+	 */
 	function deleteComic(comic) {
 		// delete from cache
 		delete self.all[comic.comic];
@@ -240,8 +251,10 @@ var ComicsResource = new function() {
 		});
 	}
 
-	// Save the set of states for the instance of the MozComics object
-	// (identified by callbackId) to the database
+	/*
+	 * Save the set of states for the instance of the MozComics object
+	 * (identified by callbackId) to the database
+	 */
 	function saveStatesToDB(callbackId) {
 		var statements = [];
 		for(var comic in self.all) {
@@ -258,7 +271,10 @@ var ComicsResource = new function() {
 		}
 	}
 
-
+	/*
+	 * Find the comic's strips whose urls are in the browser history, and
+	 * prompt the user if they want to mark these strips as read
+	 */
 	function findReadStrips(selectedComic) {
 		var getUnreadStrips = getUnreadStripsStatement.clone();
 		getUnreadStrips.params.comic = selectedComic.comic;
@@ -288,7 +304,9 @@ var ComicsResource = new function() {
 							readStrips.push(row);
 						}
 					}
-					_processReadStrips(this.selectedComic, readStrips);
+
+					var noneFoundMessage = Utils.getString("findReadStrips.noneFound");
+					_processReadStrips(this.selectedComic, readStrips, noneFoundMessage);
 				}
 				else {
 					Utils.alert(Utils.getString("findReadStrips.sqlError"));
@@ -297,6 +315,10 @@ var ComicsResource = new function() {
 		});
 	}
 
+	/*
+	 * Find a comic's strips that are marked unread in MozComics,
+	 * and the user if they want to mark these strips as read
+	 */
 	function markAllStripsRead(selectedComic) {
 		var getUnreadStrips = getUnreadStripsStatement.clone();
 		getUnreadStrips.params.comic = selectedComic.comic;
@@ -318,7 +340,9 @@ var ComicsResource = new function() {
 						var row = DB.cloneRow(this.rows[i], this.columns);
 						readStrips.push(row);
 					}
-					_processReadStrips(this.selectedComic, readStrips);
+
+					var noneFoundMessage = Utils.getString("markAllStripsRead.noneFound");
+					_processReadStrips(this.selectedComic, readStrips, noneFoundMessage);
 				}
 				else {
 					Utils.alert(Utils.getString("markAllStripsRead.sqlError"));
@@ -327,7 +351,11 @@ var ComicsResource = new function() {
 		});
 	}
 
-	function _processReadStrips(selectedComic, readStrips) {
+	/*
+	 * Prompt the user if they want to mark strips as read,
+	 * and do so if user wants to.
+	 */
+	function _processReadStrips(selectedComic, readStrips, noneFoundMessage) {
 		if(readStrips.length > 0) {
 			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
 				.getService(Components.interfaces.nsIPrompt);
@@ -338,7 +366,7 @@ var ComicsResource = new function() {
 			}
 		}
 		else {
-			Utils.alert(Utils.getString("processReadStrips.noneFound"));
+			Utils.alert(noneFoundMessage);
 		}
 	}
 }

@@ -17,7 +17,7 @@ pref("extensions.mozcomics.showMouseoverBelowImage", false);
 pref("extensions.mozcomics.defaultStrip", 0);
 
 // preloading
-pref("extensions.mozcomics.preloadAmount", 3);
+pref("extensions.mozcomics.preloadAmount", 5);
 pref("extensions.mozcomics.preloadImages", true);
 
 // update

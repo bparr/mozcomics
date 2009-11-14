@@ -16,7 +16,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 	<hbox id="mozcomics-pane" persist="height" chromedir="&locale.dir;" flex="1">
 
 		<popupset>
-			<popup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu();">
+			<popup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu(event);">
 				<menuitem label="&mozcomics.menu.onlyEnable;" oncommand="MozComics.Comics.onlyEnable()"/>
 				<menuitem label="&mozcomics.menu.findReadStrips;" oncommand="MozComics.Comics.findReadStrips()"/>
 				<menuitem label="&mozcomics.menu.markAllStripsRead;" oncommand="MozComics.Comics.markAllStripsRead()"/>
@@ -142,8 +142,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 				<splitter id="mozcomics-sidebar-splitter" resizebefore="closest" resizeafter="closest" />
 
 				<scrollbox orient="horizantal" id="mozcomics-strip-pane" flex="1" pack="center"
-					onkeydown="MozComics.handleKeyDown(event, this.id);"
-					onkeyup="MozComics.handleKeyUp(event, this.id);">
+					onkeydown="MozComics.handleKeyDown(event);"
+					onkeyup="MozComics.handleKeyUp(event);">
 
 					<vbox id="mozcomics-strip-found" align="center" hidden="true">
 						<label id="mozcomics-strip-comic" class="text-link" href="" />

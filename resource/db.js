@@ -103,7 +103,12 @@ var DB = new function() {
 	var ioService = Components.classes["@mozilla.org/network/io-service;1"]
 		.getService(Components.interfaces.nsIIOService);
 
+	/*
+	 * Update the read times of the strips.
+	 * Return the read time.
+ 	 */
 	function updateReadTimes(comic, strips, d) {
+		// use current time is none was passed
 		d = (d) ? d : new Date();
 		var read = d.getTime();
 
@@ -120,6 +125,7 @@ var DB = new function() {
 			updateStatements.push(updateStripReadTime);
 
 			if(Prefs.user.addReadToBrowserHistory) {
+				// add url of strip to browser history
 				var uri = ioService.newURI(strip.url, null, null);
 				historyService.addURI(uri, false, true, null);
 			}
