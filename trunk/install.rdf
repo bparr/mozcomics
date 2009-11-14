@@ -7,7 +7,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <RDF xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:em="http://www.mozilla.org/2004/em-rdf#">
 	<Description about="urn:mozilla:install-manifest">
 		<em:id>mozcomics@bparr.com</em:id>
-		<em:version>1.0</em:version>
+		<em:version>1.0b1</em:version>
 		<em:type>2</em:type>
 	 
 		<em:name>MozComics</em:name>
@@ -22,8 +22,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 		<em:targetApplication>
 			<Description>
 				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
-				<em:minVersion>3.0</em:minVersion>
-				<em:maxVersion>3.6</em:maxVersion>
+				<em:minVersion>3.5</em:minVersion>
+				<em:maxVersion>3.7a1pre</em:maxVersion>
 			</Description>
 		</em:targetApplication>
 	</Description>			
