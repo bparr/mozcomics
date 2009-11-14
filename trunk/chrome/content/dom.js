@@ -8,7 +8,23 @@ MozComics.Dom = new function() {
 	this.unload = unload;
 	this._getDomElement = _getDomElement;
 
-	this._eventFunctions = {};
+	this._eventFunctions = {
+		comicPicker: function(e) {
+			MozComics.ComicPicker.onClick(e);
+		},
+
+		advancedDate: function(e) {
+			MozComics.Strips.setByDatePicker();
+		},
+
+		image: function(e) {
+			MozComics.Dom.loadingImage.style.visibility = 'hidden';
+
+			MozComics.Dom.stripFound.style.width = 'auto';
+			var width = MozComics.Dom.image.clientWidth;
+			MozComics.Dom.stripFound.style.width = width + 'px';
+		}
+	};
 
 	// cache Dom elements
 	function init() {
@@ -19,6 +35,7 @@ MozComics.Dom = new function() {
 		// cache navigation elements
 		this._getDomElement("lastSuccessfulUpdate", "mozcomics-update-last-successful");
 		this._getDomElement("loadingImage", "mozcomics-tb-loading-image");
+		this._getDomElement("tbClose", "mozcomics-tb-close");
 
 		// cache sidebar elements
 		this._getDomElement("sidebar", "mozcomics-sidebar");
@@ -54,8 +71,10 @@ MozComics.Dom = new function() {
 		// determine if this instance is a stand-alone window, or a browser overlay
 		MozComics.isWindow = !this.paneSplitter;
 
+		// determine initial value of hasBeenOpened by whether or not MozComics is showing
+		MozComics.hasBeenOpened = !MozComics.Dom.pane.hidden;
+
 		// close toolbar button only relevant when this instance is a browser overlay
-		this._getDomElement("tbClose", "mozcomics-tb-close");
 		this.tbClose.hidden = MozComics.isWindow;
 
 		// initialize state of sidebar toolbar icon and splitter
@@ -65,24 +84,12 @@ MozComics.Dom = new function() {
 		// initialize state of advanced toggle
 		this.advancedToggle.setAttribute("expand", this.advanced.hidden);
 
+		// initialize disabled state of enableAll button
+		this.enableAll.disabled = !MozComics.Prefs.user.multipleEnabledComics;
+
 		// add event listeners
-		this._eventFunctions.comicPicker = function(e) {
-			MozComics.ComicPicker.onClick(e);
-		};
 		this.comicPicker.addEventListener("click", this._eventFunctions.comicPicker, true);
-
-		this._eventFunctions.advancedDate = function(e) {
-			MozComics.Strips.setByDatePicker();
-		};
 		this.advancedDate.addEventListener("change", this._eventFunctions.advancedDate, false);
-
-		this._eventFunctions.image = function(e) {
-			MozComics.Dom.loadingImage.style.visibility = 'hidden';
-
-			MozComics.Dom.stripFound.style.width = 'auto';
-			var width = MozComics.Dom.image.clientWidth;
-			MozComics.Dom.stripFound.style.width = width + 'px';
-		};
 		this.image.addEventListener("load", this._eventFunctions.image, false);
 
 		// add scroll methods to scrollboxes
@@ -90,6 +97,7 @@ MozComics.Dom = new function() {
 	}
 
 	function unload() {
+		// remove event listeners
 		this.comicPicker.removeEventListener("click", this._eventFunctions.comicPicker, true);
 		this.advancedDate.removeEventListener("change", this._eventFunctions.advancedDate, false);
 		this.image.removeEventListener("load", this._eventFunctions.image, false);

@@ -13,6 +13,8 @@ Components.utils.import("resource://mozcomics/callback.js");
 var Prefs = new function() {
 	this.user = null;
 	this.default = null;
+	this.recache = recache;
+	this.set = set;
 
 	var userSetBranch = Components.classes["@mozilla.org/preferences-service;1"]
 			.getService(Components.interfaces.nsIPrefService)
@@ -22,7 +24,10 @@ var Prefs = new function() {
 			.getService(Components.interfaces.nsIPrefService)
 			.getDefaultBranch("extensions.mozcomics.");
 
-	this.recache = function() {
+	/*
+	 * Update the user and default cached preferences
+	 */
+	function recache() {
 		this.user = {};
 		this.default = {};
 		var prefNames = defaultBranch.getChildList('', {});
@@ -38,7 +43,10 @@ var Prefs = new function() {
 		Callback.callType("prefsChanged");
 	}
 
-	this.set = function(prefName, value){
+	/*
+	 * Change actual preference, and the cached value
+	 */
+	function set(prefName, value) {
 		this.user[prefName] = value;
 
 		var prefType = userSetBranch.getPrefType(prefName);
@@ -51,8 +59,13 @@ var Prefs = new function() {
 		else {
 			userSetBranch.setIntPref(prefName, value);
 		}
+
+		Callback.callType("prefsChanged");
 	}
 
+	/*
+	 * Get the value of a preference from a branch
+	 */
 	function _getFromBranch(prefName, branch) {
 		var prefType = branch.getPrefType(prefName);
 		if(prefType == branch.PREF_BOOL) {

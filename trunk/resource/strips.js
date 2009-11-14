@@ -61,8 +61,12 @@ var StripsResource = new function() {
 		STATEMENT_PREFIX + "AND read IS NOT NULL ORDER BY read DESC LIMIT 1;" // get the last read strip
 	];
 
-
+	/*
+	 * Find a strip based on information in data. force is a flag used to
+	 * force a request, even if busy (i.e. already fulfilling another request)
+	 */
 	function findStrip(data, force) {
+		// do nothing if already fulfilling a request, and force flag false
 		if(busy && !force) {
 			return;
 		}
@@ -93,6 +97,7 @@ var StripsResource = new function() {
 			t = "(" + t + ") AND bookmark = :bookmark";
 		}
 
+		// generate statement
 		var queryString = STATEMENTS[data.statementId].replace("?", t);
 		var statement = DB.dbConn.createStatement(queryString);
 
@@ -123,6 +128,7 @@ var StripsResource = new function() {
 			rows: [],
 
 			handleResult: function(response) {
+				// store rows that were returned
 				for(var row = response.getNextRow(); row; row = response.getNextRow()) {
 					this.rows.push(row);
 				}
@@ -147,7 +153,7 @@ var StripsResource = new function() {
 					else if(this.data.onFailStatementId) {
 						this.data.statementId = this.data.onFailStatementId;
 						this.data.onFailStatementId = null;
-						findStrip(this.data, true);
+						findStrip(this.data, true); // force request
 					}
 					// unsuccessful with no fallback statement
 					else {

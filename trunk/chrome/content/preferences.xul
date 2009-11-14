@@ -80,6 +80,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 		<label id="mozcomics-preferences-link" class="text-link" value="&mozcomics.preferences.moreInformation;" href="" />
 		<script>
 		<![CDATA[
+			// set href of mozcomics-preferences-link to PREFERENCE_SUPPORT url
 			Components.utils.import("resource://mozcomics/utils.js");
 
 			window.addEventListener('load', function(e) {
@@ -91,3 +92,4 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 	</prefpane>
 
 </prefwindow>
+

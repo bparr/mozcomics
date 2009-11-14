@@ -26,16 +26,20 @@ var Utils = new function() {
 		.getService(Components.interfaces.nsIStringBundleService)
 		.createBundle("chrome://mozcomics/locale/mozcomics.properties");
 
-	// Generates standard alert box. Useful for code inside resource module
-	// where the alert shortcut is not available.
+	/*
+	 * Generate standard alert box. Useful for code inside resource module
+	 * where the alert shortcut is not available.
+	 */
 	function alert(msg) {
 		var promptService = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
 			.getService(Components.interfaces.nsIPromptService);
 		promptService.alert(null, '', msg);
 	}
 
-	// Get localised message. Based off of
-	// https://developer.mozilla.org/En/Code_snippets/Miscellaneous#Using_string_bundles_from_JavaScript
+	/*
+	 * Get localised message. Based off of
+	 * https://developer.mozilla.org/En/Code_snippets/Miscellaneous#Using_string_bundles_from_JavaScript
+	 */
 	function getString(msg, args) {
 		if (args){
 			args = Array.prototype.slice.call(arguments, 1);
@@ -46,14 +50,20 @@ var Utils = new function() {
 		}
 	}
 
+
+	/*
+	 * Unescape special HTML characters
+	 */
 	function unescapeHtml(html) {
 		var nsISUHTML = Components.classes["@mozilla.org/feed-unescapehtml;1"]
 				.getService(Components.interfaces.nsIScriptableUnescapeHTML);
 		return nsISUHTML.unescape(html);
 	}
 
-	// sqlTime is number of seconds since midnight of January 1, 1970
-	// according to universal time. Convert to javascript date.
+	/*
+	 * sqlTime is number of seconds since midnight of January 1, 1970
+	 * according to universal time. Convert to javascript date.
+	 */
 	function sqlToDate(sqlTime) {
 		var d = new Date();
 		d.setTime(sqlTime * 1000);

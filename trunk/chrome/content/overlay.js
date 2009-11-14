@@ -30,6 +30,8 @@ var MozComics = new function() {
 
 	var MAX_BOOKMARK = 2;
 
+	// used for Callback so the resource module can notify this instance of
+	// MozComics of certain changes
 	this.callbackId = null;
 	this.callbackFunctions = {
 		stripRead: function() {
@@ -39,7 +41,7 @@ var MozComics = new function() {
 
 		comicsChanged: function() {
 			MozComics.Comics.updateStatusBarPanel();
-			MozComics.Comics.refreshCache();
+			MozComics.Comics.refreshCache(true);
 		},
 
 		prefsChanged: function() {
@@ -55,7 +57,7 @@ var MozComics = new function() {
 		Components.utils.import("resource://mozcomics/update.js"); this.Update = Update;
 		Components.utils.import("resource://mozcomics/callback.js"); this.Callback = Callback;
 
-		// load other javascript files
+		// load chrome javascript files
 		var scriptFiles = [
 			"comicPicker",
 			"comics",
@@ -76,24 +78,23 @@ var MozComics = new function() {
 		window.addEventListener("unload", MozComics.onUnload, false);
 
 		MozComics.Dom.init();
-
-		if(MozComics.isWindow) {
-			MozComics.hasBeenOpened = true;
-			MozComics.focusStripPane();
-		}
-		else {
-			MozComics.hasBeenOpened = !MozComics.Dom.pane.hidden;
-		}
-
 		MozComics.ComicPicker.init();
 		MozComics.Comics.init();
 
+		// add this instance of MozComics to Callback
 		MozComics.callbackId = MozComics.Callback.add(MozComics.callbackFunctions);
-		MozComics.Prefs.recache();
 
+		// if this is the first time MozComics is run (just installed)
+		// then show the FIRST_RUN url
 		if(MozComics.Prefs.user.firstRun) {
 			MozComics.showWebpage(MozComics.Utils.URLS.FIRST_RUN);
 			MozComics.Prefs.set('firstRun', false);
+		}
+
+		// make it so the user does not have to click the strip pane
+		// every time a stand-alone window is created
+		if(MozComics.isWindow) {
+			MozComics.focusStripPane();
 		}
 	}
 
@@ -103,6 +104,7 @@ var MozComics = new function() {
 		MozComics.Comics.unload();
 		MozComics.Dom.unload();
 
+		// remove this instance of MozComics from Callback
 		MozComics.Callback.remove(MozComics.callbackId);
 	}
 
@@ -115,6 +117,10 @@ var MozComics = new function() {
 		}
 	}
 
+	/*
+	 * Open a new MozComics in a stand-alone window, and hide this one
+	 * if it is a browser overlay.
+	 */
 	function openWindow() {
 		this.togglePane();
 		this._openMozComicsWindow();
@@ -126,31 +132,44 @@ var MozComics = new function() {
 		);
 	}
 
+	/*
+	 * If this is a browser overlay, toggle hidden state of MozComics.
+	 */
 	function togglePane() {
+		// do nothing if this MozComics is a stand-alone window
 		if(this.isWindow) {
 			return;
 		}
 
 		var nowHidden = !MozComics.Dom.pane.hidden;
 		if(!nowHidden && MozComics.Prefs.user.alwaysOpenInNewWindow) {
+			// skip overlay view and directly open a new stand-alone window
 			this._openMozComicsWindow();
 		}
 		else {
 			MozComics.Dom.pane.hidden = nowHidden;
+			MozComics.Dom.paneSplitter.hidden = nowHidden;
+			(nowHidden) ? MozComics.Dom.focusableStripPane.blur() : MozComics.focusStripPane();
+
+			// if this is the first time MozComics has been opened,
+			// make first/original strip request so the strip pane doesn't
+			// show up empty even if there is a strip that should be shown
 			if(!this.hasBeenOpened) {
 				this.hasBeenOpened = true;
 				MozComics.Strips.refresh();
 			}
 
+			// save comic states to database on hide of MozComics
 			if(nowHidden) {
 				MozComics.Comics.saveStatesToDB();
 			}
-
-			MozComics.Dom.paneSplitter.hidden = nowHidden;
-			(nowHidden) ? MozComics.Dom.focusableStripPane.blur() : MozComics.focusStripPane();
 		}
 	}
 
+	/*
+	 * Toggle hidden state of the sidebar, and update the Toggle Sidebar
+	 * toolbar button whose icon depends on the hidden state of the sidebar.
+	 */
 	function toggleSidebar() {
 		var nowHidden = !MozComics.Dom.sidebar.hidden;
 		MozComics.Dom.sidebar.hidden = nowHidden;
@@ -158,17 +177,26 @@ var MozComics = new function() {
 		MozComics.Dom.sidebarSplitter.hidden = nowHidden;
 	}
 
+	/*
+	 * Toggle hidden state of the advanced pane (located within the sidebar).
+	 */
 	function toggleAdvanced() {
 		var nowHidden = !MozComics.Dom.advanced.hidden;
 		MozComics.Dom.advanced.hidden = nowHidden;
 		MozComics.Dom.advancedToggle.setAttribute("expand", nowHidden);
 	}
 
+	/*
+	 * Give focus to strip pane so keyboard shortcuts, such as arrow keys, work.
+	 */
 	function focusStripPane() {
 		MozComics.Dom.focusableStripPane.focus();
 	}
 
-	function handleKeyDown(event, from) {
+	/*
+	 * Handle key downs from the strip pane.
+	 */
+	function handleKeyDown(event) {
 		var key = String.fromCharCode(event.which).toLowerCase();
 		if(!event.ctrlKey && !event.altKey && !event.metaKey) {
 			if(event.shiftKey) {
@@ -182,9 +210,15 @@ var MozComics = new function() {
 					MozComics.toggleSidebar();
 				}
 				else if(event.keyCode == event.DOM_VK_LEFT && MozComics.lastScrollXPos === null) {
+					// Set lastScrollXPos so handleKeyDown can determine whether
+					// to request the Previous strip. The strip pane will still
+					// scroll horizantally left because not using preventDefault.
 					MozComics.lastScrollXPos = MozComics._getCurrentScrollXPos();
 				}
 				else if(event.keyCode == event.DOM_VK_RIGHT && MozComics.lastScrollXPos === null) {
+					// Set lastScrollXPos so handleKeyDown can determine whether
+					// to request the Next strip. The strip pane will still
+					// scroll horizantally right because not using preventDefault.
 					MozComics.lastScrollXPos = MozComics._getCurrentScrollXPos();					
 				}
 				else if(event.keyCode == event.DOM_VK_RETURN || event.keyCode == event.DOM_VK_ENTER) {
@@ -217,6 +251,7 @@ var MozComics = new function() {
 					MozComics.Strips.deleteCache();
 				}
 				else if(key == 't') {
+					// go to next possible value of bookmarkMenu
 					var newValue = (parseInt(MozComics.Dom.bookmarkMenu.value) + 1) % MAX_BOOKMARK;
 					MozComics.Dom.bookmarkMenu.value = newValue;
 					MozComics.Strips.deleteCache();
@@ -225,7 +260,13 @@ var MozComics = new function() {
 		}
 	}
 
-	function handleKeyUp(event, from) {
+	/*
+	 * Handle function overloading of arrow keys.
+	 * If the pressed key was either the left or right arrow key, and the
+	 * strip pane did not scroll horizantally (i.e. was at the edge),
+	 * then navaigate to the appropriate strip.
+	 */
+	function handleKeyUp(event) {
 		var currentScrollXPos = MozComics._getCurrentScrollXPos();
 		var lastScrollXPos = MozComics.lastScrollXPos;
 		MozComics.lastScrollXPos = null;
@@ -249,20 +290,33 @@ var MozComics = new function() {
 		}
 	}
 
-	function buildComicsContextMenu() {
+	/*
+	 * Only display the comics context menu if the user clicked a row in the
+	 * comic picker, and a comic is selected.
+	 */
+	function buildComicsContextMenu(e) {
 		var menu = MozComics.Dom.comicPickerContextMenu;
-		var hideItems = !MozComics.ComicPicker.selectedComic;
-		for(var i = 0, len = menu.childNodes.length; i < len; i++) {
-			menu.childNodes[i].setAttribute('hidden', hideItems);
+		var rowClicked = MozComics.ComicPicker.rowClicked(e);
+		var selectedComic = MozComics.ComicPicker.selectedComic;
+		if(!(rowClicked && selectedComic)) {
+			// don't show context menu
+			e.preventDefault();
 		}
 	}
 
+	/*
+	 * Update last success label in the update tooltip so that it shows
+	 * the relative date since the last successful update.
+	 */
 	function buildUpdateTooltip() {
 		var relativeDate = MozComics.Utils.relativeDate(MozComics.Prefs.user.lastSuccessfulUpdate);
 		var lastSuccess = MozComics.Utils.getString("update.lastSuccess", relativeDate);
 		MozComics.Dom.lastSuccessfulUpdate.value = lastSuccess;
 	}
 
+	/*
+	 * Show the preferences dialog. Recache preferences once dialog is closed.
+	 */
 	function showPreferences() {
 		window.openDialog('chrome://mozcomics/content/preferences.xul',
 			'mozcomics-preferences', 'chrome,modal=yes'
@@ -271,6 +325,9 @@ var MozComics = new function() {
 		MozComics.Prefs.recache();
 	}
 
+	/*
+	 * Return the x scroll coordinate of the strip pane.
+	 */
 	function _getCurrentScrollXPos() {
 		var x = {};
 		MozComics.Dom.stripPane.getPosition(x, {});

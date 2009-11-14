@@ -14,7 +14,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <?xml-stylesheet href="chrome://mozcomics/skin/mozcomics.css" type="text/css"?>
 <window id="mozcomics-window"
 	title="MozComics"
-	persist="screenX, screenY, width, height"
+	persist="screenX screenY width height"
 	width="750px"
 	height="550px"
 	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
@@ -23,3 +23,4 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 	<hbox id="mozcomics-pane" hidden="false"></hbox>
 
 </window>
+

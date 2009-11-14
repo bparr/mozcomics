@@ -17,8 +17,6 @@ MozComics.Strips = new function() {
 
 	this.deleteCache = deleteCache;
 	this.setToDefaultStrip = setToDefaultStrip;
-	this.repeatLastRequest = repeatLastRequest;
-	this._setStrip = _setStrip;
 	this.setToFirstStrip = function() { this._setStrip(S.first); };
 	this.setToPreviousStrip = function() { this._setStrip(S.previous); };
 	this.setToNextStrip = function() { this._setStrip(S.next); };
@@ -28,15 +26,18 @@ MozComics.Strips = new function() {
 	this.setToForwardStrip = function() { this._setStrip(S.forward); };
 	this.setToLastReadStrip = function() { this._setStrip(S.lastRead); };
 	this.setByDatePicker = setByDatePicker;
+	this.repeatLastRequest = repeatLastRequest;
+	this._setStrip = _setStrip;
 
-	this._preloadImage = _preloadImage;
 	this._updatePane = _updatePane;
+	this._preloadImage = _preloadImage;
 	this._updateParamVariables = _updateParamVariables;
 
 	this.datePickerDates = null;
 	this._updateDatePickerDates = _updateDatePickerDates;
 	this.updateDatePicker = updateDatePicker;
 
+	// parameters used when finding a strip
 	this.params = {
 		lastComic: null,
 		lastStrip: null,
@@ -45,21 +46,25 @@ MozComics.Strips = new function() {
 		stripQueue: []
 	}
 
+	/*
+	 * Change strip to default if no strip showing, or the one that is
+	 * showing is from a comic that is no longer enabled
+	 */
 	function refresh() {
 		self.params.lastRead = INFINITY;
 		self.params.stripQueue = [];
 
+		// don't search for a strip until MozComics has been opened
 		if(!MozComics.hasBeenOpened) {
 			return;
 		}
 
-		// change strip to default if no strip showing, or the one that is
-		// showing is from a comic that is no longer enabled
 		if(MozComics.Dom.stripFound.hidden ||
 			self.params.lastComic == null ||
 			!MozComics.Comics.getComic(self.params.lastComic) ||
 			!MozComics.Comics.getComicProp(self.params.lastComic, "enabled")) {
 
+			// show same strip when going from browser overlay to stand alone window
 			if(self._firstRefresh && MozComics.isWindow && !MozComics.Prefs.user.alwaysOpenInNewWindow) {
 				self.setToLastReadStrip();
 			}
@@ -71,10 +76,16 @@ MozComics.Strips = new function() {
 		self._firstRefresh = false;
 	}
 
+	/*
+	 * Clear the strip cache
+	 */
 	function deleteCache() {
 		this.params.stripQueue = [];
 	}
 
+	/*
+	 * Request the default strip, which is set by user preference
+	 */
 	function setToDefaultStrip() {
 		switch(MozComics.Prefs.user.defaultStrip) {
 			case 0:
@@ -99,21 +110,54 @@ MozComics.Strips = new function() {
 		}
 	}
 
+	/*
+	 * Request a strip based on the date picker. Called when user changes the
+	 * value in the date picker.
+	 */
+	function setByDatePicker() {
+		var d = MozComics.Dom.advancedDate.dateValue;
+		var time = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - 1;
+
+		this.params.stripQueue = [];
+
+		var dateType = MozComics.Dom.advancedDateMenu.value;
+		switch(dateType) {
+			case "pubDate":
+				// set to first strip published on or after date
+				this.params.lastComic = INFINITY;
+				this.params.lastStrip = Math.floor(time / 1000);
+				this.setToNextStrip();
+				break;
+			case "readDate":
+				// set to first strip read on or after date
+				this.params.lastRead = time;
+				this.setToForwardStrip();
+				break;
+		}
+	}
+
+	/*
+	 * Repeat same type of request as the last one
+	 */
 	function repeatLastRequest() {
 		if(this.lastStripRequest != null) {
 			this._setStrip(this.lastStripRequest);
 		}
 	}
 
+	/*
+	 * Make strip request
+	 */
 	function _setStrip(statementId) {
 		MozComics.Dom.loadingImage.style.visibility = 'visible';
 
+		// delete cache if different strip request than the last one
 		if(statementId != this.lastStripRequest) {
 			this.deleteCache();
 			this.lastStripRequest = statementId;
 		}
 
-		// lastComic and lastStrip need to be numbers for previous and next search
+		// lastComic and lastStrip need to be defined for previous and next search
 		if(this.params.lastComic == null || this.params.lastStrip == null) {
 			if(statementId == S.previous || statementId == S.next) {
 				this._updatePane(false, statementId);
@@ -121,7 +165,7 @@ MozComics.Strips = new function() {
 			}
 		}
 
-		// generate data from StripsResource.findStrip
+		// generate data for StripsResource.findStrip
 		var data =  {
 			statementId: statementId,
 			onFailStatementId: null,
@@ -132,10 +176,13 @@ MozComics.Strips = new function() {
 			bookmark: MozComics.Dom.bookmarkMenu.value
 		};
 
+		// force showing read strips for requests for a type of read strip
+		// (otherwise, the request would return no strips)
 		if(statementId == S.back || statementId == S.forward || statementId == S.lastRead) {
 			data.showRead = true;
 		}
 
+		// set on fail request used if first request returns no strips
 		if(statementId == S.lastRead) {
 			data.onFailStatementId = S.first;
 		}
@@ -148,8 +195,11 @@ MozComics.Strips = new function() {
 			}
 		}
 
+		// use cached strip if one exists
 		if(data.params.stripQueue.length > 0) {
 			this._updatePane(data.params.stripQueue.shift(), statementId);
+
+			// refill cache if cache is now empty
 			if(data.params.stripQueue.length == 0) {
 				data.onComplete = function(row, statementId) {
 					if(row) {
@@ -165,38 +215,17 @@ MozComics.Strips = new function() {
 		}
 	}
 
-	function setByDatePicker() {
-		var d = MozComics.Dom.advancedDate.dateValue;
-		var time = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - 1;
-
-		this.params.stripQueue = [];
-
-		var dateType = MozComics.Dom.advancedDateMenu.value;
-		switch(dateType) {
-			case "pubDate":
-				this.params.lastComic = INFINITY;
-				this.params.lastStrip = Math.floor(time / 1000);
-				this.setToNextStrip();
-				break;
-			case "readDate":
-				this.params.lastRead = time;
-				this.setToForwardStrip();
-				break;
-		}
-	}
-
-	function _preloadImage(src) {
-		if(MozComics.Prefs.user.preloadImages) {
-			var image = new Image();
-			image.src = src;
-		}
-	}
-
+	/*
+	 * Display requested strip (callback for StripsResource.findStrip)
+	 */
 	function _updatePane(row, statementId) {
+		// preload next strip image in cache
 		if(self.params.stripQueue.length > 0) {
 			self._preloadImage(self.params.stripQueue[0].image);
 		}
 
+		// image onload event not triggered if url did not change, so
+		// hide loadingImage icon here instead
 		if(row && self.params.lastUrl == row.url) {
 			MozComics.Dom.loadingImage.style.visibility = 'hidden';
 		}
@@ -208,6 +237,7 @@ MozComics.Strips = new function() {
 		MozComics.Dom.stripNone.hidden = !!row;
 		if(row) {
 			if(MozComics.Dom.updateRead.checked && statementId != S.back && statementId != S.forward) {
+				// update and store requested strip's read time
 				self.params.lastRead = StripsResource.updateReadTime(row.comic, [row]);
 			}
 
@@ -254,11 +284,25 @@ MozComics.Strips = new function() {
 			MozComics.Dom.loadingImage.style.visibility = 'hidden';
 		}
 
+		// scroll to the top of the strip pane
 		if(!MozComics.Dom.pane.hidden) {
 			MozComics.Dom.stripPane.scrollTo(0,0);
 		}
 	}
 
+	/*
+	 * Preload an image for quicker viewing later
+	 */
+	function _preloadImage(src) {
+		if(MozComics.Prefs.user.preloadImages) {
+			var image = new Image();
+			image.src = src;
+		}
+	}
+
+	/*
+	 * Update parameters that are passed when finding a strip
+	 */
 	function _updateParamVariables(row, statementId) {
 		if(row) {
 			this.params.lastComic = row.comic;
@@ -303,6 +347,11 @@ MozComics.Strips = new function() {
 		}
 	}
 
+
+	/*
+	 * Store values for all type of dates for this row, so
+	 * the user can switch between them
+	 */
 	function _updateDatePickerDates(row) {
 		var d = new Date();
 		var currentTime = d.getTime();
@@ -314,7 +363,6 @@ MozComics.Strips = new function() {
 			};
 		}
 		else {
-
 			this.datePickerDates = {
 				"pubDate": currentTime,
 				"readDate": currentTime
@@ -324,6 +372,9 @@ MozComics.Strips = new function() {
 		this.updateDatePicker();
 	}
 
+	/*
+	 * Update the display of the date picker using stored dates
+	 */
 	function updateDatePicker() {
 		var datepicker = MozComics.Dom.advancedDate;
 		var dateType = MozComics.Dom.advancedDateMenu.value;

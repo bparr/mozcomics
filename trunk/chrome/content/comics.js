@@ -32,20 +32,33 @@ MozComics.Comics = new function() {
 
 	function init() {
 		this.updateStatusBarPanel();
-		this.refreshCache();
+		this.refreshCache(true);
 	}
 
+	/*
+	 * When Firefox window is closed, only save comic states if MozComics was
+	 * showing so that a hidden MozComics to doesn't seemingly make the
+	 * comic states in the database randomly change.
+	 */
 	function unload() {
 		if(!MozComics.Dom.pane.hidden) {
 			this.saveStatesToDB();
 		}
 	}
 
+	/*
+	 * Save the current states of the comics, such as enabled states, so that
+	 * they persist to the next instance of MozComics.
+	 */
 	function saveStatesToDB() {
 		ComicsResource.saveStatesToDB(MozComics.callbackId);
 	}
 
+	/*
+	 * Update number of unread strips shown next to status bar icon.
+	 */
 	function updateStatusBarPanel() {
+		// statusbar does not exist for stand-alone window, so do nothing
 		if(MozComics.isWindow) {
 			return;
 		}
@@ -54,10 +67,17 @@ MozComics.Comics = new function() {
 		MozComics.Dom.statusBarPanel.label = label;
 	}
 
+	/*
+	 * Load the COMIC_LIST webpage so user can find and add a comic.
+	 */
 	function addComic() {
 		MozComics.showWebpage(MozComics.Utils.URLS.COMIC_LIST);
 	}
 
+	/*
+	 * Entirely delete a comic.
+	 * Confirm with user before doing this unrecoverable action.
+	 */
 	function deleteComic() {
 		var selectedComic = MozComics.ComicPicker.selectedComic;
 		if(!selectedComic) {
@@ -73,15 +93,25 @@ MozComics.Comics = new function() {
 		}
 	}
 
+	/*
+	 * Find all unread strips of currently selected comic that have
+	 * urls that have been visited in the browser, and mark them as read.
+	 */
 	function findReadStrips() {
 		ComicsResource.findReadStrips(MozComics.ComicPicker.selectedComic);
 	}
 
+	/*
+	 * Find all unread strips of currently selected comic and mark them as read.
+	 */
 	function markAllStripsRead() {
 		ComicsResource.markAllStripsRead(MozComics.ComicPicker.selectedComic);
 	}
 
-	function refreshCache(callUpdate) {
+	/*
+	 * Populate the showing and enabled cache arrays, and refresh the comic picker.
+	 */
+	function refreshCache(refreshTree) {
 		// refresh comic arrays
 		this.showing = [];
 		this.enabled = [];
@@ -97,14 +127,19 @@ MozComics.Comics = new function() {
 		}
 
 		// refresh ComicPicker
-		if(callUpdate) {
-			MozComics.ComicPicker.update();
+		if(refreshTree) {
+			MozComics.ComicPicker.refreshTree();
 		}
 		else {
-			MozComics.ComicPicker.refreshTree();
+			MozComics.ComicPicker.update();
 		}
 	}
 
+
+	/*
+	 * Get and set functions so other parts of MozComics can interact
+	 * with the installed comics.
+	 */
 	function getComic(comic) {
 		return (comic.comic) ? comic: ComicsResource.all[comic];
 	}
@@ -117,41 +152,54 @@ MozComics.Comics = new function() {
 		return self.getComic(comic).get(prop, MozComics.callbackId);
 	}
 
-	// ignoreUpdatingCache is a flag used when setComicProp is called
-	// multiple times in a function so that refreshCache is not called
-	// every time a property is changed
-	function setComicProp(comic, prop, val, ignoreUpdatingCache) {
+	function setComicProp(comic, prop, val, skipRefreshCache) {
 		this.getComic(comic).set(prop, val, MozComics.callbackId);
 
-		if(!ignoreUpdatingCache) {
-			this.refreshCache(true);
+		if(!skipRefreshCache) {
+			this.refreshCache();
 		}
 	}
 
-	function enableAll(ignoreUpdatingCache) {
+
+	/*
+	 * Enable all comics
+	 * Don't call refreshCache if the skipRefreshCache flag is true
+	 * Otherwise, only call refreshCache once at the end
+	 */
+	function enableAll(skipRefreshCache) {
 		for(var comic in ComicsResource.all) {
 			this.setComicProp(comic, "enabled", true, true);
 		}
 
-		if(!ignoreUpdatingCache) {
-			this.refreshCache(true);
+		if(!skipRefreshCache) {
+			this.refreshCache();
 		}
 	}
 
-	function disableAll(ignoreUpdatingCache) {
+	/*
+	 * Disable all comics
+	 * Don't call refreshCache if the skipRefreshCache flag is true
+	 * Otherwise, only call refreshCache once at the end
+	 */
+	function disableAll(skipRefreshCache) {
 		for(var comic in ComicsResource.all) {
 			this.setComicProp(comic, "enabled", false, true);
 		}
 
-		if(!ignoreUpdatingCache) {
-			this.refreshCache(true);
+		if(!skipRefreshCache) {
+			this.refreshCache();
 		}
 	}
 
-	// default to selected comic if no argument was passed
+	/*
+	 * Default to selected comic if no argument was passed
+	 */
 	function onlyEnable(comic) {
 		if(comic == undefined || comic == null) {
 			comic = MozComics.ComicPicker.selectedComic;
+			if(comic === false) {
+				return;
+			}
 		}
 
 		this.disableAll(true);

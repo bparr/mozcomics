@@ -53,6 +53,9 @@ var Update = new function() {
 	this.setAutoUpdateTimer();
 
 
+	/*
+	 * Set the update timer for automatic updating
+	 */
 	function setAutoUpdateTimer() {
 		this.timer.cancel();
 
@@ -67,12 +70,12 @@ var Update = new function() {
 
 			this.timer.initWithCallback(this.timerCallback, updateInterval * 60000, 
 				Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);
-		
 		}
 	}
 
-
-	// update all installed comics
+	/*
+	 * Update all installed comics
+	 */
 	function updateAll() {
 		var comics = new Array();
 		for(comicId in ComicsResource.all) {
@@ -81,8 +84,12 @@ var Update = new function() {
 		update(comics, false);
 	}
 
-	// comics is an array whose members at least have guid, name, and updated
-	// addingNewComic is a boolean flag for case when adding a new comic
+	/*
+	 * Update specific comics
+	 *
+	 * comics is an array whose members at least have guid, name, and updated
+	 * addingNewComic is a boolean flag for case when adding a new comic
+	 */
 	function update(comics, addingNewComic) {
 		var completedTracker = {
 			numComplete: 0,
@@ -129,7 +136,9 @@ var Update = new function() {
 		}
 	}
 
-	// process JSON returned by the server
+	/*
+	 * Process JSON returned by the server
+	 */
 	function _onDownloadComplete(req, addingNewComic, completedTracker, comicRequestCount) {
 		try {
 			var response = JSON.parse(req.responseText);
@@ -212,6 +221,9 @@ var Update = new function() {
 		}
 	}
 
+	/*
+	 * Update the strips of a comic
+	 */
 	function _updateStrips(newComic, strips, updated, addingNewComic, completedTracker) {
 		var statements = [];
 		for(var i = 0, len = strips.length; i < len; i++) {
@@ -247,6 +259,7 @@ var Update = new function() {
 			}
 		}
 
+		// finally update comic updated time
 		var updateComicUpdatedTime = updateComicUpdatedTimeStatement.clone();
 		updateComicUpdatedTime.params.comic = newComic.comic;
 		updateComicUpdatedTime.params.updated = updated;
@@ -273,6 +286,9 @@ var Update = new function() {
 		});
 	}
 
+	/*
+	 * Handle what happens when all comics have finished updating
+	 */
 	function _onStripsComplete(addingNewComic, completedTracker) {
 		if(completedTracker.numComplete == completedTracker.total) {
 			var d = new Date();
