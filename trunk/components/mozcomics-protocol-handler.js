@@ -84,7 +84,7 @@ function ChromeExtensionHandler() {
 			}
 
 			// ensure the comic is not already in MozComics
-			if(MozComics.Comics.getComicByGuid(comic.guid)) {
+			if(MozComics.Comics.isInstalled(comic.guid)) {
 				window.alert(MozComics.Utils.getString("addComic.alreadyInstalled", comic.name));
 				return;
 			}
