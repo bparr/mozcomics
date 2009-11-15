@@ -19,6 +19,7 @@ MozComics.Comics = new function() {
 	this.refreshCache = refreshCache;
 
 	this.getComic = getComic;
+	this.isInstalled = isInstalled;
 	this.getComicByGuid = getComicByGuid;
 	this.getComicProp = getComicProp;
 	this.setComicProp = setComicProp;
@@ -142,6 +143,10 @@ MozComics.Comics = new function() {
 	 */
 	function getComic(comic) {
 		return (comic.comic) ? comic: ComicsResource.all[comic];
+	}
+
+	function isInstalled(guid) {
+		return (ComicsResource.guids[guid] !== undefined);
 	}
 
 	function getComicByGuid(guid) {

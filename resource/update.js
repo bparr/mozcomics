@@ -91,11 +91,6 @@ var Update = new function() {
 	 * addingNewComic is a boolean flag for case when adding a new comic
 	 */
 	function update(comics, addingNewComic) {
-		var completedTracker = {
-			numComplete: 0,
-			total: comics.length
-		};
-
 		// group by update site to decrease number of requests
 		var updateSites = {};
 		for(var i = 0, len = comics.length; i < len; i++) {
@@ -120,12 +115,11 @@ var Update = new function() {
 			var req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
 				.createInstance(Components.interfaces.nsIXMLHttpRequest);
 			req.open('GET', url, true);
-			req.comicRequestCount = updateSites[updateSite].count;
 			req.onreadystatechange = function (aEvt) {
 				var req = aEvt.originalTarget;
 				if (req.readyState == 4) {
 					if(req.status == 200) {
-						_onDownloadComplete(req, addingNewComic, completedTracker, req.comicRequestCount);
+						_onDownloadComplete(req, addingNewComic);
 					}
 					else {
 						Utils.alert(Utils.getString("update.serverError"));
@@ -139,7 +133,7 @@ var Update = new function() {
 	/*
 	 * Process JSON returned by the server
 	 */
-	function _onDownloadComplete(req, addingNewComic, completedTracker, comicRequestCount) {
+	function _onDownloadComplete(req, addingNewComic) {
 		try {
 			var response = JSON.parse(req.responseText);
 		}
@@ -149,10 +143,6 @@ var Update = new function() {
 		}
 
 		var comicsLen = response.comics.length;
-		completedTracker.numComplete += (comicRequestCount - comicsLen);
-		if(comicsLen == 0) {
-			_onStripsComplete(addingNewComic, completedTracker);
-		}
 
 		// ensure only one comic is added if adding a new comic
 		if(addingNewComic && comicsLen > 1) {
@@ -207,13 +197,11 @@ var Update = new function() {
 				strips: comic.strips,
 				updated: updated,
 				addingNewComic: addingNewComic,
-				completedTracker: completedTracker,
 
 				handleResult: function(response) {
 					var newComic = DB.cloneRow(response.getNextRow(), DB.comicColumns);
 					newComic.updated = this.updated;
-					_updateStrips(newComic, this.strips, this.updated, 
-						this.addingNewComic, this.completedTracker);
+					_updateStrips(newComic, this.strips, this.updated, this.addingNewComic);
 				},
 				handleError: function(error) {},
 				handleCompletion: function(reason) {}
@@ -224,7 +212,7 @@ var Update = new function() {
 	/*
 	 * Update the strips of a comic
 	 */
-	function _updateStrips(newComic, strips, updated, addingNewComic, completedTracker) {
+	function _updateStrips(newComic, strips, updated, addingNewComic) {
 		var statements = [];
 		for(var i = 0, len = strips.length; i < len; i++) {
 			var strip = strips[i];
@@ -268,7 +256,6 @@ var Update = new function() {
 		DB.dbConn.executeAsync(statements, statements.length, {
 			newComic: newComic,
 			addingNewComic: addingNewComic,
-			completedTracker: completedTracker,
 
 			handleResult: function(response) {},
 			handleError: function(error) {},
@@ -280,8 +267,7 @@ var Update = new function() {
 					Utils.alert(Utils.getString("update.sqlError"));
 				}
 
-				this.completedTracker.numComplete++;
-				_onStripsComplete(this.addingNewComic, this.completedTracker);
+				_onStripsComplete(this.addingNewComic);
 			}
 		});
 	}
@@ -289,15 +275,13 @@ var Update = new function() {
 	/*
 	 * Handle what happens when all comics have finished updating
 	 */
-	function _onStripsComplete(addingNewComic, completedTracker) {
-		if(completedTracker.numComplete == completedTracker.total) {
-			var d = new Date();
-			Prefs.set("lastSuccessfulUpdate", d.getTime() / 1000);
-			Callback.callType("comicsChanged");
+	function _onStripsComplete(addingNewComic) {
+		var d = new Date();
+		Prefs.set("lastSuccessfulUpdate", d.getTime() / 1000);
+		Callback.callType("comicsChanged");
 
-			if(!addingNewComic) {
-				self.setAutoUpdateTimer();
-			}
+		if(!addingNewComic) {
+			self.setAutoUpdateTimer();
 		}
 	}
 }
