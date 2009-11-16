@@ -87,8 +87,10 @@ var MozComics = new function() {
 		// if this is the first time MozComics is run (just installed)
 		// then show the FIRST_RUN url
 		if(MozComics.Prefs.user.firstRun) {
-			MozComics.showWebpage(MozComics.Utils.URLS.FIRST_RUN);
 			MozComics.Prefs.set('firstRun', false);
+			window.setTimeout(function() {
+				MozComics.showWebpage(MozComics.Utils.URLS.FIRST_RUN);
+			}, 100);
 		}
 
 		// make it so the user does not have to click the strip pane
@@ -110,7 +112,7 @@ var MozComics = new function() {
 
 	function showWebpage(url) {
 		if(MozComics.isWindow) {
-			window.open(MozComics.Utils.URLS.COMIC_LIST);
+			window.open(url);
 		}
 		else {
 			gBrowser.selectedTab = gBrowser.addTab(url);
