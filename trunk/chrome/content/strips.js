@@ -52,7 +52,7 @@ MozComics.Strips = new function() {
 	 */
 	function refresh() {
 		self.params.lastRead = INFINITY;
-		self.params.stripQueue = [];
+		self.deleteCache();
 
 		// don't search for a strip until MozComics has been opened
 		if(!MozComics.hasBeenOpened) {
@@ -118,7 +118,7 @@ MozComics.Strips = new function() {
 		var d = MozComics.Dom.advancedDate.dateValue;
 		var time = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()) - 1;
 
-		this.params.stripQueue = [];
+		this.deleteCache();
 
 		var dateType = MozComics.Dom.advancedDateMenu.value;
 		switch(dateType) {
