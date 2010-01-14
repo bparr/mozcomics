@@ -15,6 +15,7 @@ pref("extensions.mozcomics.addReadToBrowserHistory", true);
 pref("extensions.mozcomics.multipleEnabledComics", true);
 pref("extensions.mozcomics.showMouseoverBelowImage", true);
 pref("extensions.mozcomics.defaultStrip", 0);
+pref("extensions.mozcomics.enableDeveloperTools", false);
 
 // preloading
 pref("extensions.mozcomics.preloadAmount", 5);

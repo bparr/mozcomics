@@ -36,6 +36,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 						<label id="mozcomics-update-last-successful" value="" />
 					</tooltip>
 				</toolbarbutton>
+				<toolbarbutton id="mozcomics-tb-updateFromFile" tooltiptext="&mozcomics.toolbar.updateFromFile;" oncommand="MozComics.Update.updateFromFile()"/>
 				<spacer flex="1"/>
 				<toolbarbutton id="mozcomics-tb-loading-image" tooltip="&mozcomics.toolbar.loadingImage;" disabled="true" />
 				<toolbarbutton id="mozcomics-tb-first" tooltiptext="&mozcomics.toolbar.first;" oncommand="MozComics.Strips.setToFirstStrip()"/>

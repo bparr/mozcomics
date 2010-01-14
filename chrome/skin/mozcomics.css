@@ -80,6 +80,10 @@
 	list-style-image: url('chrome://mozcomics/skin/tb_update.png');
 }
 
+#mozcomics-tb-updateFromFile {
+	list-style-image: url('chrome://mozcomics/skin/tb_updateFromFile.png');
+}
+
 #mozcomics-update-last-successful {
 	font-size: .75em;
 	color: gray;

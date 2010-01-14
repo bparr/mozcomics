@@ -21,6 +21,8 @@ var Utils = new function() {
 	this.unescapeHtml = unescapeHtml;
 	this.sqlToDate = sqlToDate;
 	this.relativeDate = relativeDate;
+	this.readTextFile = readTextFile;
+	this.logToConsole = logToConsole;
 
 	var stringBundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
 		.getService(Components.interfaces.nsIStringBundleService)
@@ -121,7 +123,7 @@ var Utils = new function() {
 		if(inHours == 1) {
 			return this.getString("update.oneHourAgo");
 		}
-		if (inDays < 1.01) {
+		if(inDays < 1.01) {
 			return this.getString("update.hoursAgo", inHours);
 		}
 		
@@ -141,6 +143,51 @@ var Utils = new function() {
 		}
 		
 		return this.getString("update.yearsAgo", inYears);
+	}
+
+	/*
+	 * Read and return contents of a text file as a string
+	 */
+	function readTextFile(file) {
+		var fis = Components.classes["@mozilla.org/network/file-input-stream;1"]
+			.createInstance(Components.interfaces.nsIFileInputStream);
+		fis.init(file, 0x01, -1, 0);
+
+		var charset = "UTF-8";
+		var bufferSize = 4096;
+		const replacementChar = Components.interfaces.nsIConverterInputStream.DEFAULT_REPLACEMENT_CHARACTER;
+		var is = Components.classes["@mozilla.org/intl/converter-input-stream;1"]
+			.createInstance(Components.interfaces.nsIConverterInputStream);
+		is.init(fis, charset, bufferSize, replacementChar);
+
+		var substrings = [];
+		var str = {};
+		while(is.readString(bufferSize, str) != 0) {
+			substrings.push(str.value);
+		}
+
+		is.close();
+
+		return substrings.join('');
+	}
+
+	/*
+	 * Log a message to the console
+	 */
+	function logToConsole(message, messageType) {
+		if(!messageType) {
+			messageType = "warning";
+		}
+
+		var consoleService = Components.classes["@mozilla.org/consoleservice;1"]
+			.getService(Components.interfaces.nsIConsoleService);
+		var scriptError = Components.classes["@mozilla.org/scripterror;1"]
+			.createInstance(Components.interfaces.nsIScriptError);
+
+		var flag = scriptError[messageType + "Flag"];
+		scriptError.init("MozComics: " + message, null, null, null, null,
+			flag, null);
+		consoleService.logMessage(scriptError);
 	}
 }
 

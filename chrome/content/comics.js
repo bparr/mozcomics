@@ -146,7 +146,7 @@ MozComics.Comics = new function() {
 	}
 
 	function isInstalled(guid) {
-		return (ComicsResource.guids[guid] !== undefined);
+		return (ComicsResource.guids.hasOwnProperty(guid));
 	}
 
 	function getComicByGuid(guid) {
@@ -200,6 +200,7 @@ MozComics.Comics = new function() {
 	 * Default to selected comic if no argument was passed
 	 */
 	function onlyEnable(comic) {
+		var undefined;
 		if(comic == undefined || comic == null) {
 			comic = MozComics.ComicPicker.selectedComic;
 			if(comic === false) {

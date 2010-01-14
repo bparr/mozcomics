@@ -34,6 +34,7 @@ MozComics.Dom = new function() {
 
 		// cache navigation elements
 		this._getDomElement("lastSuccessfulUpdate", "mozcomics-update-last-successful");
+		this._getDomElement("updateFromFile", "mozcomics-tb-updateFromFile");
 		this._getDomElement("loadingImage", "mozcomics-tb-loading-image");
 		this._getDomElement("tbClose", "mozcomics-tb-close");
 
@@ -86,6 +87,9 @@ MozComics.Dom = new function() {
 
 		// initialize disabled state of enableAll button
 		this.enableAll.disabled = !MozComics.Prefs.user.multipleEnabledComics;
+
+		// hide developer tools if not enabled
+		this.updateFromFile.hidden = !MozComics.Prefs.user.enableDeveloperTools;
 
 		// add event listeners
 		this.comicPicker.addEventListener("click", this._eventFunctions.comicPicker, true);

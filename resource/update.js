@@ -28,6 +28,7 @@ var Update = new function() {
 
 	this.setAutoUpdateTimer = setAutoUpdateTimer;
 	this.updateAll = updateAll;
+	this.updateFromFile = updateFromFile;
 	this.update = update;
 
 	var defaultSite = Utils.URLS.UPDATE; // used when update_site column is null
@@ -71,6 +72,38 @@ var Update = new function() {
 			this.timer.initWithCallback(this.timerCallback, updateInterval * 60000, 
 				Components.interfaces.nsITimer.TYPE_REPEATING_SLACK);
 		}
+	}
+
+	/*
+	 * Select JSON file, and use it to update
+	 */
+	function updateFromFile() {
+		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+			.getService(Components.interfaces.nsIWindowMediator);
+		var win = wm.getMostRecentWindow(null);
+
+		const nsIFilePicker = Components.interfaces.nsIFilePicker;
+		var fp = Components.classes["@mozilla.org/filepicker;1"]
+			.createInstance(nsIFilePicker);
+		fp.init(win, null, nsIFilePicker.modeOpen);
+		fp.appendFilter(Utils.getString("update.jsonFilter"), "*.json");
+		fp.appendFilters(nsIFilePicker.filterAll);
+
+		var rv = fp.show();
+		if(rv != nsIFilePicker.returnOK) {
+			return;
+		}
+
+		var jsonString = Utils.readTextFile(fp.file);
+		try {
+			var comic = JSON.parse(jsonString);
+		}
+		catch(err) {
+			Utils.alert(Utils.getString("update.invalidJson"));
+			return;
+		}
+
+		_updateComic(comic, true);
 	}
 
 	/*
@@ -150,63 +183,69 @@ var Update = new function() {
 		}
 
 		for(var i = 0; i < comicsLen; i++) {
-			var comic = response.comics[i];
-			if(!comic.guid) {
-				throw ("Update failed: guid not defined for a comic");
-			}
-			if(!comic.updated) {
-				throw ("Update failed: updated not defined for a comic");
-			}
-
-			comic.guid = comic.guid.toLowerCase();
-
-			// certain columns are not settable from the JSON
-			comic.comic = null;
-			comic.state = null;
-
-			// update the updated once all strips have been inserted in order
-			// to maintain consistency if strip insert queries fail
-			var updated = comic.updated;
-			comic.updated = 0;
-
-			// save some states in the old comic so that they persist to the new one
-			var oldComic = ComicsResource.guids[comic.guid];
-			if(oldComic) {
-				comic.comic = oldComic.comic;
-				comic.state = oldComic.state;
-				comic.updated = oldComic.updated;
-			}
-			else if(!addingNewComic) {
-				// no comics should be added if only updating installed comics
-				throw ("Update failed: suspected foul play with update site");
-			}
-
-			// generate and execute statements to update comic
-			var updateComic = updateComicStatement.clone();
-			for(var col = 0, colLen = DB.comicColumns.length; col < colLen; col++) {
-				var columnName = DB.comicColumns[col];
-				if(comic[columnName]) {
-					updateComic.params[columnName] = comic[columnName];
-				}
-			}
-
-			var getComicByGuid = getComicByGuidStatement.clone();
-			getComicByGuid.params.guid = comic.guid;
-
-			DB.dbConn.executeAsync([updateComic, getComicByGuid], 2, {
-				strips: comic.strips,
-				updated: updated,
-				addingNewComic: addingNewComic,
-
-				handleResult: function(response) {
-					var newComic = DB.cloneRow(response.getNextRow(), DB.comicColumns);
-					newComic.updated = this.updated;
-					_updateStrips(newComic, this.strips, this.updated, this.addingNewComic);
-				},
-				handleError: function(error) {},
-				handleCompletion: function(reason) {}
-			});
+			_updateComic(response.comics[i], addingNewComic);
 		}
+	}
+
+	/*
+	 * Update an individual comic
+	 */
+	function _updateComic(comic, addingNewComic) {
+		if(!comic.guid) {
+			throw ("Update failed: guid not defined for a comic");
+		}
+		if(!comic.updated) {
+			throw ("Update failed: updated not defined for a comic");
+		}
+
+		comic.guid = comic.guid.toLowerCase();
+
+		// certain columns are not settable from the JSON
+		comic.comic = null;
+		comic.state = null;
+
+		// update the updated once all strips have been inserted in order
+		// to maintain consistency if strip insert queries fail
+		var updated = comic.updated;
+		comic.updated = 0;
+
+		// save some states in the old comic so that they persist to the new one
+		var oldComic = ComicsResource.guids[comic.guid];
+		if(oldComic) {
+			comic.comic = oldComic.comic;
+			comic.state = oldComic.state;
+			comic.updated = oldComic.updated;
+		}
+		else if(!addingNewComic) {
+			// no comics should be added if only updating installed comics
+			throw ("Update failed: suspected foul play with update site");
+		}
+
+		// generate and execute statements to update comic
+		var updateComic = updateComicStatement.clone();
+		for(var col = 0, colLen = DB.comicColumns.length; col < colLen; col++) {
+			var columnName = DB.comicColumns[col];
+			if(comic[columnName]) {
+				updateComic.params[columnName] = comic[columnName];
+			}
+		}
+
+		var getComicByGuid = getComicByGuidStatement.clone();
+		getComicByGuid.params.guid = comic.guid;
+
+		DB.dbConn.executeAsync([updateComic, getComicByGuid], 2, {
+			strips: comic.strips,
+			updated: updated,
+			addingNewComic: addingNewComic,
+
+			handleResult: function(response) {
+				var newComic = DB.cloneRow(response.getNextRow(), DB.comicColumns);
+				newComic.updated = this.updated;
+				_updateStrips(newComic, this.strips, this.updated, this.addingNewComic);
+			},
+			handleError: function(error) {},
+			handleCompletion: function(reason) {}
+		});
 	}
 
 	/*
