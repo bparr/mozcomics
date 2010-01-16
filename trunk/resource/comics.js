@@ -173,8 +173,13 @@ var ComicsResource = new function() {
 		"SELECT " + DB.comicColumns.join(", ") + " FROM comic;"
 	);
 
-	while(statement.step()) {
-		updateComic(statement.row);
+	try {
+		while(statement.step()) {
+			updateComic(statement.row);
+		}
+	}
+	finally {
+		statement.reset();
 	}
 
 	this.populateUnreadCounts();
