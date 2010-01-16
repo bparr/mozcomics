@@ -61,8 +61,6 @@ function ChromeExtensionHandler() {
 				if(val) {
 					switch (key) {
 						case 'guid':
-							comic[key] = val;
-							break;
 						case 'name':
 						case 'update_site':
 							comic[key] = unescape(val);
@@ -95,8 +93,7 @@ function ChromeExtensionHandler() {
 			// ensure user wants to add this comic
 			var result = prompt.confirm("", MozComics.Utils.getString("addComic.youSure", comic.name));
 			if (result) {
-				comic.updated = 0;
-				MozComics.Update.update([comic], true);
+				MozComics.Update.addComic(comic);
 			}
 		}
 	};
