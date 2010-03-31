@@ -397,7 +397,6 @@ MozComics.Strips = new function() {
 	function updateDatePicker() {
 		var datepicker = MozComics.Dom.advancedDate;
 		var dateType = MozComics.Dom.advancedDateMenu.value;
-alert(this.datePickerDates[dateType]);
 		datepicker.value = this.datePickerDates[dateType];
 	}
 }
