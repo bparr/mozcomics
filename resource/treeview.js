@@ -1,6 +1,9 @@
 /*
 Copyright (c) 2009-2010 Ben Parr
 Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.php
+
+
+Based on https://developer.mozilla.org/en/Sorting_and_filtering_a_custom_tree_view
 */
 
 var EXPORTED_SYMBOLS = ["TreeView"];
@@ -40,6 +43,15 @@ TreeView.prototype.getColumnProperties = function(colid,col,props){};
 TreeView.prototype.cycleHeader = function(col, elem) {};
 
 
+// Converts value to lowercase if a string
+TreeView.prototype.prepareForComparison = function(val) {
+	if (typeof val == "string") {
+		return val.toLowerCase();
+	}
+	return val;
+}
+
+
 // update tree with a specific sort
 TreeView.prototype.update = function(sortColumn) {
 	var firstRow = this.xulTree.treeBoxObject.getFirstVisibleRow()
@@ -61,15 +73,15 @@ TreeView.prototype.update = function(sortColumn) {
 	var sortObjId = sortColumnId.replace(this.xulVarPrefix, "");
 	var self = this;
 	function columnSortFunction(a, b) {
-		var val1 = self.getText(a, sortObjId);
-		var val2 = self.getText(b, sortObjId);
+		var val1 = self.prepareForComparison(self.getText(a, sortObjId));
+		var val2 = self.prepareForComparison(self.getText(b, sortObjId));
 
 		if(val1 > val2) return sortOrder;
 		if(val1 < val2) return -1 * sortOrder;
 
 		// tiebreaker
-		val1 = self.getText(a, "name");
-		val2 = self.getText(b, "name");
+		val1 = self.prepareForComparison(self.getText(a, "name"));
+		val2 = self.prepareForComparison(self.getText(b, "name"));
 		if(val1 > val2) return 1;
 		if(val1 < val2) return -1;
 
