@@ -34,6 +34,8 @@ MozComics.Strips = new function() {
 	this._updateParamVariables = _updateParamVariables;
 
 	this.datePickerDates = null;
+	this._localeToDatepicker = _localeToDatepicker;
+	this._utcToDatepicker = _utcToDatepicker;
 	this._updateDatePickerDates = _updateDatePickerDates;
 	this.updateDatePicker = updateDatePicker;
 
@@ -347,6 +349,23 @@ MozComics.Strips = new function() {
 		}
 	}
 
+	/*
+	 * Convert time to a string accepted by datepicker using locale functions
+	 */
+	function _localeToDatepicker(time) {
+		var d = new Date();
+		d.setTime(time);
+		return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate();
+	}
+
+	/*
+	 * Convert time to a string accepted by datepicker using UTC functions
+	 */
+	function _utcToDatepicker(time) {
+		var d = new Date();
+		d.setTime(time);
+		return d.getUTCFullYear() + "-" + (d.getUTCMonth() + 1) + "-" + d.getUTCDate();
+	}
 
 	/*
 	 * Store values for all type of dates for this row, so
@@ -354,12 +373,12 @@ MozComics.Strips = new function() {
 	 */
 	function _updateDatePickerDates(row) {
 		var d = new Date();
-		var currentTime = d.getTime();
+		var currentTime = this._localeToDatepicker(d.getTime());
 
 		if(row) {
 			this.datePickerDates = {
-				"pubDate": MozComics.Utils.sqlToDate(row.strip).getTime(),
-				"readDate": (row.read != null) ? row.read : currentTime
+				"pubDate": this._utcToDatepicker(row.strip * 1000),
+				"readDate": (row.read != null) ? this._localeToDatepicker(row.read) : currentTime
 			};
 		}
 		else {
@@ -378,15 +397,8 @@ MozComics.Strips = new function() {
 	function updateDatePicker() {
 		var datepicker = MozComics.Dom.advancedDate;
 		var dateType = MozComics.Dom.advancedDateMenu.value;
-		var d = new Date();
-
-		switch(dateType) {
-			case "pubDate":
-			case "readDate":
-				d.setTime(this.datePickerDates[dateType]);
-		}
-
-		datepicker.dateValue = d;
+alert(this.datePickerDates[dateType]);
+		datepicker.value = this.datePickerDates[dateType];
 	}
 }
 
