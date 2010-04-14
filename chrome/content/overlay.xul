@@ -55,7 +55,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			<hbox flex="1">
 				<vbox id="mozcomics-sidebar" persist="width hidden" hidden="false">
 					<vbox align="center">
-						<label class="text-link" onclick="MozComics.toggleAdvanced();">
+						<label class="text-link" onclick="MozComics.toggleAdvanced(); return false;">
 							<hbox align="center">
 								<image id="mozcomics-advanced-toggle" />
 								<label>&mozcomics.advanced.label;</label>
@@ -147,8 +147,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					onkeyup="MozComics.handleKeyUp(event);">
 
 					<vbox id="mozcomics-strip-found" align="center" hidden="true">
-						<label id="mozcomics-strip-comic" class="text-link" href="" />
-						<label id="mozcomics-strip-title" class="text-link" href="" />
+						<label id="mozcomics-strip-comic" class="text-link" href="" onclick="MozComics.showWebpage(this.href); return false;" />
+						<label id="mozcomics-strip-title" class="text-link" href="" onclick="MozComics.showWebpage(this.href); return false;" />
 						<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip"/>
 						<tooltip id="mozcomics-strip-image-tooltip" label="" noautohide="true" />
 						<label id="mozcomics-strip-tooltip-label" />
