@@ -12,6 +12,7 @@ var MozComics = new function() {
 
 	this.onChromeLoad = onChromeLoad;
 	this.onUnload = onUnload;
+	this.handleLinkClick = handleLinkClick;
 	this.showWebpage = showWebpage;
 	this.openWindow = openWindow;
 	this._openMozComicsWindow = _openMozComicsWindow;
@@ -22,6 +23,7 @@ var MozComics = new function() {
 	this.handleKeyDown = handleKeyDown;
 	this.handleKeyUp = handleKeyUp;
 	this.buildComicsContextMenu = buildComicsContextMenu;
+	this.buildStripContextMenu = buildStripContextMenu;
 	this.buildUpdateTooltip = buildUpdateTooltip;
 	this.showPreferences = showPreferences;
 	this._getCurrentScrollXPos = _getCurrentScrollXPos;
@@ -112,8 +114,15 @@ var MozComics = new function() {
 		MozComics.Callback.remove(MozComics.callbackId);
 	}
 
-	function showWebpage(url) {
-		if(MozComics.isWindow) {
+	function handleLinkClick(e) {
+		if(e.button == 0) {
+			showWebpage(e.currentTarget.href, e.shiftKey);
+		}
+		return false;
+	}
+
+	function showWebpage(url, forceNewWindow) {
+		if(forceNewWindow || MozComics.isWindow) {
 			window.open(url);
 		}
 		else {
@@ -306,6 +315,37 @@ var MozComics = new function() {
 			// don't show context menu
 			e.preventDefault();
 		}
+	}
+
+	function buildStripContextMenu(e) {
+		if(!MozComics.isWindow) {
+			var node = document.popupNode;
+			var newNode;
+			if(node.localName == "image") {
+				newNode = gBrowser.contentDocument.createElement("img");
+				newNode.src = node.src;
+				if(MozComics.Dom.imageTooltip.label) {
+					newNode.alt = MozComics.Dom.imageTooltip.label;
+				}
+			}
+			else if(node.localName == "label") {
+				newNode = gBrowser.contentDocument.createElement("a");
+				if(node.href) {
+					newNode.href = node.href;
+				}
+				newNode.textContent = node.value;
+			}
+			else {
+				newNode = node;
+			}
+
+			document.popupNode = newNode;
+			MozComics.Dom.mainContextMenu.openPopupAtScreen(e.screenX, e.screenY, true);
+		}
+
+		e.preventDefault();
+		e.stopPropagation();
+		return false;
 	}
 
 	/*

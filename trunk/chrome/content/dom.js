@@ -83,6 +83,11 @@ MozComics.Dom = new function() {
 		// close toolbar button only relevant when this instance is a browser overlay
 		this.tbClose.hidden = MozComics.isWindow;
 
+		// contentAreaContextMenu does not exist when MozComics is a stand-alone window
+		if(!MozComics.isWindow) {
+			this._getDomElement("mainContextMenu", "contentAreaContextMenu");
+		}
+
 		// initialize state of sidebar toolbar icon and splitter
 		this.sidebarToolbarIcon.setAttribute("expand", this.sidebar.hidden);
 		this.sidebarSplitter.hidden = this.sidebar.hidden;
