@@ -30,6 +30,7 @@ MozComics.Strips = new function() {
 	this._setStrip = _setStrip;
 
 	this._updatePane = _updatePane;
+	this.changeZoom = changeZoom;
 	this._preloadImage = _preloadImage;
 	this._updateParamVariables = _updateParamVariables;
 
@@ -47,6 +48,11 @@ MozComics.Strips = new function() {
 		lastRead: INFINITY,
 		stripQueue: []
 	}
+
+	// image properties used for zooming
+	this.imageOriginalWidth = -1;
+	this.imageOriginalHeight = -1;
+	this.imageZoom = 1.0;
 
 	/*
 	 * Change strip to default if no strip showing, or the one that is
@@ -249,6 +255,10 @@ MozComics.Strips = new function() {
 			var title = (row.title) ? row.title : MozComics.Utils.getString("strip.noTitle");
 			MozComics.Dom.title.textContent = title;
 			MozComics.Dom.title.href = row.url;
+
+			self.imageOriginalWidth = -1;
+			self.imageOriginalHeight = -1;
+			self.imageZoom = 1;
 			MozComics.Dom.image.src = row.image;
 			MozComics.Dom.image.hidden = false;
 			if(!row.image) {
@@ -290,6 +300,29 @@ MozComics.Strips = new function() {
 		if(!MozComics.Dom.pane.hidden) {
 			MozComics.Dom.stripPane.scrollTo(0,0);
 		}
+	}
+
+
+	/*
+	 * Change image zoom by passed amount
+	 */
+	function changeZoom(amount) {
+		// image not loaded yet
+		if(this.imageOriginalWidth == -1 || this.imageOriginalHeight == -1) {
+			return;
+		}
+
+		var newImageZoom = this.imageZoom + amount;
+		if(newImageZoom <= 0) {
+			return;
+		}
+
+		this.imageZoom = newImageZoom;
+		var newWidth = (newImageZoom * this.imageOriginalWidth) + "px";
+		var newHeight = (newImageZoom * this.imageOriginalHeight) + "px";
+		MozComics.Dom.stripFound.style.width = newWidth;
+		MozComics.Dom.image.style.width = newWidth;
+		MozComics.Dom.image.style.height = newHeight;
 	}
 
 	/*

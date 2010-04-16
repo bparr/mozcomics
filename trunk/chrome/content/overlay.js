@@ -28,6 +28,8 @@ var MozComics = new function() {
 
 	this.lastScrollXPos = null;
 
+	this.zoomAmount = .25;
+
 	var MAX_BOOKMARK = 2;
 
 	// used for Callback so the resource module can notify this instance of
