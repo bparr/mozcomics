@@ -117,8 +117,9 @@ var MozComics = new function() {
 	function handleLinkClick(e) {
 		if(e.button == 0) {
 			showWebpage(e.currentTarget.href, e.shiftKey);
+			return false;
 		}
-		return false;
+		return true;
 	}
 
 	function showWebpage(url, forceNewWindow) {
