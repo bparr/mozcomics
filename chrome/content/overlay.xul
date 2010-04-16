@@ -16,12 +16,14 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 	<hbox id="mozcomics-pane" persist="height" chromedir="&locale.dir;" flex="1">
 
 		<popupset>
-			<popup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu(event);">
+			<menupopup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu(event);">
 				<menuitem label="&mozcomics.menu.onlyEnable;" oncommand="MozComics.Comics.onlyEnable()"/>
 				<menuitem label="&mozcomics.menu.findReadStrips;" oncommand="MozComics.Comics.findReadStrips()"/>
 				<menuitem label="&mozcomics.menu.markAllStripsRead;" oncommand="MozComics.Comics.markAllStripsRead()"/>
 				<menuitem label="&mozcomics.menu.deleteComic;" oncommand="MozComics.Comics.deleteComic()"/>
-			</popup>
+			</menupopup>
+
+			<menupopup id="mozcomics-strip-menu" onpopupshowing="return MozComics.buildStripContextMenu(event);" />
 		</popupset>
 
 		<vbox flex="1">
@@ -150,9 +152,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					onkeyup="MozComics.handleKeyUp(event);">
 
 					<vbox id="mozcomics-strip-found" align="center" hidden="true">
-						<label id="mozcomics-strip-comic" class="text-link" href="" onclick="MozComics.showWebpage(this.href); return false;" />
-						<label id="mozcomics-strip-title" class="text-link" href="" onclick="MozComics.showWebpage(this.href); return false;" />
-						<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip"/>
+						<label id="mozcomics-strip-comic" class="text-link" href="" onclick="return MozComics.handleLinkClick(event);" context="mozcomics-strip-menu" />
+						<label id="mozcomics-strip-title" class="text-link" href="" onclick="return MozComics.handleLinkClick(event);" context="mozcomics-strip-menu" />
+						<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip" context="mozcomics-strip-menu"/>
 						<tooltip id="mozcomics-strip-image-tooltip" label="" noautohide="true" />
 						<label id="mozcomics-strip-tooltip-label" />
 						<image id="mozcomics-strip-hiddenImage" src="" />
