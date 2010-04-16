@@ -122,6 +122,14 @@
 	list-style-image: url('chrome://mozcomics/skin/tb_last.png');
 }
 
+#mozcomics-tb-zoom-in {
+	list-style-image: url('chrome://mozcomics/skin/tb_zoomIn.png');
+}
+
+#mozcomics-tb-zoom-out {
+	list-style-image: url('chrome://mozcomics/skin/tb_zoomOut.png');
+}
+
 #mozcomics-tb-openWindow {
 	list-style-image: url('chrome://mozcomics/skin/tb_openWindow.png');
 }

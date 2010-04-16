@@ -16,6 +16,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.toolbar.last                         "Last">
 <!ENTITY mozcomics.toolbar.back                         "Back">
 <!ENTITY mozcomics.toolbar.forward                      "Forward">
+<!ENTITY mozcomics.toolbar.zoomIn                       "Zoom In (Image only)">
+<!ENTITY mozcomics.toolbar.zoomOut                      "Zoom Out (Image only)">
 <!ENTITY mozcomics.toolbar.openWindow                   "New Window">
 
 <!ENTITY mozcomics.menu.onlyEnable                      "Only Enable This Comic">

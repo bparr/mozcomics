@@ -21,7 +21,12 @@ MozComics.Dom = new function() {
 			MozComics.Dom.loadingImage.style.visibility = 'hidden';
 
 			MozComics.Dom.stripFound.style.width = 'auto';
+			MozComics.Dom.image.style.width = 'auto';
+			MozComics.Dom.image.style.height = 'auto';
+
 			var width = MozComics.Dom.image.clientWidth;
+			MozComics.Strips.imageOriginalWidth = width;
+			MozComics.Strips.imageOriginalHeight = MozComics.Dom.image.clientHeight;
 			MozComics.Dom.stripFound.style.width = width + 'px';
 		}
 	};

@@ -39,6 +39,9 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 				<toolbarbutton id="mozcomics-tb-updateFromFile" tooltiptext="&mozcomics.toolbar.updateFromFile;" oncommand="MozComics.Update.updateFromFile()"/>
 				<spacer flex="1"/>
 				<toolbarbutton id="mozcomics-tb-loading-image" tooltip="&mozcomics.toolbar.loadingImage;" disabled="true" />
+				<toolbarbutton id="mozcomics-tb-zoom-in" tooltiptext="&mozcomics.toolbar.zoomIn;" oncommand="MozComics.Strips.changeZoom(MozComics.zoomAmount)"/>
+				<toolbarbutton id="mozcomics-tb-zoom-out" tooltiptext="&mozcomics.toolbar.zoomOut;" oncommand="MozComics.Strips.changeZoom(-MozComics.zoomAmount)"/>
+				<toolbarseparator/>
 				<toolbarbutton id="mozcomics-tb-first" tooltiptext="&mozcomics.toolbar.first;" oncommand="MozComics.Strips.setToFirstStrip()"/>
 				<toolbarbutton id="mozcomics-tb-previous" tooltiptext="&mozcomics.toolbar.previous;" oncommand="MozComics.Strips.setToPreviousStrip()"/>
 				<toolbarbutton id="mozcomics-tb-random" tooltiptext="&mozcomics.toolbar.random;" oncommand="MozComics.Strips.setToRandomStrip()"/>
