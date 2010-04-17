@@ -66,13 +66,15 @@ MozComics.Dom = new function() {
 		// cache strip elements
 		this._getDomElement("focusableStripPane", "mozcomics-strip-pane");
 		this._getDomElement("stripFound", "mozcomics-strip-found");
-		this._getDomElement("stripNone", "mozcomics-strip-none");
 		this._getDomElement("comic", "mozcomics-strip-comic");
 		this._getDomElement("title", "mozcomics-strip-title");
 		this._getDomElement("image", "mozcomics-strip-image");
 		this._getDomElement("imageTooltip", "mozcomics-strip-image-tooltip");
 		this._getDomElement("imageTooltipLabel", "mozcomics-strip-tooltip-label");
 		this._getDomElement("hiddenImage", "mozcomics-strip-hiddenImage");
+		this._getDomElement("stripNone", "mozcomics-strip-none");
+		this._getDomElement("resetShowRead", "mozcomics-strip-resetShowRead");
+		this._getDomElement("resetStripType", "mozcomics-strip-resetStripType");
 
 		// determine if this instance is a stand-alone window, or a browser overlay
 		MozComics.isWindow = !this.paneSplitter;

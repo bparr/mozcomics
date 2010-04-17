@@ -12,6 +12,8 @@ MozComics.Strips = new function() {
 
 	this._firstRefresh = true;
 	this.refresh = refresh;
+	this.resetShowRead = resetShowRead;
+	this.resetStripType = resetStripType;
 
 	this.lastStripRequest = null;
 
@@ -82,6 +84,22 @@ MozComics.Strips = new function() {
 		}
 
 		self._firstRefresh = false;
+	}
+
+	/*
+	 * Set show read to true, and refresh
+	 */
+	function resetShowRead() {
+		MozComics.Dom.showRead.checked = true;
+		this.refresh();
+	}
+
+	/*
+	 * Set strip type to "All", and refresh
+	 */
+	function resetStripType() {
+		MozComics.Dom.bookmarkMenu.value = 0;
+		this.refresh();		
 	}
 
 	/*
@@ -294,6 +312,8 @@ MozComics.Strips = new function() {
 		}
 		else {
 			MozComics.Dom.loadingImage.style.visibility = 'hidden';
+			MozComics.Dom.resetShowRead.hidden = MozComics.Dom.showRead.checked;
+			MozComics.Dom.resetStripType.hidden = (MozComics.Dom.bookmarkMenu.value == 0);
 		}
 
 		// scroll to the top of the strip pane
