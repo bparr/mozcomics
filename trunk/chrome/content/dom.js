@@ -15,19 +15,6 @@ MozComics.Dom = new function() {
 
 		advancedDate: function(e) {
 			MozComics.Strips.setByDatePicker();
-		},
-
-		image: function(e) {
-			MozComics.Dom.loadingImage.style.visibility = 'hidden';
-
-			MozComics.Dom.stripFound.style.width = 'auto';
-			MozComics.Dom.image.style.width = 'auto';
-			MozComics.Dom.image.style.height = 'auto';
-
-			var width = MozComics.Dom.image.clientWidth;
-			MozComics.Strips.imageOriginalWidth = width;
-			MozComics.Strips.imageOriginalHeight = MozComics.Dom.image.clientHeight;
-			MozComics.Dom.stripFound.style.width = width + 'px';
 		}
 	};
 
@@ -68,10 +55,8 @@ MozComics.Dom = new function() {
 		this._getDomElement("stripFound", "mozcomics-strip-found");
 		this._getDomElement("comic", "mozcomics-strip-comic");
 		this._getDomElement("title", "mozcomics-strip-title");
-		this._getDomElement("image", "mozcomics-strip-image");
 		this._getDomElement("imageTooltip", "mozcomics-strip-image-tooltip");
 		this._getDomElement("imageTooltipLabel", "mozcomics-strip-tooltip-label");
-		this._getDomElement("hiddenImage", "mozcomics-strip-hiddenImage");
 		this._getDomElement("stripNone", "mozcomics-strip-none");
 		this._getDomElement("resetShowRead", "mozcomics-strip-resetShowRead");
 		this._getDomElement("resetStripType", "mozcomics-strip-resetStripType");
@@ -106,7 +91,6 @@ MozComics.Dom = new function() {
 		// add event listeners
 		this.comicPicker.addEventListener("click", this._eventFunctions.comicPicker, true);
 		this.advancedDate.addEventListener("change", this._eventFunctions.advancedDate, false);
-		this.image.addEventListener("load", this._eventFunctions.image, false);
 
 		// add scroll methods to scrollboxes
 		this.stripPane = this.focusableStripPane.boxObject.QueryInterface(Components.interfaces.nsIScrollBoxObject);
@@ -116,7 +100,6 @@ MozComics.Dom = new function() {
 		// remove event listeners
 		this.comicPicker.removeEventListener("click", this._eventFunctions.comicPicker, true);
 		this.advancedDate.removeEventListener("change", this._eventFunctions.advancedDate, false);
-		this.image.removeEventListener("load", this._eventFunctions.image, false);
 
 		// force persist of values that would have been otherwise lost
 		// see https://bugzilla.mozilla.org/show_bug.cgi?id=15232
