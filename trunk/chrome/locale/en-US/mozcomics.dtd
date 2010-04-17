@@ -31,8 +31,10 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.comic.rating                         "Rating">
 
 <!ENTITY mozcomics.strip.none                           "No strips found by query">
-<!ENTITY mozcomics.strip.resetShowRead                  "Show read strips?">
-<!ENTITY mozcomics.strip.resetStripType                 "Show all strip types?">
+<!ENTITY mozcomics.strip.quickLinks                     "Quick Links">
+<!ENTITY mozcomics.strip.addComic                       "Add a New Comic">
+<!ENTITY mozcomics.strip.resetShowRead                  "Show Read Strips">
+<!ENTITY mozcomics.strip.resetStripType                 "Show All Strip Types">
 
 <!ENTITY mozcomics.comicpicker.enabled                  "Enabled:">
 <!ENTITY mozcomics.comicpicker.all                      "All">
