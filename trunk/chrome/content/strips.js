@@ -331,6 +331,7 @@ MozComics.Strips = new function() {
 			newImageDomElement.setAttribute("tooltip", IMAGE_TOOLTIP);
 			newImageDomElement.setAttribute("context", IMAGE_CONTEXT);
 			newImageDomElement.addEventListener("load", _onImageLoad, false);
+			newImageDomElement.addEventListener("dragstart", _onImageDragStart, false);
 			self.images.push({ domElement: newImageDomElement });
 		}
 
@@ -402,6 +403,13 @@ MozComics.Strips = new function() {
 
 		// all images are loaded, so hide loadingImage icon
 		MozComics.Dom.loadingImage.style.visibility = 'hidden';
+	}
+
+	function _onImageDragStart(e) {
+		var url = e.currentTarget.src;
+		var dt = e.dataTransfer;
+		dt.setData("text/uri-list", url);
+		dt.setData("text/plain", url);
 	}
 
 	/*
