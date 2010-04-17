@@ -154,10 +154,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					<vbox id="mozcomics-strip-found" align="center" hidden="true">
 						<label id="mozcomics-strip-comic" class="text-link" href="" onclick="return MozComics.handleLinkClick(event);" context="mozcomics-strip-menu" />
 						<label id="mozcomics-strip-title" class="text-link" href="" onclick="return MozComics.handleLinkClick(event);" context="mozcomics-strip-menu" />
-						<image id="mozcomics-strip-image" src="" tooltip="mozcomics-strip-image-tooltip" context="mozcomics-strip-menu"/>
-						<tooltip id="mozcomics-strip-image-tooltip" label="" noautohide="true" />
 						<label id="mozcomics-strip-tooltip-label" />
-						<image id="mozcomics-strip-hiddenImage" src="" />
+						<tooltip id="mozcomics-strip-image-tooltip" label="" noautohide="true" />
 					</vbox>
 					<vbox id="mozcomics-strip-none" align="center" hidden="true">
 						<label value="&mozcomics.strip.none;" />

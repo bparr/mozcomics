@@ -107,6 +107,7 @@ var MozComics = new function() {
 	function onUnload() {
 		window.removeEventListener("unload", MozComics.onUnload, false);
 
+		MozComics.Strips.unload();
 		MozComics.Comics.unload();
 		MozComics.Dom.unload();
 

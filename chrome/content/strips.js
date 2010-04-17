@@ -10,6 +10,14 @@ MozComics.Strips = new function() {
 	var S = StripsResource.S;
 	var INFINITY = StripsResource.INFINITY;
 
+	var MIN_WIDTH = 250; // minimum width of strip pane
+	var IMAGE_ID_PREFIX = "mozcomics-strip-image";
+	var IMAGE_CLASS = "mozcomics-strip-image";
+	var IMAGE_TOOLTIP = "mozcomics-strip-image-tooltip";
+	var IMAGE_CONTEXT = "mozcomics-strip-menu";
+
+	this.unload = unload;
+
 	this._firstRefresh = true;
 	this.refresh = refresh;
 	this.resetShowRead = resetShowRead;
@@ -33,7 +41,7 @@ MozComics.Strips = new function() {
 
 	this._updatePane = _updatePane;
 	this.changeZoom = changeZoom;
-	this._preloadImage = _preloadImage;
+	this._preloadImages = _preloadImages;
 	this._updateParamVariables = _updateParamVariables;
 
 	this.datePickerDates = null;
@@ -50,10 +58,19 @@ MozComics.Strips = new function() {
 		stripQueue: []
 	}
 
-	// image properties used for zooming
-	this.imageOriginalWidth = -1;
-	this.imageOriginalHeight = -1;
+	// image properties used to display images and handle zooming
+	this.images = [];
+	this.imagesShowingCount = 0;
 	this.imageZoom = 1.0;
+
+	/*
+	 * Remove event listeners from images
+	 */
+	function unload() {
+		for(var i = 0, len = this.images.length; i < len; i++) {
+			this.images[i].domElement.removeEventListener("load", _onImageLoad, false);
+		}
+	}
 
 	/*
 	 * Change strip to default if no strip showing, or the one that is
@@ -228,7 +245,7 @@ MozComics.Strips = new function() {
 			if(data.params.stripQueue.length == 0) {
 				data.onComplete = function(row, statementId) {
 					if(row) {
-						self._preloadImage(row.image);
+						self._preloadImages(row.images);
 						data.params.stripQueue.unshift(row);
 					}
 				};
@@ -246,7 +263,7 @@ MozComics.Strips = new function() {
 	function _updatePane(row, statementId) {
 		// preload next strip image in cache
 		if(self.params.stripQueue.length > 0) {
-			self._preloadImage(self.params.stripQueue[0].image);
+			self._preloadImages(self.params.stripQueue[0].images);
 		}
 
 		self._updateParamVariables(row, statementId);
@@ -266,22 +283,8 @@ MozComics.Strips = new function() {
 			var title = (row.title) ? row.title : MozComics.Utils.getString("strip.noTitle");
 			MozComics.Dom.title.textContent = title;
 			MozComics.Dom.title.href = row.url;
-
-			self.imageOriginalWidth = -1;
-			self.imageOriginalHeight = -1;
-			self.imageZoom = 1;
-			MozComics.Dom.image.src = "";
-			MozComics.Dom.image.src = row.image;
-			MozComics.Dom.image.hidden = false;
-			if(!row.image) {
-				MozComics.Dom.loadingImage.style.visibility = 'hidden';
-			}
-
-			var extra = {};
-			try {
-				extra = JSON.parse(row.extra);
-			}
-			catch(e) {}
+			_displayImages(row.images);
+			var extra = row.extra;
 
 			// handle mouseover extra property
 			MozComics.Dom.imageTooltip.hidden = !extra.mouseover;
@@ -296,13 +299,6 @@ MozComics.Strips = new function() {
 					MozComics.Dom.imageTooltipLabel.hidden = false;
 				}
 			}
-
-			// handle hiddenImage extra propery
-			MozComics.Dom.hiddenImage.hidden = !extra.hiddenImage;
-			MozComics.Dom.hiddenImage.src = "";
-			if(extra.hiddenImage) {
-				MozComics.Dom.hiddenImage.src = extra.hiddenImage;
-			}
 		}
 		else {
 			MozComics.Dom.loadingImage.style.visibility = 'hidden';
@@ -316,36 +312,140 @@ MozComics.Strips = new function() {
 		}
 	}
 
+	/*
+	 * Display images given array of image urls
+	 */
+	function _displayImages(urls) {
+		self.imageZoom = 1;
+
+		var imagesLen = self.images.length;
+		var urlsLen = urls.length;
+		self.imagesShowingCount = urlsLen;
+
+		// create needed image DOM elements
+		for(; imagesLen < urlsLen; imagesLen++) {
+			var newImageDomElement = document.createElement("image");
+			MozComics.Dom.stripFound.insertBefore(newImageDomElement, MozComics.Dom.imageTooltipLabel);
+			newImageDomElement.setAttribute("id", IMAGE_ID_PREFIX + imagesLen);
+			newImageDomElement.setAttribute("class", IMAGE_CLASS);
+			newImageDomElement.setAttribute("tooltip", IMAGE_TOOLTIP);
+			newImageDomElement.setAttribute("context", IMAGE_CONTEXT);
+			newImageDomElement.addEventListener("load", _onImageLoad, false);
+			self.images.push({ domElement: newImageDomElement });
+		}
+
+		// initialize used entries in image array
+		for(var i = 0; i < urlsLen; i++) {
+			var image = self.images[i];
+			var imageDomElement = image.domElement;
+			image.width = -1;
+			image.height = -1;
+			imageDomElement.setAttribute("src", '');
+			imageDomElement.setAttribute("hidden", false);
+			imageDomElement.style.visibility = "hidden";
+			imageDomElement.style.width = 'auto';
+			imageDomElement.style.height = 'auto';
+		}
+
+		MozComics.Dom.stripFound.style.width = MIN_WIDTH + "px";
+
+		// set image.src properties (Not included in above for loop because onload
+		// event listener needs on all entries in image array to be initialized)
+		for(var i = 0; i < urlsLen; i++) {
+			self.images[i].domElement.setAttribute("src", urls[i]);
+		}
+
+		// hide all non-used entries in image array
+		for(var i = urlsLen; i < imagesLen; i++) {
+			self.images[i].domElement.setAttribute("hidden", true);
+		}
+
+		// _onImageLoad can't hide icon when no images to load because it never gets called
+		if(urlsLen == 0) {
+			MozComics.Dom.loadingImage.style.visibility = 'hidden';
+		}
+	}
+
+	/*
+	 * When an image is finiahed loading, set it's width and height
+	 */
+	function _onImageLoad(e) {
+		var imageId = e.currentTarget.id;
+		var imageNumber = parseInt(imageId.substr(IMAGE_ID_PREFIX.length));
+		var image = self.images[imageNumber];
+
+		// ensure images are not scaled down
+		var stripFound = MozComics.Dom.stripFound;
+		var stripFoundWidth = stripFound.clientWidth;
+		stripFound.style.width = "auto";
+
+		// force image width/height to specific values (no more scaling)
+		var originalWidth = image.domElement.clientWidth;
+		var zoomedWidth = self.imageZoom * originalWidth;
+		var originalHeight = image.domElement.clientHeight;
+		image.width = originalWidth;
+		image.height = originalHeight;
+		image.domElement.style.width = zoomedWidth + "px";
+		image.domElement.style.height = (self.imageZoom * originalHeight) + "px";
+		image.domElement.style.visibility = "visible";
+
+		// force stripFound width (without this, for example, 
+		// a long strip title or tooltip label would no word wrap)
+		stripFound.style.width = Math.max(zoomedWidth, stripFoundWidth) + 'px';
+
+		// check to see if all images are loaded
+		for(var i = 0, len = self.imagesShowingCount; i < len; i++) {
+			if(self.images[i].width == -1 || self.images[i].height == -1) {
+				return;
+			}
+		}
+
+		// all images are loaded, so hide loadingImage icon
+		MozComics.Dom.loadingImage.style.visibility = 'hidden';
+	}
 
 	/*
 	 * Change image zoom by passed amount
 	 */
 	function changeZoom(amount) {
-		// image not loaded yet
-		if(this.imageOriginalWidth == -1 || this.imageOriginalHeight == -1) {
-			return;
-		}
-
 		var newImageZoom = this.imageZoom + amount;
 		if(newImageZoom <= 0) {
 			return;
 		}
-
 		this.imageZoom = newImageZoom;
-		var newWidth = (newImageZoom * this.imageOriginalWidth) + "px";
-		var newHeight = (newImageZoom * this.imageOriginalHeight) + "px";
-		MozComics.Dom.stripFound.style.width = newWidth;
-		MozComics.Dom.image.style.width = newWidth;
-		MozComics.Dom.image.style.height = newHeight;
+
+		var stripFoundWidth = MIN_WIDTH;
+		MozComics.Dom.stripFound.style.width = "auto";
+		for(var i = 0, len = self.imagesShowingCount; i < len; i++) {
+			var image = self.images[i];
+
+			// skip images that have not yet been loaded
+			if(image.width == -1 || image.height == -1) {
+				continue;
+			}
+
+			// use image's original width/height to calculate new width/height
+			var width = newImageZoom * image.width;
+			image.domElement.style.width = width + "px";
+			image.domElement.style.height = (newImageZoom * image.height) + "px";
+
+			stripFoundWidth = Math.max(width, stripFoundWidth);
+		}
+
+		// set stripFound width to maximum image width
+		MozComics.Dom.stripFound.style.width = stripFoundWidth + "px";
 	}
 
 	/*
-	 * Preload an image for quicker viewing later
+	 * Preload images for quicker viewing later
 	 */
-	function _preloadImage(src) {
+	function _preloadImages(urls) {
 		if(MozComics.Prefs.user.preloadImages) {
-			var image = new Image();
-			image.src = src;
+			var preloadedImages = new Array(urls.length);
+			for(var i = 0, len = urls.length; i < len; i++) {
+				preloadedImages[i] = new Image();
+				preloadedImages[i].src = urls[i];
+			}
 		}
 	}
 

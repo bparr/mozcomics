@@ -140,14 +140,14 @@ var StripsResource = new function() {
 				if(reason == DB.REASON_FINISHED) {
 					// successfully found strip(s)
 					if(this.rows.length > 0) {
-						var firstRow = DB.cloneRow(this.rows[0], COLUMNS);
+						var firstRow = parseRowResult(this.rows[0]);
 						for(var i = 1, len = this.rows.length; i < len; i++) {
-							var row = DB.cloneRow(this.rows[i], COLUMNS);
+							var row = parseRowResult(this.rows[i]);
 							this.data.params.stripQueue.push(row);
 						}
 
-						busy = false;
 						this.data.onComplete(firstRow, this.data.statementId);
+						busy = false;
 					}
 					// unsuccessful in finding a strip, but a fallback statement exists
 					else if(this.data.onFailStatementId) {
@@ -157,17 +157,44 @@ var StripsResource = new function() {
 					}
 					// unsuccessful with no fallback statement
 					else {
-						busy = false;
 						this.data.onComplete(false, this.data.statementId);
+						busy = false;
 					}
 				}
 				else {
-					busy = false;
 					Utils.alert(Utils.getString("findStrip.sqlError"));
 					this.data.onComplete(false, this.data.statementId);
+					busy = false;
 				}
 			}
 		});
+	}
+
+	function parseRowResult(row) {
+		var parsedRow = DB.cloneRow(row, COLUMNS);
+
+		// parse urls of images from image column
+		if(parsedRow.image) {
+			parsedRow.images = parsedRow.image.split('\n');
+		}
+		else {
+			parsedRow.images = [];
+		}
+
+		// parse JSON object from extra column
+		var extra = {};
+		try {
+			extra = JSON.parse(parsedRow.extra);
+		}
+		catch(e) {}
+		parsedRow.extra = extra;
+
+		// handle hiddenImage extra propery
+		if(extra.hiddenImage) {
+			parsedRow.images.push(extra.hiddenImage);
+		}
+
+		return parsedRow;
 	}
 }
 
