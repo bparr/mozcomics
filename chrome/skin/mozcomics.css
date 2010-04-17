@@ -59,6 +59,11 @@
 	padding-top: 8px;
 }
 
+#mozcomics-strip-quickLinksHeader {
+	padding-top: 16px;
+	font-weight: bold;
+}
+
 #mozcomics-tb-sidebar {
 	list-style-image: url('chrome://mozcomics/skin/tb_sidebar_contract.png');
 }

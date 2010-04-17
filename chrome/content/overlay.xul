@@ -159,6 +159,8 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 					</vbox>
 					<vbox id="mozcomics-strip-none" align="center" hidden="true">
 						<label value="&mozcomics.strip.none;" />
+						<label id="mozcomics-strip-quickLinksHeader" value="&mozcomics.strip.quickLinks;" />
+						<label value="&mozcomics.strip.addComic;" class="text-link" href="" onclick="MozComics.Comics.addComic();" />
 						<label id="mozcomics-strip-resetShowRead" value="&mozcomics.strip.resetShowRead;"
 							class="text-link" href="" onclick="MozComics.Strips.resetShowRead();" />
 						<label id="mozcomics-strip-resetStripType" value="&mozcomics.strip.resetStripType;"
