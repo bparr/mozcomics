@@ -46,7 +46,6 @@ MozComics.Strips = new function() {
 	this.params = {
 		lastComic: null,
 		lastStrip: null,
-		lastUrl: null,
 		lastRead: INFINITY,
 		stripQueue: []
 	}
@@ -250,12 +249,6 @@ MozComics.Strips = new function() {
 			self._preloadImage(self.params.stripQueue[0].image);
 		}
 
-		// image onload event not triggered if url did not change, so
-		// hide loadingImage icon here instead
-		if(row && self.params.lastUrl == row.url) {
-			MozComics.Dom.loadingImage.style.visibility = 'hidden';
-		}
-
 		self._updateParamVariables(row, statementId);
 		self._updateDatePickerDates(row);
 
@@ -277,6 +270,7 @@ MozComics.Strips = new function() {
 			self.imageOriginalWidth = -1;
 			self.imageOriginalHeight = -1;
 			self.imageZoom = 1;
+			MozComics.Dom.image.src = "";
 			MozComics.Dom.image.src = row.image;
 			MozComics.Dom.image.hidden = false;
 			if(!row.image) {
@@ -362,7 +356,6 @@ MozComics.Strips = new function() {
 		if(row) {
 			this.params.lastComic = row.comic;
 			this.params.lastStrip = row.strip;
-			this.params.lastUrl = row.url;
 
 			switch(statementId) {
 				case S.back:
@@ -374,8 +367,6 @@ MozComics.Strips = new function() {
 			}
 		}
 		else {
-			this.lastUrl = null;
-
 			switch(statementId) {
 				case S.previous:
 					this.params.lastComic = -1 * INFINITY;
