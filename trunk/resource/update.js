@@ -178,8 +178,9 @@ var Update = new function() {
 
 		// generate and send requests
 		for(updateSite in updateSites) {
-			var url = updateSite + "guids=" + updateSites[updateSite].guids.join(',');
-			url += "&updated=" + updateSites[updateSite].updated.join(',');
+			var url = updateSite + "version=" + Utils.VERSION +
+				"&guids=" + updateSites[updateSite].guids.join(',') +
+				"&updated=" + updateSites[updateSite].updated.join(',');
 
 			var req = Components.classes["@mozilla.org/xmlextras/xmlhttprequest;1"]
 				.createInstance(Components.interfaces.nsIXMLHttpRequest);
