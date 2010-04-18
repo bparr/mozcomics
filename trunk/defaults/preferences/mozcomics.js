@@ -5,6 +5,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 
 pref("extensions.mozcomics.firstRun", true);
 pref("extensions.mozcomics.databaseVersion", 1);
+pref("extensions.mozcomics.backupAmount", 2);
 
 // user interface
 pref("extensions.mozcomics.showUnreadCount", true);

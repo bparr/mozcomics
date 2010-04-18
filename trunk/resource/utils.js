@@ -27,6 +27,17 @@ var Utils = new function() {
 	this.relativeDate = relativeDate;
 	this.readTextFile = readTextFile;
 	this.logToConsole = logToConsole;
+	this.getNSIFile = getNSIFile;
+	this.createDirectory = createDirectory;
+
+
+	this.DIRECTORY_NAME = "mozcomics";
+	this.DATABASE_NAME = "mozcomics.sqlite";
+	this.profileDirectory = Components.classes["@mozilla.org/file/directory_service;1"]
+		.getService(Components.interfaces.nsIProperties)
+		.get("ProfD", Components.interfaces.nsIFile);
+	this.mozcomicsDirectory = this.getNSIFile(this.profileDirectory, this.DIRECTORY_NAME);
+
 
 	var stringBundle = Components.classes["@mozilla.org/intl/stringbundle;1"]
 		.getService(Components.interfaces.nsIStringBundleService)
@@ -172,6 +183,33 @@ var Utils = new function() {
 		scriptError.init("MozComics: " + message, null, null, null, null,
 			flag, null);
 		consoleService.logMessage(scriptError);
+	}
+
+
+	/*
+	 * Get nsIFile of file located in directory
+	 */
+	function getNSIFile(directory, filename) {
+		var file = directory.clone();
+		file.append(filename);
+		return file;
+	}
+
+	/*
+	 * Create directory if it currently doesn't exist
+	 * Returns whether or not the directory was created
+	 */
+	function createDirectory(directory) {
+		if (directory.exists() && !directory.isDirectory()) {
+			directory.remove(null);
+		}
+
+		if (!directory.exists()) {
+			directory.create(Components.interfaces.nsIFile.DIRECTORY_TYPE, 0755);
+			return true;
+		}
+
+		return false;
 	}
 }
 
