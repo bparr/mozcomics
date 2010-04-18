@@ -178,7 +178,7 @@ var Update = new function() {
 
 		// generate and send requests
 		for(updateSite in updateSites) {
-			var url = updateSite + "version=" + Utils.VERSION +
+			var url = updateSite + "version=" + Utils.UPDATE_VERSION +
 				"&guids=" + updateSites[updateSite].guids.join(',') +
 				"&updated=" + updateSites[updateSite].updated.join(',');
 
