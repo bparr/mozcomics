@@ -9,10 +9,7 @@ var EXPORTED_SYMBOLS = ["Utils"];
  * Useful general purpose functions/objects
  */
 var Utils = new function() {
-	this.GUID = "mozcomics@bparr.com";
-	this.VERSION = Components.classes["@mozilla.org/extensions/manager;1"]
-		.getService(Components.interfaces.nsIExtensionManager)
-		.getItemForID(this.GUID).version;
+	this.UPDATE_VERSION = 1;
 
 	this.URLS = {
 		FIRST_RUN: "http://www.mozcomics.com/firstRun",
