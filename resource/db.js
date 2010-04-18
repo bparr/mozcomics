@@ -16,13 +16,62 @@ Components.utils.import("resource://mozcomics/prefs.js");
 var DB = new function() {
 	var storageService = Components.classes["@mozilla.org/storage/service;1"]
 		.getService(Components.interfaces.mozIStorageService);
-	var file = Components.classes["@mozilla.org/file/directory_service;1"]
-		.getService(Components.interfaces.nsIProperties)
-		.get("ProfD", Components.interfaces.nsIFile);
-	file.append("mozcomics.sqlite");
+	var mozcomicsDirectory = Utils.mozcomicsDirectory;
+	var databaseName = Utils.DATABASE_NAME;
+	function getBackupFilename(i) {
+		return databaseName + (i ? '.' + i : '') + ".bak";
+	}
+
+	// get backup amount from preference
+	var MAX_BACKUPS = 16;
+	var oldBackupAmount = Prefs.user.backupAmount;
+	var backupAmount = Math.max(0, Math.min(oldBackupAmount, MAX_BACKUPS));
+	if(backupAmount != oldBackupAmount) {
+		Prefs.set("backupAmount", backupAmount);
+	}
+
+	// create mozcomics directory if it doesn't exist
+	if(Utils.createDirectory(mozcomicsDirectory)) {
+		// handle case where user is upgrading from version prior to 1.0b3
+		var oldDatabaseFile = Utils.getNSIFile(Utils.profileDirectory, databaseName);
+		if(oldDatabaseFile.exists()) {
+			oldDatabaseFile.moveTo(mozcomicsDirectory, databaseName);
+		}
+	}
+
+	// remove old backups
+	// (multiple backups will be removed if user previously decreased backupAmount)
+	for(var i = Math.max(0, backupAmount - 1); true; i++) {
+		var oldBackupFile = Utils.getNSIFile(mozcomicsDirectory, getBackupFilename(i));
+		if(!oldBackupFile.exists()) {
+			break;
+		}
+
+		oldBackupFile.remove(null);
+	}
+
+	// shift backups up a number
+	for(var i = backupAmount - 2; i >= 0; i--) {
+		var sourceFilename = getBackupFilename(i);
+		var sourceFile = Utils.getNSIFile(mozcomicsDirectory, sourceFilename);
+
+		if(sourceFile.exists()) {
+			var targetFilename = getBackupFilename(i + 1);
+			sourceFile.moveTo(mozcomicsDirectory, targetFilename);
+		}
+	}
+
+	// create backup of main database file
+	var databaseFile = Utils.getNSIFile(mozcomicsDirectory, databaseName);
+	if(backupAmount > 0 && databaseFile.exists()) {
+		try {
+			storageService.backupDatabaseFile(databaseFile, getBackupFilename(0));
+		}
+		catch(e) {}
+	}
 
 
-	this.dbConn = storageService.openDatabase(file); // database connection
+	this.dbConn = storageService.openDatabase(databaseFile); // database connection
 	this.REASON_FINISHED = Components.interfaces.mozIStorageStatementCallback.REASON_FINISHED;
 	this.cloneRow = cloneRow;
 	this.updateReadTimes = updateReadTimes;
