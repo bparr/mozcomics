@@ -35,7 +35,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 				<toolbarbutton id="mozcomics-tb-update" tooltip="_child" oncommand="MozComics.Update.updateAll()">
 					<tooltip onpopupshowing="MozComics.buildUpdateTooltip();" noautohide="true">
 						<label value="&mozcomics.toolbar.updateAll;" />
-						<label id="mozcomics-update-last-successful" value="" />
+						<label id="mozcomics-update-message" value="" />
 					</tooltip>
 				</toolbarbutton>
 				<toolbarbutton id="mozcomics-tb-updateFromFile" tooltiptext="&mozcomics.toolbar.updateFromFile;" oncommand="MozComics.Update.updateFromFile()"/>

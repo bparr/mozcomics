@@ -85,6 +85,10 @@
 	list-style-image: url('chrome://mozcomics/skin/tb_update.png');
 }
 
+#mozcomics-tb-update[failed="true"] {
+	list-style-image: url('chrome://mozcomics/skin/tb_updateFailed.png');
+}
+
 #mozcomics-tb-updateFromFile {
 	list-style-image: url('chrome://mozcomics/skin/tb_updateFromFile.png');
 }

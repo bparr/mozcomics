@@ -17,6 +17,10 @@ Components.utils.import("resource://mozcomics/callback.js");
 var Update = new function() {
 	var self = this;
 
+	this.upgradeRequired = false;
+	this.lastUpdateSuccessful = true;
+	this.failureMessage = '';
+
 	this.setAutoUpdateTimer = setAutoUpdateTimer;
 	this.addComic = addComic;
 	this.updateFromFile = updateFromFile;
@@ -67,6 +71,30 @@ var Update = new function() {
 		"UPDATE comic SET updated=:updated WHERE comic = :comic;"
 	);
 
+
+	// variables to keep track of update progress
+	this.updateInProgress = false;
+	this.numRequests = 0;
+	this.numRequestsCompleted = 0;
+	this.numUpdatedComics = 0;
+	this.numUpdatedComicsCompleted = 0;
+	this.currentUpdateSuccessful = true;
+	this.currentFailureMessage = '';
+	this.initProgressVariables = function() {
+		if(this.updateInProgress) {
+			return false;
+		}
+		this.updateInProgress = true;
+		this.numRequests = 0;
+		this.numRequestsCompleted = 0;
+		this.numUpdatedComics = 0;
+		this.numUpdatedComicsCompleted = 0;
+		this.currentUpdateSuccessful = true;
+		this.currentFailureMessage = '';
+		return true;
+	};
+
+
 	// initialize automatic updating
 	this.MIN_INTERVAL = 10;
 	this.timer = Components.classes["@mozilla.org/timer;1"]
@@ -89,7 +117,7 @@ var Update = new function() {
 	function setAutoUpdateTimer() {
 		this.timer.cancel();
 
-		if(Prefs.user.autoUpdate) {
+		if(Prefs.user.autoUpdate && !this.upgradeRequired) {
 			// stored as number of minutes
 			var updateInterval = Prefs.user.updateInterval;
 
@@ -115,6 +143,8 @@ var Update = new function() {
 	 * Select JSON file, and use it to update
 	 */
 	function updateFromFile() {
+		var updateType = UPDATE_TYPES.updateFromFile;
+
 		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
 			.getService(Components.interfaces.nsIWindowMediator);
 		var win = wm.getMostRecentWindow(null);
@@ -131,16 +161,22 @@ var Update = new function() {
 			return;
 		}
 
+		if(!self.initProgressVariables()) {
+			Utils.alert(Utils.getString("update.inProgress"));
+			return;
+		}
+
 		var jsonString = Utils.readTextFile(fp.file);
 		try {
 			var comic = JSON.parse(jsonString);
 		}
 		catch(err) {
-			Utils.alert(Utils.getString("update.invalidJson"));
+			_onFailedUpdate(updateType, Utils.getString("update.invalidJson"));
 			return;
 		}
 
-		_updateComic(comic, UPDATE_TYPES.updateFromFile);
+		self.numUpdatedComics = 1;
+		_updateComic(comic, updateType);
 	}
 
 	/*
@@ -162,12 +198,23 @@ var Update = new function() {
 	 * comics is an array whose members at least have guid, name, and updated
 	 */
 	function _requestUpdates(comics, updateType) {
+		if(!self.initProgressVariables()) {
+			Utils.alert(Utils.getString("update.inProgress"));
+			return;
+		}
+
+		if(self.upgradeRequired) {
+			_onFailedUpdate(updateType, Utils.getString("update.upgradeRequired"));
+			return;
+		}
+
 		// group by update site to decrease number of requests
 		var updateSites = {};
 		for(var i = 0, len = comics.length; i < len; i++) {
 			var site = comics[i].update_site;
 			site = (site) ? site : Utils.URLS.UPDATE;
 			if(!updateSites[site]) {
+				self.numRequests++;
 				updateSites[site] = {};
 				updateSites[site].guids = new Array();
 				updateSites[site].updated = new Array();
@@ -188,11 +235,12 @@ var Update = new function() {
 			req.onreadystatechange = function (aEvt) {
 				var req = aEvt.originalTarget;
 				if (req.readyState == 4) {
+					self.numRequestsCompleted++;
 					if(req.status == 200) {
 						_onDownloadComplete(req, updateType);
 					}
-					else if(updateType != UPDATE_TYPES.automaticUpdateAll) {
-						Utils.alert(Utils.getString("update.serverError"));
+					else {
+						_onFailedUpdate(updateType, Utils.getString("update.serverError"));
 					}
 				}
 			};
@@ -208,26 +256,35 @@ var Update = new function() {
 			var response = JSON.parse(req.responseText);
 		}
 		catch(err) {
-			Utils.alert(Utils.getString("update.invalidJson"));
+			_onFailedUpdate(updateType, Utils.getString("update.invalidJson"));
 			return;
+		}
+
+		// handle update errors
+		if(response.errors) {
+			var updateErrors = response.errors;
+			if(updateErrors.upgradeRequired) {
+				self.upgradeRequired = true;
+				_onFailedUpdate(updateType, Utils.getString("update.upgradeRequired"));
+				return;
+			}
 		}
 
 		var comicsLen = response.comics.length;
 
 		// ensure only one comic is added if adding a new comic
 		if(updateType == UPDATE_TYPES.addComic && comicsLen > 1) {
-			throw ("Update failed: suspected foul play with update site");
+			_onFailedUpdate(updateType, Utils.getString("update.suspectedFoulPlay"));
+			return;
 		}
 
+		self.numUpdatedComics += comicsLen;
 		for(var i = 0; i < comicsLen; i++) {
 			_updateComic(response.comics[i], updateType);
 		}
 
-		if(updateType == UPDATE_TYPES.toolbarUpdateAll ||
-			updateType == UPDATE_TYPES.automaticUpdateAll) {
-
-			var d = new Date();
-			Prefs.set("lastSuccessfulUpdate", d.getTime() / 1000);
+		if(comicsLen == 0) {
+			_onSuccessfulUpdate(updateType);
 		}
 	}
 
@@ -236,10 +293,14 @@ var Update = new function() {
 	 */
 	function _updateComic(comic, updateType) {
 		if(!comic.guid) {
-			throw ("Update failed: guid not defined for a comic");
+			self.numUpdatedComicsCompleted++;
+			_onFailedUpdate(updateType, Utils.getString("update.missingGuid"));
+			return;
 		}
 		if(!comic.updated) {
-			throw ("Update failed: updated not defined for a comic");
+			self.numUpdatedComicsCompleted++;
+			_onFailedUpdate(updateType, Utils.getString("update.missingUpdated"));
+			return;
 		}
 
 		// certain columns are not settable from the JSON
@@ -261,7 +322,9 @@ var Update = new function() {
 		else if(updateType == UPDATE_TYPES.toolbarUpdateAll ||
 			updateType == UPDATE_TYPES.automaticUpdateAll) {
 			// no comics should be added if only updating installed comics
-			throw ("Update failed: suspected foul play with update site");
+			self.numUpdatedComicsCompleted++;
+			_onFailedUpdate(updateType, Utils.getString("update.suspectedFoulPlay"));
+			return;
 		}
 
 
@@ -271,7 +334,9 @@ var Update = new function() {
 		var strips = comic.strips;
 		for(var i = 0, len = strips.length; i < len; i++) {
 			if(!strips[i].strip) {
-				throw ("Update failed: Strip ID not defined for a strip");
+				self.numUpdatedComicsCompleted++;
+				_onFailedUpdate(updateType, Utils.getString("update.missingStripId"));
+				return;
 			}
 			if(oldComic && strips[i].action == ACTIONS.update) {
 				var getStripPersisted = getStripPersistedStatement.clone();
@@ -323,7 +388,8 @@ var Update = new function() {
 						this.updated, this.updateType);
 				}
 				else {
-					Utils.alert(Utils.getString("update.sqlError"));
+					self.numUpdatedComicsCompleted++;
+					_onFailedUpdate(this.updateType, Utils.getString("update.sqlError"));
 				}
 			}
 		});
@@ -387,29 +453,72 @@ var Update = new function() {
 			handleResult: function(response) {},
 			handleError: function(error) {},
 			handleCompletion: function(reason) {
+				self.numUpdatedComicsCompleted++;
 				if(reason == DB.REASON_FINISHED) {
 					ComicsResource.updateComic(this.comic);
+					_onSuccessfulUpdate(this.updateType);
 				}
 				else {
-					Utils.alert(Utils.getString("update.sqlError"));
+					_onFailedUpdate(this.updateType, Utils.getString("update.sqlError"));
 				}
-
-				_onStripsComplete(this.updateType);
 			}
 		});
 	}
 
 	/*
-	 * Handle what happens when all comics have finished updating
+	 * Handle case where a comic was successfully updated
 	 */
-	function _onStripsComplete(updateType) {
-		Callback.callType("comicsChanged");
+	function _onSuccessfulUpdate(updateType) {
+		if(self.numRequestsCompleted == self.numRequests ||
+			self.numUpdatedComicsCompleted == self.numUpdatedComics) {
 
+			_onUpdateComplete(updateType);
+		}
+	}
+
+	/*
+	 * Handle case where a comic failed to update
+	 */
+	function _onFailedUpdate(updateType, failureMessage) {
+		self.currentUpdateSuccessful = false;
+		self.currentFailureMessage = Utils.getString("update.failureMessage", failureMessage);
+
+		if(self.numRequestsCompleted == self.numRequests ||
+			self.numUpdatedComicsCompleted == self.numUpdatedComics) {
+
+			_onUpdateComplete(updateType);
+		}
+	}
+
+	function _onUpdateComplete(updateType) {
+		var success = self.currentUpdateSuccessful;
+		self.lastUpdateSuccessful = success;
+		self.failureMessage = self.currentFailureMessage;
+
+		if(success) {
+			if(updateType == UPDATE_TYPES.toolbarUpdateAll ||
+				updateType == UPDATE_TYPES.automaticUpdateAll) {
+
+				var d = new Date();
+				Prefs.set("lastSuccessfulUpdate", d.getTime() / 1000);
+			}
+		}
+		else {
+			if(updateType != UPDATE_TYPES.automaticUpdateAll) {
+				Utils.alert(self.failureMessage);
+			}
+		}
+
+
+		Callback.callType("comicsChanged");
 		if(updateType == UPDATE_TYPES.toolbarUpdateAll ||
 			updateType == UPDATE_TYPES.automaticUpdateAll) {
 
 			self.setAutoUpdateTimer();
 		}
+
+		Callback.callType("updateComplete");
+		self.updateInProgress = false;
 	}
 }
 

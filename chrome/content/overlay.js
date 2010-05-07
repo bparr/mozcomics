@@ -51,6 +51,10 @@ var MozComics = new function() {
 		prefsChanged: function() {
 			MozComics.Dom.enableAll.disabled = !MozComics.Prefs.user.multipleEnabledComics;
 			MozComics.Comics.updateStatusBarPanel();
+		},
+
+		updateComplete: function() {
+			MozComics.Dom.updateIcon.setAttribute("failed", !MozComics.Update.lastUpdateSuccessful);
 		}
 	}
 
@@ -351,13 +355,19 @@ var MozComics = new function() {
 	}
 
 	/*
-	 * Update last success label in the update tooltip so that it shows
-	 * the relative date since the last successful update.
+	 * Set update message in the update tooltip
 	 */
 	function buildUpdateTooltip() {
-		var relativeDate = MozComics.Utils.relativeDate(MozComics.Prefs.user.lastSuccessfulUpdate);
-		var lastSuccess = MozComics.Utils.getString("update.lastSuccess", relativeDate);
-		MozComics.Dom.lastSuccessfulUpdate.value = lastSuccess;
+		if(MozComics.Update.lastUpdateSuccessful) {
+			// show the relative date since the last successful update.
+			var relativeDate = MozComics.Utils.relativeDate(MozComics.Prefs.user.lastSuccessfulUpdate);
+			var lastSuccess = MozComics.Utils.getString("update.lastSuccess", relativeDate);
+			MozComics.Dom.updateMessage.value = lastSuccess;
+		}
+		else {
+			// show error message
+			MozComics.Dom.updateMessage.value = MozComics.Update.failureMessage;
+		}
 	}
 
 	/*

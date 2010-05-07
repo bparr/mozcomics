@@ -25,7 +25,8 @@ MozComics.Dom = new function() {
 		this._getDomElement("statusBarPanel", "mozcomics-statusbarpanel", true);
 
 		// cache navigation elements
-		this._getDomElement("lastSuccessfulUpdate", "mozcomics-update-last-successful");
+		this._getDomElement("updateIcon", "mozcomics-tb-update");
+		this._getDomElement("updateMessage", "mozcomics-update-message");
 		this._getDomElement("updateFromFile", "mozcomics-tb-updateFromFile");
 		this._getDomElement("loadingImage", "mozcomics-tb-loading-image");
 		this._getDomElement("tbClose", "mozcomics-tb-close");
@@ -78,6 +79,9 @@ MozComics.Dom = new function() {
 		// initialize state of sidebar toolbar icon and splitter
 		this.sidebarToolbarIcon.setAttribute("expand", this.sidebar.hidden);
 		this.sidebarSplitter.hidden = this.sidebar.hidden;
+
+		// initialize state of update icon
+		this.updateIcon.setAttribute("failed", !MozComics.Update.lastUpdateSuccessful);
 
 		// initialize state of advanced toggle
 		this.advancedToggle.setAttribute("expand", this.advanced.hidden);
