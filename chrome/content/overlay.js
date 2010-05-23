@@ -7,7 +7,7 @@ var MozComics = new function() {
 
 	this.init = init;
 
-	this.isWindow = null;
+	this.isWindow = false;
 	this.hasBeenOpened = false;
 
 	this.onChromeLoad = onChromeLoad;
@@ -85,12 +85,15 @@ var MozComics = new function() {
 		window.removeEventListener("load", MozComics.onChromeLoad, false);
 		window.addEventListener("unload", MozComics.onUnload, false);
 
-		MozComics.Dom.init();
-		MozComics.ComicPicker.init();
-		MozComics.Comics.init();
+		// determine if this instance is a stand-alone window, or a browser overlay
+		MozComics.isWindow = (window.location == "chrome://mozcomics/content/window.xul");
 
 		// add this instance of MozComics to Callback
 		MozComics.callbackId = MozComics.Callback.add(MozComics.callbackFunctions);
+
+		MozComics.Dom.init();
+		MozComics.ComicPicker.init();
+		MozComics.Comics.init();
 
 		// if this is the first time MozComics is run (just installed)
 		// then show the FIRST_RUN url
@@ -99,12 +102,6 @@ var MozComics = new function() {
 			window.setTimeout(function() {
 				MozComics.showWebpage(MozComics.Utils.URLS.FIRST_RUN);
 			}, 100);
-		}
-
-		// make it so the user does not have to click the strip pane
-		// every time a stand-alone window is created
-		if(MozComics.isWindow) {
-			MozComics.focusStripPane();
 		}
 	}
 
@@ -324,30 +321,28 @@ var MozComics = new function() {
 	}
 
 	function buildStripContextMenu(e) {
-		if(!MozComics.isWindow) {
-			var node = document.popupNode;
-			var newNode;
-			if(node.localName == "image") {
-				newNode = gBrowser.contentDocument.createElement("img");
-				newNode.src = node.src;
-				if(MozComics.Dom.imageTooltip.label) {
-					newNode.alt = MozComics.Dom.imageTooltip.label;
-				}
+		var node = document.popupNode;
+		var newNode;
+		if(node.localName == "image") {
+			newNode = gBrowser.contentDocument.createElement("img");
+			newNode.src = node.src;
+			if(MozComics.Dom.imageTooltip.label) {
+				newNode.alt = MozComics.Dom.imageTooltip.label;
 			}
-			else if(node.localName == "label") {
-				newNode = gBrowser.contentDocument.createElement("a");
-				if(node.href) {
-					newNode.href = node.href;
-				}
-				newNode.textContent = node.value;
-			}
-			else {
-				newNode = node;
-			}
-
-			document.popupNode = newNode;
-			MozComics.Dom.mainContextMenu.openPopupAtScreen(e.screenX, e.screenY, true);
 		}
+		else if(node.localName == "label") {
+			newNode = gBrowser.contentDocument.createElement("a");
+			if(node.href) {
+				newNode.href = node.href;
+			}
+			newNode.textContent = node.value;
+		}
+		else {
+			newNode = node;
+		}
+
+		document.popupNode = newNode;
+		MozComics.Dom.mainContextMenu.openPopupAtScreen(e.screenX, e.screenY, true);
 
 		e.preventDefault();
 		e.stopPropagation();
