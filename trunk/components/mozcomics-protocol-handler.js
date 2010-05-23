@@ -39,7 +39,7 @@ function ChromeExtensionHandler() {
 	 * - name (required)
 	 * - update_site
 	 */
-	var AddComicExtension = new function(){
+	var AddComicExtension = new function() {
 		this.newChannel = newChannel;
 		
 		function newChannel(uri) {
@@ -98,9 +98,26 @@ function ChromeExtensionHandler() {
 		}
 	};
 
+
+	/*
+	 * Set MozComics to stand-alone window mode
+	 *
+	 * mozcomics://windowmode
+	 */
+	var WindowModeExtension = new function() {
+		this.newChannel = newChannel;
+
+		function newChannel(uri) {
+			var window = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+				.getService(Components.interfaces.nsIWindowMediator).getMostRecentWindow(null);
+			window.location = "chrome://mozcomics/content/window.xul";
+		}
+	};
 	
 	var AddComicExtensionSpec = MOZCOMICS_SCHEME + "://addcomic"
 	this._extensions[AddComicExtensionSpec] = AddComicExtension;
+	var WindowModeExtensionSpec = MOZCOMICS_SCHEME + "://window"
+	this._extensions[WindowModeExtensionSpec] = WindowModeExtension;
 }
 
 

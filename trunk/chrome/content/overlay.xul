@@ -13,7 +13,16 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <?xml-stylesheet href="chrome://mozcomics/skin/mozcomics.css" type="text/css"?>
 <overlay id="mozcomics" xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-	<hbox id="mozcomics-pane" persist="height" chromedir="&locale.dir;" flex="1">
+	<script src="overlay.js" />
+
+	<statusbar id="status-bar">
+		<statusbarpanel id="mozcomics-statusbarpanel" class="statusbarpanel-iconic-text" onclick="MozComics.togglePane();"
+			src="chrome://mozcomics/skin/logo16.png" label="" />
+	</statusbar>
+
+	<vbox id="appcontent">
+	<splitter id="mozcomics-splitter" resizebefore="closest" resizeafter="closest" hidden="true" />
+	<hbox id="mozcomics-pane" persist="height" chromedir="&locale.dir;" flex="1" hidden="true">
 
 		<popupset>
 			<menupopup id="mozcomics-comicpicker-menu" onpopupshowing="MozComics.buildComicsContextMenu(event);">
@@ -170,6 +179,14 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 			</hbox>
 		</vbox>
 	</hbox>
+	</vbox>
+
+	<keyset id="mainKeyset">
+		<key id="mozcomics-key"
+			 key="C"
+			 oncommand="MozComics.togglePane();"
+			 modifiers="accel shift" />
+	</keyset>
 
 </overlay>
 

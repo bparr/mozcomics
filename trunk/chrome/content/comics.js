@@ -59,7 +59,7 @@ MozComics.Comics = new function() {
 	 * Update number of unread strips shown next to status bar icon.
 	 */
 	function updateStatusBarPanel() {
-		// statusbar does not exist for stand-alone window, so do nothing
+		// statusbar is not showing stand-alone window, so do nothing
 		if(MozComics.isWindow) {
 			return;
 		}
