@@ -246,6 +246,10 @@ var Update = new function() {
 			};
 			req.send(null);
 		}
+
+		if(self.numRequestsCompleted == 0) {
+			_onSuccessfulUpdate(updateType);
+		}
 	}
 
 	/*
