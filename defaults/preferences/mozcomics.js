@@ -12,6 +12,7 @@ pref("extensions.mozcomics.showUnreadCount", true);
 pref("extensions.mozcomics.alwaysOpenInNewWindow", false);
 pref("extensions.mozcomics.wrapAround", true);
 pref("extensions.mozcomics.useArrowsToSwitchStrip", true);
+pref("extensions.mozcomics.alwaysResetZoom", false);
 pref("extensions.mozcomics.addReadToBrowserHistory", true);
 pref("extensions.mozcomics.multipleEnabledComics", true);
 pref("extensions.mozcomics.showMouseoverBelowImage", true);
