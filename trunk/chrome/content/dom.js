@@ -9,6 +9,15 @@ MozComics.Dom = new function() {
 	this._getDomElement = _getDomElement;
 
 	this._eventFunctions = {
+		pane: function(e) {
+			if(e.ctrlKey || e.altKey || e.metaKey) {
+				e.preventDefault();
+			}
+
+			e.stopPropagation();
+			return false;
+		},
+
 		comicPicker: function(e) {
 			MozComics.ComicPicker.onClick(e);
 		},
@@ -138,6 +147,8 @@ MozComics.Dom = new function() {
 			gBrowser.addTabsProgressListener(this._tabsProgressListener);
 			this.content.addEventListener("TabClose", setDocumentTitle, false);
 			this.appcontent.addEventListener("pageshow", setDocumentTitle, false);
+			this.pane.addEventListener("keydown", this._eventFunctions.pane, false);
+			this.pane.addEventListener("keyup", this._eventFunctions.pane, false);
 
 			this.tbClose.hidden = true;
 			this.paneSplitter.hidden = true;
@@ -171,6 +182,8 @@ MozComics.Dom = new function() {
 			gBrowser.removeTabsProgressListener(this._tabsProgressListener);
 			this.content.removeEventListener("TabClose", setDocumentTitle, false);
 			this.appcontent.removeEventListener("pageshow", setDocumentTitle, false);
+			this.pane.removeEventListener("keydown", this._eventFunctions.pane, false);
+			this.pane.removeEventListener("keyup", this._eventFunctions.pane, false);
 		}
 
 		// force persist of values that would have been otherwise lost
