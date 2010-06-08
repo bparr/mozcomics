@@ -316,7 +316,9 @@ MozComics.Strips = new function() {
 	 * Display images given array of image urls
 	 */
 	function _displayImages(urls) {
-		self.imageZoom = 1;
+		if(MozComics.Prefs.user.alwaysResetZoom) {
+			self.imageZoom = 1.0;
+		}
 
 		var imagesLen = self.images.length;
 		var urlsLen = urls.length;

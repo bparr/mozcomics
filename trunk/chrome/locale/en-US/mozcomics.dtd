@@ -57,6 +57,7 @@ Licensed under the MIT License: http://www.opensource.org/licenses/mit-license.p
 <!ENTITY mozcomics.preferences.alwaysOpenInNewWindow    "Always open MozComics in a new stand-alone window">
 <!ENTITY mozcomics.preferences.wrapAround               "Wrap around when navigating strips">
 <!ENTITY mozcomics.preferences.useArrowsToSwitchStrip   "Use arrow keys to switch strip">
+<!ENTITY mozcomics.preferences.alwaysResetZoom          "Reset zoom when navigating to a new strip">
 <!ENTITY mozcomics.preferences.addReadToBrowserHistory  "Add urls of read strips to browser history">
 <!ENTITY mozcomics.preferences.multipleEnabledComics    "Allow multiple comics to be enabled at a time">
 <!ENTITY mozcomics.preferences.showMouseoverBelowImage  "Show mouseover text below strip image">
