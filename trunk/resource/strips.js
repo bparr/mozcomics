@@ -172,14 +172,7 @@ var StripsResource = new function() {
 
 	function parseRowResult(row) {
 		var parsedRow = DB.cloneRow(row, COLUMNS);
-
-		// parse urls of images from image column
-		if(parsedRow.image) {
-			parsedRow.images = parsedRow.image.split('\n');
-		}
-		else {
-			parsedRow.images = [];
-		}
+		var comic = ComicsResource.all[parsedRow.comic];
 
 		// parse JSON object from extra column
 		var extra = {};
@@ -189,12 +182,34 @@ var StripsResource = new function() {
 		catch(e) {}
 		parsedRow.extra = extra;
 
+		// parse urls of images from image column
+		var images = parsedRow.image ? parsedRow.image.split('\n') : [];
+
 		// handle hiddenImage extra propery
 		if(extra.hiddenImage) {
-			parsedRow.images.push(extra.hiddenImage);
+			images.push(extra.hiddenImage);
 		}
 
+		// build urls from templates
+		parsedRow.url = buildUrl(comic.url_template, parsedRow.url);
+		parsedRow.images = images.map(function(image) { 
+			return buildUrl(comic.image_template, image);
+		});
+
 		return parsedRow;
+	}
+
+	function buildUrl(template, str) {
+		if(!template || str.match(/^(https?|ftp|file):\/\/.+$/)) {
+			return str;
+		}
+
+		var parts = str.split("\t");
+		var replacementCallback = function(aMatch, aKey) {
+			return parts[aKey] ? parts[aKey] : "";
+		}
+
+		return template.replace(/%(\d+)%/g, replacementCallback);
 	}
 }
 
