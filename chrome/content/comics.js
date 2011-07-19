@@ -85,10 +85,10 @@ MozComics.Comics = new function() {
 			return;
 		}
 
-		var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
-			.getService(Components.interfaces.nsIPrompt);
+    var prompt = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+      .getService(Components.interfaces.nsIPromptService);
 	
-		var result = prompt.confirm("", MozComics.Utils.getString("deleteComic.youSure", selectedComic.name));
+		var result = prompt.confirm(null, "", MozComics.Utils.getString("deleteComic.youSure", selectedComic.name));
 		if (result) {
 			ComicsResource.deleteComic(selectedComic);
 		}
