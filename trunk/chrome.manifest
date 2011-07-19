@@ -11,3 +11,6 @@ overlay   chrome://mozcomics/content/window.xul   chrome://mozcomics/content/ove
 
 locale    mozcomics en-US       chrome/locale/en-US/
 
+component {bf590229-584a-4f43-b563-bc96214f66e6} components/mozcomics-protocol-handler.js
+contract @mozilla.org/network/protocol;1?name=mozcomics {bf590229-584a-4f43-b563-bc96214f66e6}
+
