@@ -362,10 +362,10 @@ var ComicsResource = new function() {
 	 */
 	function _processReadStrips(selectedComic, readStrips, noneFoundMessage) {
 		if(readStrips.length > 0) {
-			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
-				.getService(Components.interfaces.nsIPrompt);
+      var prompt = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+        .getService(Components.interfaces.nsIPromptService);
 
-			var result = prompt.confirm("", Utils.getString("processReadStrips.youSure", readStrips.length));
+			var result = prompt.confirm(null, "", Utils.getString("processReadStrips.youSure", readStrips.length));
 			if(result) {
 				DB.updateReadTimes(selectedComic.comic, readStrips);
 			}

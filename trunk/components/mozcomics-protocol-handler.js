@@ -87,11 +87,11 @@ function ChromeExtensionHandler() {
 				return;
 			}
 			
-			var prompt = Components.classes["@mozilla.org/network/default-prompt;1"]
-				.getService(Components.interfaces.nsIPrompt);
+      var prompt = Components.classes["@mozilla.org/embedcomp/prompt-service;1"]
+        .getService(Components.interfaces.nsIPromptService);
 
 			// ensure user wants to add this comic
-			var result = prompt.confirm("", MozComics.Utils.getString("addComic.youSure", comic.name));
+			var result = prompt.confirm(null, "", MozComics.Utils.getString("addComic.youSure", comic.name));
 			if (result) {
 				MozComics.Update.addComic(comic);
 			}
